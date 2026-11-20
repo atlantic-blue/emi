@@ -133,11 +133,9 @@ resource "aws_cognito_user_pool_client" "iphone" {
 
   generate_secret = false
 
-  # Choice based sign in is the only flow a one time code travels in. The custom flow is the one
-  # Sign in with Telegram starts, and the three triggers above carry it. The refresh keeps her
-  # signed in. No password flow is listed, so a client cannot present a password even if one
-  # existed.
-  explicit_auth_flows = ["ALLOW_USER_AUTH", "ALLOW_REFRESH_TOKEN_AUTH", "ALLOW_CUSTOM_AUTH"]
+  # Rotation refuses ALLOW_REFRESH_TOKEN_AUTH, so the flow is absent here and present on the site.
+  # The phone refreshes with GetTokensFromRefreshToken or the refresh_token grant.
+  explicit_auth_flows = ["ALLOW_USER_AUTH", "ALLOW_CUSTOM_AUTH"]
 
   # The same three ways the site offers, each named through the resource that makes it. The phone
   # opens the managed login in its authentication session, which ends on the private scheme of the
@@ -160,12 +158,19 @@ resource "aws_cognito_user_pool_client" "iphone" {
 
   access_token_validity  = 1
   id_token_validity      = 1
-  refresh_token_validity = 30
+  refresh_token_validity = 365
 
   token_validity_units {
     access_token  = "hours"
     id_token      = "hours"
     refresh_token = "days"
+  }
+
+  # Rotation never extends the window above. The year runs from her first sign in, whatever it
+  # reissues. The grace period lets two screens refreshing at once both spend the same token.
+  refresh_token_rotation {
+    feature                    = "ENABLED"
+    retry_grace_period_seconds = 10
   }
 
   # A sign out ends the session it was issued for.

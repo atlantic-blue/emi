@@ -41,14 +41,21 @@ defineFeature(feature, (test) => {
     });
 
     and('neither client allows a password flow', () => {
-      for (const name of clients) {
-        const flows = listedIn(
+      const flowsOf = (name: string): string[] =>
+        listedIn(
           bodyOf(configuration, `resource "aws_cognito_user_pool_client" "${name}"`),
           'explicit_auth_flows',
         );
 
-        expect(flows).toEqual(['ALLOW_USER_AUTH', 'ALLOW_REFRESH_TOKEN_AUTH', 'ALLOW_CUSTOM_AUTH']);
-        expect(flows.join(' ')).not.toContain('PASSWORD');
+      expect(flowsOf('iphone')).toEqual(['ALLOW_USER_AUTH', 'ALLOW_CUSTOM_AUTH']);
+      expect(flowsOf('website')).toEqual([
+        'ALLOW_USER_AUTH',
+        'ALLOW_REFRESH_TOKEN_AUTH',
+        'ALLOW_CUSTOM_AUTH',
+      ]);
+
+      for (const name of clients) {
+        expect(flowsOf(name).join(' ')).not.toContain('PASSWORD');
       }
     });
 
