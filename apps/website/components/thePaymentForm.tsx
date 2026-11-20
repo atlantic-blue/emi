@@ -10,7 +10,11 @@ import {
   type TheElementsOfTheForm,
   stripeArrives,
 } from '@/lib/theStripeOnThePage';
-import { type HowItAsks, startASubscription } from '@/lib/theSubscriptionSheStarts';
+import {
+  finishASubscription,
+  type HowItAsks,
+  startASubscription,
+} from '@/lib/theSubscriptionSheStarts';
 import { useTheCardFormSheFillsIn } from '@/lib/useTheCardFormSheFillsIn';
 import { goTo } from '@/lib/whereSheGoesNext';
 
@@ -128,6 +132,20 @@ export function ThePaymentForm({
       if (said.error !== undefined) {
         setPaying(false);
         setWhatWentWrong(said.error.message ?? words.checkoutCouldNotStart);
+
+        return;
+      }
+
+      // Stripe holds her card at this line and nothing charges it yet. The subscription is created
+      // by the call below, so a press that stopped here would leave her paying nothing and reading
+      // an account page that says so.
+      const setupRef = said.setupIntent?.id;
+      const created =
+        setupRef === undefined ? false : await finishASubscription(session.idToken, setupRef, asks);
+
+      if (!created) {
+        setPaying(false);
+        setWhatWentWrong(words.checkoutCouldNotStart);
 
         return;
       }
