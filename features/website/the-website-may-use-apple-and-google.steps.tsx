@@ -154,10 +154,9 @@ defineFeature(feature, (test) => {
       expect(phoneSignInProblems(configuration)).toEqual([]);
     });
 
-    and('it allows the code flow, the refresh and the custom flow', () => {
+    and('it allows the code flow and the custom flow, and no refresh flow', () => {
       expect(listedIn(client, 'explicit_auth_flows')).toEqual([
         theCodeSignInFlow,
-        'ALLOW_REFRESH_TOKEN_AUTH',
         'ALLOW_CUSTOM_AUTH',
       ]);
     });
