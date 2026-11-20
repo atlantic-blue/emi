@@ -2197,10 +2197,19 @@ describe('the pool she signs in to, which is step 28.2', () => {
       expect(inClient(name)).toContain('generate_secret = false');
     });
 
-    it.each(clients)('lets the %s client start a code sign in, refresh, and no more', (name) => {
-      expect(listedIn(inClient(name), 'explicit_auth_flows')).toEqual([
+    it('lets the website client start a code sign in, refresh, and no more', () => {
+      expect(listedIn(inClient('website'), 'explicit_auth_flows')).toEqual([
         'ALLOW_USER_AUTH',
         'ALLOW_REFRESH_TOKEN_AUTH',
+        'ALLOW_CUSTOM_AUTH',
+      ]);
+    });
+
+    // The phone rotates its refresh token, and Amazon Cognito refuses the refresh flow beside
+    // rotation, so this client lists one flow fewer than the site does.
+    it('lets the iphone client start a code sign in, and no more', () => {
+      expect(listedIn(inClient('iphone'), 'explicit_auth_flows')).toEqual([
+        'ALLOW_USER_AUTH',
         'ALLOW_CUSTOM_AUTH',
       ]);
     });
@@ -3474,7 +3483,10 @@ describe('the triggers on the pool, and the custom flow on both clients', () => 
     // a sign in that works, so the custom flow is added beside it and replaces nothing.
     it.each(bothClients)('keeps the flow the code travels in on the %s client', (name) => {
       expect(flowsOf(name)).toContain(theCodeSignInFlow);
-      expect(flowsOf(name)).toContain(theRefreshFlow);
+    });
+
+    it('keeps the refresh flow on the website client, which rotates no refresh token', () => {
+      expect(flowsOf('website')).toContain(theRefreshFlow);
     });
 
     it.each(bothClients)('allows no password flow on the %s client, which 28.2 settled', (name) => {
@@ -3660,6 +3672,72 @@ describe('the api answers the preflight of the site, which is issue 433', () => 
 
       expect(keys.filter((key) => key.startsWith('OPTIONS'))).toEqual([]);
       expect(keys.filter((key) => key.includes('$default'))).toEqual([]);
+    });
+  });
+});
+
+// Amazon Cognito says of rotation that it "isn't compatible with the authentication flow
+// REFRESH_TOKEN_AUTH", and that to implement it "you must disable this authentication flow in your
+// app client". So turning rotation on takes a flow away, and only two calls can then spend the
+// token: GetTokensFromRefreshToken, and the refresh_token grant of the token endpoint.
+//
+// Rotation reissues inside the window it was given and never extends it. The service says the
+// session "still expires 30 days after the first sign-in, not 30 days after the most recent
+// rotation", so the thirty days below is the whole life of a sign in either way.
+describe('the refresh token of her phone rotates', () => {
+  const phone = bodyOf('resource "aws_cognito_user_pool_client" "iphone"');
+  const site = bodyOf('resource "aws_cognito_user_pool_client" "website"');
+
+  // Read inside each case rather than beside the two clients above. A missing block throws, and a
+  // throw in the body of a describe fails the file before it collects a single case.
+  const rotation = (): string => blockBodyOf(phone, 'refresh_token_rotation');
+
+  describe('the client on her phone', () => {
+    it('hands back a new refresh token on every refresh', () => {
+      expect(rotation()).toContain('feature                    = "ENABLED"');
+    });
+
+    it('leaves the token it rotated out good for ten seconds', () => {
+      expect(rotation()).toContain('retry_grace_period_seconds = 10');
+    });
+
+    it('lists no refresh flow, because the service refuses that flow beside rotation', () => {
+      expect(listedIn(phone, 'explicit_auth_flows')).toEqual([
+        'ALLOW_USER_AUTH',
+        'ALLOW_CUSTOM_AUTH',
+      ]);
+    });
+
+    it('keeps the thirty days and the hour, because rotation moves neither', () => {
+      expect(phone).toContain('access_token_validity  = 1');
+      expect(phone).toContain('id_token_validity      = 1');
+      expect(phone).toContain('refresh_token_validity = 30');
+    });
+  });
+
+  describe('the client on the site, which this change leaves alone', () => {
+    it('rotates no refresh token', () => {
+      expect(site).not.toContain('refresh_token_rotation');
+    });
+
+    it('keeps all three flows, including the one rotation refuses', () => {
+      expect(listedIn(site, 'explicit_auth_flows')).toEqual([
+        'ALLOW_USER_AUTH',
+        'ALLOW_REFRESH_TOKEN_AUTH',
+        'ALLOW_CUSTOM_AUTH',
+      ]);
+    });
+
+    it('keeps the same thirty days and the same hour', () => {
+      expect(site).toContain('access_token_validity  = 1');
+      expect(site).toContain('id_token_validity      = 1');
+      expect(site).toContain('refresh_token_validity = 30');
+    });
+  });
+
+  describe('the role that applies it', () => {
+    it('may change a client of the pool, which is the call this update makes', () => {
+      expect(actionsIn(applyPolicy)).toContain('cognito-idp:UpdateUserPoolClient');
     });
   });
 });

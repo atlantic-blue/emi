@@ -41,14 +41,23 @@ defineFeature(feature, (test) => {
     });
 
     and('neither client allows a password flow', () => {
-      for (const name of clients) {
-        const flows = listedIn(
+      const flowsOf = (name: string): string[] =>
+        listedIn(
           bodyOf(configuration, `resource "aws_cognito_user_pool_client" "${name}"`),
           'explicit_auth_flows',
         );
 
-        expect(flows).toEqual(['ALLOW_USER_AUTH', 'ALLOW_REFRESH_TOKEN_AUTH', 'ALLOW_CUSTOM_AUTH']);
-        expect(flows.join(' ')).not.toContain('PASSWORD');
+      // The phone rotates its refresh token, and the service refuses the refresh flow beside
+      // rotation, so the two clients no longer list the same flows.
+      expect(flowsOf('iphone')).toEqual(['ALLOW_USER_AUTH', 'ALLOW_CUSTOM_AUTH']);
+      expect(flowsOf('website')).toEqual([
+        'ALLOW_USER_AUTH',
+        'ALLOW_REFRESH_TOKEN_AUTH',
+        'ALLOW_CUSTOM_AUTH',
+      ]);
+
+      for (const name of clients) {
+        expect(flowsOf(name).join(' ')).not.toContain('PASSWORD');
       }
     });
 
