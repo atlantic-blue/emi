@@ -35,6 +35,14 @@
         {
           "faceIDPermission": "Emi asks for Face ID so only you can open your own records."
         }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "enableSceneSupport": true
+          }
+        }
       ]
     ],
     "experiments": {
