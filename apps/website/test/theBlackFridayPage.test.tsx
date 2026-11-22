@@ -16,7 +16,11 @@ import {
 } from '../lib/theBlackFridayOffer';
 import { theStoreListingIsOpen } from '../lib/theStoreListing';
 import { amountsOfMoneyIn, theAmountOf, theOfferAmount } from '../lib/theOnePrice';
-import { thePagesOfTheSite } from '../tools/theFilesACrawlerReads';
+import {
+  everyPageTheSiteServes,
+  thePagesOfTheSite,
+  thePagesTheSitemapLeavesOut,
+} from '../tools/theFilesACrawlerReads';
 
 /**
  * The page a woman buys Emi at half price on. She was handed the address, she reads what the offer
@@ -276,17 +280,31 @@ describe('the Black Friday page', () => {
   });
 
   describe('where the site serves it', () => {
-    it('is a page the site says it serves, so a crawler is told about it', () => {
-      expect(thePagesOfTheSite.map((page) => page.path)).toContain(THE_BLACK_FRIDAY_PAGE);
+    it('is a page the site serves, and one the sitemap leaves out', () => {
+      expect(everyPageTheSiteServes().map((page) => page.path)).toContain(THE_BLACK_FRIDAY_PAGE);
+      expect(thePagesTheSitemapLeavesOut.map((page) => page.path)).toContain(THE_BLACK_FRIDAY_PAGE);
+      expect(thePagesOfTheSite.map((page) => page.path)).not.toContain(THE_BLACK_FRIDAY_PAGE);
       expect(THE_BLACK_FRIDAY_PAGE).toBe('black-friday/');
     });
 
-    it('is in the list of addresses the site keeps for a crawler', () => {
+    it('is in no list of addresses the site keeps for a crawler', () => {
       const sitemap = readFileSync(join(__dirname, '..', 'public', 'sitemap.xml'), 'utf8');
 
+      expect(sitemap).not.toContain('black-friday');
+
       for (const language of languages) {
-        expect(sitemap).toContain(`https://myemi.app/${language}/${THE_BLACK_FRIDAY_PAGE}`);
+        expect(sitemap).not.toContain(`https://myemi.app/${language}/${THE_BLACK_FRIDAY_PAGE}`);
       }
+    });
+
+    it.each(languages)('asks a search engine not to keep it, in %s', async (language) => {
+      const head = await generateMetadata({ params: Promise.resolve({ lang: language }) });
+      const robots = head.robots as { index?: boolean; follow?: boolean } | undefined;
+
+      expect(robots?.index).toBe(false);
+
+      // The links on it still lead somewhere worth reading, so a crawler is asked to follow them.
+      expect(robots?.follow).toBe(true);
     });
 
     it('answers that there is no such page where the address names a language the site does not serve', async () => {

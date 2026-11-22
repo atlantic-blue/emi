@@ -29,7 +29,6 @@ import {
   theAmountOf,
   theAmountsThePageMayName,
   theOfferAmount,
-  theOneAmount,
   theOneHost,
   theOnePrice,
   theWordsThatNameMoney,

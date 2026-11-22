@@ -30,11 +30,12 @@ import { theStoreListingIsOpen } from '@/lib/theStoreListing';
  * the offer is over. A press she saved, or a link somebody sent her in the night, then lands her
  * on what Emi costs today, which is the page she would have had to find anyway.
  *
- * Nothing links to it. It is written for a woman who was handed the address, so the band at the
- * top and the band at the foot of the site offer no way here.
+ * Nothing links to it and no sitemap names it. It is written for a woman who was handed the
+ * address, so the band at the top and the band at the foot of the site offer no way here, and a
+ * search engine is asked to find it and not to keep it.
  */
 
-/** The path this page sits at under a language, which its own head and the sitemap both name. */
+/** The path this page sits at under a language, which its own head names and the sitemap does not. */
 export const THE_BLACK_FRIDAY_PAGE = 'black-friday/';
 
 /**
@@ -59,6 +60,10 @@ export async function generateMetadata({
     title: words.blackFridayTitle,
     description: words.blackFridayDescription,
     alternates: theLinksOf(language, THE_BLACK_FRIDAY_PAGE),
+    // A search engine keeps an address for months and offers it long after the offer closed, so
+    // the page asks to be left out of the index and the sitemap leaves it out as well. The links
+    // on it are still worth following, which is what a crawler does with the rest of the site.
+    robots: { index: false, follow: true },
     // Written here rather than left to the layout, because the card a woman sends her sister says
     // what the offer is and when it ends, which is the whole of why she sends it.
     ...theCardAChatDraws({

@@ -29,7 +29,10 @@ import {
   THE_PRIVACY_INBOX,
   THE_SUPPORT_INBOX,
 } from '../../apps/website/lib/addresses';
-import { thePagesOfTheSite } from '../../apps/website/tools/theFilesACrawlerReads';
+import {
+  everyPageTheSiteServes,
+  thePagesOfTheSite,
+} from '../../apps/website/tools/theFilesACrawlerReads';
 
 const feature = loadFeature(join(__dirname, '26.26-no-link-on-the-site-points-nowhere.feature'));
 
@@ -67,7 +70,7 @@ function thePageAPressLeadsTo(address: string): string {
 
 function everyAddressTheSiteServes(): string[] {
   return languages.flatMap((language) =>
-    thePagesOfTheSite.map((page) => `/${language}/${page.path}`),
+    everyPageTheSiteServes().map((page) => `/${language}/${page.path}`),
   );
 }
 
@@ -197,7 +200,7 @@ defineFeature(feature, (test) => {
 
     given('a woman opens every page of the site in each of the three languages', async () => {
       for (const language of languages) {
-        for (const page of thePagesOfTheSite) {
+        for (const page of everyPageTheSiteServes()) {
           const document = await theDocumentAt(page.path, language);
 
           opened.push({
@@ -214,10 +217,10 @@ defineFeature(feature, (test) => {
       }
 
       // A read that found nothing to read reports the same as a page where every press is right,
-      // so the count of what was read is part of the scenario. Nine pages, and the band at the
-      // top and the band at the foot of each of them.
-      expect(opened).toHaveLength(languages.length * thePagesOfTheSite.length);
-      expect(thePagesOfTheSite.length).toBeGreaterThan(2);
+      // so the count of what was read is part of the scenario. Every page the site serves, the
+      // ones the sitemap names and the one it leaves out, with both bands of each of them.
+      expect(opened).toHaveLength(languages.length * everyPageTheSiteServes().length);
+      expect(everyPageTheSiteServes().length).toBeGreaterThan(2);
 
       for (const page of opened) {
         expect({ address: page.address, enough: page.presses.length > 8 }).toEqual({
@@ -242,7 +245,7 @@ defineFeature(feature, (test) => {
       // The support page was the sixth of these and it is built now, so it is read below as a
       // page of the site rather than here as a page nobody can open.
       for (const path of ['buy/', 'calculator/', 'pulse/', 'terms/']) {
-        expect(thePagesOfTheSite.map((page) => page.path)).not.toContain(path);
+        expect(everyPageTheSiteServes().map((page) => page.path)).not.toContain(path);
 
         for (const page of opened) {
           expect({
