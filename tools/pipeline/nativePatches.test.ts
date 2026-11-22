@@ -6,7 +6,6 @@ import { dirname, join, resolve } from 'node:path';
 import {
   type PatchedPackage,
   installedDirectoryOf,
-  patchFileOf,
   patchProblems,
   patchedPackages,
 } from './nativePatches';
@@ -15,7 +14,13 @@ const repositoryRoot = resolve(__dirname, '..', '..');
 const command = join(repositoryRoot, 'tools', 'pipeline', 'checkPatches.ts');
 
 const jsi = patchedPackages[0] as PatchedPackage;
-const [scheduler, wrappers, runtime] = jsi.changes;
+const [scheduler, wrapper, runtime] = jsi.changes;
+
+/** The same package as the repository carried it before 57.1.3 took the three changes upstream. */
+const asPatched: PatchedPackage = {
+  ...jsi,
+  patch: join('patches', `${jsi.name}+${jsi.version}.patch`),
+};
 
 function run(...args: string[]): { status: number | null; output: string } {
   const finished = spawnSync(
@@ -40,10 +45,10 @@ function installedFile(change: { readonly file: string }): string {
 }
 
 /**
- * A tree shaped like this repository after an install: the manifest that asks for the patches, the
- * patch itself, and the three patched files copied out of the installed package. The files are
- * copied rather than written, so a case that removes one change is removing it from the real text
- * the pipeline reads.
+ * A tree shaped like this repository after an install: the manifest that asks for the patches, and
+ * the three files the build reads copied out of the installed package. The files are copied rather
+ * than written, so a case that takes one change away is taking it out of the real text the pipeline
+ * reads.
  */
 function fixture(): string {
   const root = mkdtempSync(join(tmpdir(), 'emi-patches-'));
@@ -63,7 +68,6 @@ function fixture(): string {
     )}\n`,
   );
 
-  write(root, patchFileOf(jsi), 'a patch the tool wrote\n');
   write(
     root,
     join(installedDirectoryOf(jsi), 'package.json'),
@@ -98,9 +102,9 @@ afterAll(() => {
   }
 });
 
-describe('the three local changes to expo-modules-jsi survive an install', () => {
+describe('the three changes the iOS build needs are in the installed expo-modules-jsi', () => {
   describe('the installed tree carries every change', () => {
-    it('reads a rule for every piece of text the patch writes, so agreement is never an empty list', () => {
+    it('reads a rule for every piece of text the build needs, so agreement is never an empty list', () => {
       const result = patchProblems(repositoryRoot);
 
       expect(jsi.changes.length).toBe(3);
@@ -126,38 +130,41 @@ describe('the three local changes to expo-modules-jsi survive an install', () =>
     });
   });
 
-  describe('a change taken back out of the installed tree', () => {
-    it('names the header when the attribute comes back', () => {
+  describe('a change missing from the installed tree', () => {
+    it('names the header when the attribute comes back onto a constructor', () => {
       const root = fixture();
       const file = installedFile(scheduler as { readonly file: string });
       const before = replaceIn(
         root,
         file,
-        '  RuntimeScheduler() {}',
-        '  SWIFT_RETURNS_RETAINED RuntimeScheduler() {}',
+        '  RuntimeScheduler() noexcept {}',
+        '  SWIFT_RETURNS_RETAINED RuntimeScheduler() noexcept {}',
       );
 
       expect(patchProblems(root).problems).toEqual([
-        `${file} still holds "SWIFT_RETURNS_RETAINED" 1 time(s), so "${scheduler?.name}" is not applied`,
-        `${file} holds "  RuntimeScheduler() {}" 0 time(s) and the change needs 1, so "${scheduler?.name}" is not applied`,
+        `${file} still holds "SWIFT_RETURNS_RETAINED RuntimeScheduler(" 1 time(s), so ` +
+          `"${scheduler?.name}" is not applied`,
+        `${file} holds "  RuntimeScheduler() noexcept {}" 0 time(s) and the change needs 1, so ` +
+          `"${scheduler?.name}" is not applied`,
       ]);
 
       writeFileSync(join(root, file), before);
       expect(patchProblems(root).problems).toEqual([]);
     });
 
-    it('names the utilities file when a wrapper is gone', () => {
+    it('names the utilities file when the wrapper is gone', () => {
       const root = fixture();
-      const file = installedFile(wrappers as { readonly file: string });
+      const file = installedFile(wrapper as { readonly file: string });
       const before = replaceIn(
         root,
         file,
-        'internal struct NonisolatedUnsafeMutablePointer<Pointee: ~Copyable>: @unchecked Sendable {',
+        'internal struct UncheckedSendable<Value>: @unchecked Sendable {',
         'internal struct SomethingElse {',
       );
 
       expect(patchProblems(root).problems).toEqual([
-        `${file} holds "internal struct NonisolatedUnsafeMutablePointer<Pointee: ~Copyable>: @unchecked Sendable {" 0 time(s) and the change needs 1, so "${wrappers?.name}" is not applied`,
+        `${file} holds "internal struct UncheckedSendable<Value>: @unchecked Sendable {" 0 ` +
+          `time(s) and the change needs 1, so "${wrapper?.name}" is not applied`,
       ]);
 
       writeFileSync(join(root, file), before);
@@ -173,9 +180,9 @@ describe('the three local changes to expo-modules-jsi survive an install', () =>
         root,
         file,
         anchor +
-          '    let thisBox = NonisolatedUnsafePointer(thisPtr)\n' +
-          '    let argumentsBox = NonisolatedUnsafePointer(argumentsPtr)\n' +
-          '    let resultBox = NonisolatedUnsafeMutablePointer(resultPtr)\n',
+          '    let thisPtr = UncheckedSendable(thisPtr)\n' +
+          '    let argumentsPtr = UncheckedSendable(argumentsPtr)\n' +
+          '    let resultPtr = UncheckedSendable(resultPtr)\n',
         anchor +
           '    nonisolated(unsafe) let thisPtr = thisPtr\n' +
           '    nonisolated(unsafe) let argumentsPtr = argumentsPtr\n' +
@@ -188,7 +195,7 @@ describe('the three local changes to expo-modules-jsi survive an install', () =>
         `${file} still holds "nonisolated(unsafe) let thisPtr = thisPtr" 1 time(s), so "${runtime?.name}" is not applied`,
       );
       expect(problems).toContain(
-        `${file} holds "NonisolatedUnsafePointer(thisPtr)" 1 time(s) and the change needs 2, so "${runtime?.name}" is not applied`,
+        `${file} holds "let thisPtr = UncheckedSendable(thisPtr)" 1 time(s) and the change needs 2, so "${runtime?.name}" is not applied`,
       );
 
       writeFileSync(join(root, file), before);
@@ -200,7 +207,7 @@ describe('the three local changes to expo-modules-jsi survive an install', () =>
       replaceIn(
         root,
         installedFile(runtime as { readonly file: string }),
-        'resultBox.pointer',
+        'resultPtr.value',
         'resultPtr',
       );
 
@@ -211,29 +218,61 @@ describe('the three local changes to expo-modules-jsi survive an install', () =>
     });
   });
 
-  describe('a patch that cannot be applied is not a pass', () => {
-    it('names the version the tool would warn about and carry on from', () => {
+  describe('a copy of the package that predates the changes', () => {
+    it('names the version the changes arrived in, because an older one carries none of them', () => {
+      const root = fixture();
+      const manifest = join(installedDirectoryOf(jsi), 'package.json');
+      write(root, manifest, `${JSON.stringify({ name: jsi.name, version: '57.1.2' }, null, 2)}\n`);
+
+      expect(patchProblems(root).problems).toEqual([
+        `${jsi.name} is installed at 57.1.2 and the changes below arrived in ${jsi.version}, ` +
+          'so an older copy carries none of them',
+      ]);
+    });
+
+    it('takes a later copy, because the changes arrived before it', () => {
       const root = fixture();
       const manifest = join(installedDirectoryOf(jsi), 'package.json');
       write(root, manifest, `${JSON.stringify({ name: jsi.name, version: '57.2.0' }, null, 2)}\n`);
 
-      expect(patchProblems(root).problems).toEqual([
-        `${jsi.name} is installed at 57.2.0 and ${patchFileOf(jsi)} is written against ` +
-          `${jsi.version}, so patch-package warns and applies nothing`,
-      ]);
+      expect(patchProblems(root).problems).toEqual([]);
     });
 
-    it('names the patch file when the repository does not carry it', () => {
+    it('refuses a version it cannot read as numbers rather than taking it', () => {
       const root = fixture();
-      rmSync(join(root, patchFileOf(jsi)));
+      const manifest = join(installedDirectoryOf(jsi), 'package.json');
+      write(root, manifest, `${JSON.stringify({ name: jsi.name }, null, 2)}\n`);
 
       expect(patchProblems(root).problems).toEqual([
-        `${patchFileOf(jsi)} is not in the repository, so an install has nothing to apply`,
+        `${jsi.name} is installed at undefined and the changes below arrived in ${jsi.version}, ` +
+          'so an older copy carries none of them',
       ]);
     });
   });
 
-  describe('the install is what applies the patch', () => {
+  describe('a package this repository does patch itself', () => {
+    it('names the patch file when the repository does not carry it', () => {
+      const root = fixture();
+
+      expect(patchProblems(root, [asPatched]).problems).toEqual([
+        `${String(asPatched.patch)} is not in the repository, so an install has nothing to apply`,
+      ]);
+    });
+
+    it('wants that exact version, because a patch is written against one', () => {
+      const root = fixture();
+      write(root, String(asPatched.patch), 'a patch the tool wrote\n');
+      const manifest = join(installedDirectoryOf(jsi), 'package.json');
+      write(root, manifest, `${JSON.stringify({ name: jsi.name, version: '57.2.0' }, null, 2)}\n`);
+
+      expect(patchProblems(root, [asPatched]).problems).toEqual([
+        `${jsi.name} is installed at 57.2.0 and ${String(asPatched.patch)} is written against ` +
+          `${jsi.version}, so patch-package warns and applies nothing`,
+      ]);
+    });
+  });
+
+  describe('the install is what applies a patch', () => {
     it('names the missing postinstall script', () => {
       const root = fixture();
       write(
