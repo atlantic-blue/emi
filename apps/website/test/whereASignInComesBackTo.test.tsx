@@ -10,10 +10,14 @@ import { TheReturnFromTelegram } from '../components/theReturnFromTelegram';
 import { TheSignInForm } from '../components/theSignInForm';
 import { WHAT_SHE_STARTED_ENTRY } from '../lib/theProviderSignIn';
 import { theSessionHeld } from '../lib/theSessionSheHolds';
+import { THE_BLACK_FRIDAY_OFFER } from '../lib/theBlackFridayOffer';
+import { theOfferAnAddressNames } from '../lib/theOfferSheArrivedWith';
 import { theEntryFor } from '../lib/theTelegramSignIn';
 import {
+  WHERE_A_SIGN_IN_LANDS,
   WHERE_SHE_BUYS_EMI,
   WHERE_SHE_WAS_GOING_ENTRY,
+  WHICH_OFFER_SHE_ARRIVED_WITH_ENTRY,
   comeBackToThisPage,
 } from '../lib/whereASignInComesBackTo';
 
@@ -231,6 +235,90 @@ describe('where a sign in leaves her', () => {
       expect(whereSheWentNext).toEqual(['/ru/checkout/']);
       expect(theSessionHeld()?.idToken).toBe('an-id-token');
       expect(window.sessionStorage.getItem(WHERE_SHE_WAS_GOING_ENTRY)).toBeNull();
+    });
+  });
+
+  /**
+   * The offer rides through the sign in beside the page, so a woman who arrived on the Black
+   * Friday address and had to sign in is reading the halved amount when she lands, rather than
+   * the full price she never agreed to.
+   */
+  describe('a woman who was moved off the Buy Emi page she opened on the offer', () => {
+    const theWaysIn: readonly (readonly [string, () => Promise<void>, string])[] = [
+      ['with a code', sheSignsInWithACode, '/en/checkout/?offer=black-friday'],
+      ['with Apple or with Google', sheComesBackFromAProvider, '/en/checkout/?offer=black-friday'],
+      ['with Telegram', sheComesBackFromTelegram, '/ru/checkout/?offer=black-friday'],
+    ];
+
+    it.each(theWaysIn)(
+      'comes back to the offer when she signs in %s',
+      async (_said, signIn, lands) => {
+        comeBackToThisPage(WHERE_SHE_BUYS_EMI, THE_BLACK_FRIDAY_OFFER);
+
+        await signIn();
+
+        expect(whereSheWentNext).toEqual([lands]);
+        expect(theSessionHeld()?.idToken).toBe('an-id-token');
+        // Both notes go as they are read, so a sign in a week later asks the one price again.
+        expect(window.sessionStorage.getItem(WHERE_SHE_WAS_GOING_ENTRY)).toBeNull();
+        expect(window.sessionStorage.getItem(WHICH_OFFER_SHE_ARRIVED_WITH_ENTRY)).toBeNull();
+      },
+    );
+
+    it('reads the offer back out of the address she lands on', async () => {
+      comeBackToThisPage(WHERE_SHE_BUYS_EMI, THE_BLACK_FRIDAY_OFFER);
+
+      await sheSignsInWithACode();
+
+      const [landed = ''] = whereSheWentNext;
+
+      expect(theOfferAnAddressNames(landed.slice(landed.indexOf('?')))).toBe(
+        THE_BLACK_FRIDAY_OFFER,
+      );
+    });
+
+    it('keeps the full price for a woman who was moved off the page without one', async () => {
+      comeBackToThisPage(WHERE_SHE_BUYS_EMI);
+
+      await sheSignsInWithACode();
+
+      expect(whereSheWentNext).toEqual(['/en/checkout/']);
+    });
+
+    /**
+     * Only the one offer this site sells is kept. Everything else is a value somebody wrote into
+     * the entry, and she lands on the page at the price the page asks for.
+     */
+    it.each([
+      'half-off-for-ever',
+      'BLACK-FRIDAY',
+      'black-friday-2025',
+      'black-friday&offer=half-off',
+      '',
+    ])('drops the kept value %s, so she lands on the page at the one price', async (said) => {
+      window.sessionStorage.setItem(WHERE_SHE_WAS_GOING_ENTRY, WHERE_SHE_BUYS_EMI);
+      window.sessionStorage.setItem(WHICH_OFFER_SHE_ARRIVED_WITH_ENTRY, said);
+
+      await sheSignsInWithACode();
+
+      expect(whereSheWentNext).toEqual(['/en/checkout/']);
+      expect(window.sessionStorage.getItem(WHICH_OFFER_SHE_ARRIVED_WITH_ENTRY)).toBeNull();
+    });
+
+    it('writes no offer for a woman who was moved off the page a second time without one', () => {
+      comeBackToThisPage(WHERE_SHE_BUYS_EMI, THE_BLACK_FRIDAY_OFFER);
+      comeBackToThisPage(WHERE_SHE_BUYS_EMI);
+
+      expect(window.sessionStorage.getItem(WHICH_OFFER_SHE_ARRIVED_WITH_ENTRY)).toBeNull();
+    });
+
+    it('leaves the offer off her account, which sells nothing', async () => {
+      window.sessionStorage.setItem(WHERE_SHE_WAS_GOING_ENTRY, WHERE_A_SIGN_IN_LANDS);
+      window.sessionStorage.setItem(WHICH_OFFER_SHE_ARRIVED_WITH_ENTRY, THE_BLACK_FRIDAY_OFFER);
+
+      await sheSignsInWithACode();
+
+      expect(whereSheWentNext).toEqual(['/en/account/']);
     });
   });
 

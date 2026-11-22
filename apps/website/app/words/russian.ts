@@ -317,6 +317,13 @@ export const russian: SiteWords = {
   checkoutCouldNotStart: 'Emi не смогла начать оплату. Попробуйте ещё раз через минуту.',
   checkoutNoPaymentFormYet: 'Оплата на сайте пока не открыта. Сегодня Emi есть в App Store.',
 
+  checkoutOfferEveryYear: 'Emi, вдвое дешевле каждый год.',
+  checkoutOfferRenews: 'Продлевается каждый год вдвое дешевле',
+  checkoutOfferAmount: '19,50 € в год',
+  checkoutOfferPrice:
+    'Первый месяц бесплатно, затем 19,50 евро в год, налог на добавленную стоимость включён.',
+  checkoutOfferPay: 'Заплатить 19,50 €',
+
   // The subscription card of the account, from boards/Profile.dc.html.
   accountSubscriptionHeading: 'ПОДПИСКА',
   accountPlanName: 'Emi, на год',

@@ -37,6 +37,7 @@ const payerDigest = 'a7f3c1d9e2b40586';
 /** Not the shape of a real key. A value that looked like one would be read as a leak. */
 const theKey = 'the-key-the-operator-wrote-by-hand';
 const aSubscriptionRef = 'sub_000000000001';
+const theInstant = new Date('2026-11-20T09:00:00.000Z');
 
 function aPayer(stripe: FakeStripe): WhatACallHolds {
   return { reaches: stripe.reaches, secretKey: theKey };
@@ -62,6 +63,7 @@ describe('every call of Stripe names the version it is made in', () => {
         customerRef: aCustomerRef,
         payerDigest,
         oneOfAKind: 'the-subscription-of-one-setup',
+        now: theInstant,
       });
 
       expect(stripe.calls()).toHaveLength(11);
@@ -92,6 +94,7 @@ describe('every call of Stripe names the version it is made in', () => {
         customerRef: aCustomerRef,
         payerDigest,
         oneOfAKind: 'the-subscription-of-one-setup',
+        now: theInstant,
       });
 
       expect(stripe.calls()[0]?.asked.headers).toEqual({

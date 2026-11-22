@@ -386,6 +386,14 @@ export const english = {
   checkoutCouldNotStart: 'Emi could not start that payment. Try again in a moment.',
   checkoutNoPaymentFormYet: 'Paying on this site is not open yet. Emi is in the App Store today.',
 
+  // The same plan for a woman who arrived on the Black Friday offer. Each one stands in for the
+  // word above that says the full price, and the free month is the same month.
+  checkoutOfferEveryYear: 'Emi, half price every year.',
+  checkoutOfferRenews: 'Renews every year at half price',
+  checkoutOfferAmount: '€19.50 a year',
+  checkoutOfferPrice: 'One month free, then 19.50 euros a year, value added tax included.',
+  checkoutOfferPay: 'Pay €19.50',
+
   // The subscription card of the account, from boards/Profile.dc.html.
   accountSubscriptionHeading: 'SUBSCRIPTION',
   accountPlanName: 'Emi, yearly',

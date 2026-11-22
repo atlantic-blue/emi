@@ -101,6 +101,37 @@ export const theYearlyPrice: YearlyPrice = {
  */
 export const theYearlyPriceRef = 'price_1UcRXkHdug2e0off0cVv6OOE';
 
+/** The one offer a call may name. A caller naming anything else is refused before Stripe is read. */
+export const theBlackFridayOffer = 'black-friday';
+
+/**
+ * The coupon of that offer, which takes half off the yearly price for as long as she stays.
+ *
+ * The operator makes it in the Stripe account by hand, at 50 percent off and forever. Nothing here
+ * creates it and nothing here reads it back, so an account that holds no coupon under this
+ * identifier refuses the create, and the woman reads that nothing was created.
+ */
+export const theBlackFridayCoupon = 'emi-black-friday-2026';
+
+/**
+ * The instant the offer closes, which is the first moment of December in central Europe. A create
+ * made at or after it carries no coupon, so a page left open over the end sells the full price.
+ */
+export const theBlackFridayOfferEnds = new Date('2026-11-30T23:00:00.000Z');
+
+/** The field a coupon travels in, which is how this api takes one discount of a subscription. */
+export const discountCouponField = 'discounts[0][coupon]';
+
+/**
+ * The coupon one create carries, or nothing at all. The offer and the instant are read together,
+ * because an offer that ran out is not a refusal: she is sold the subscription at the full price.
+ */
+export function theCouponFor(offer: string | undefined, now: Date): string | null {
+  return offer === theBlackFridayOffer && now.getTime() < theBlackFridayOfferEnds.getTime()
+    ? theBlackFridayCoupon
+    : null;
+}
+
 /** Every way a call of Stripe fails, as a value, so a caller matches a reason and not words. */
 export type StripeRefusal = 'the-call-was-refused' | 'the-answer-names-no-object';
 
@@ -564,6 +595,13 @@ export interface WhichSubscription {
    * a second press are both answered with the subscription the first call made.
    */
   readonly oneOfAKind: string;
+  /**
+   * The offer the page she pressed on was showing, where it was showing one. The coupon is worked
+   * out here rather than taken as a coupon, so no caller can name a discount of its own.
+   */
+  readonly offer?: string;
+  /** The instant the create is made at, which is what says whether the offer is still open. */
+  readonly now: Date;
 }
 
 /**
@@ -577,6 +615,7 @@ export async function yearlySubscriptionFor(
   held: WhatACallHolds,
   which: WhichSubscription,
 ): Promise<string> {
+  const coupon = theCouponFor(which.offer, which.now);
   const answered = await held.reaches(subscriptionsAddress, {
     method: 'POST',
     headers: headersFor(held.secretKey, which.oneOfAKind),
@@ -587,6 +626,7 @@ export async function yearlySubscriptionFor(
       [savesTheDefaultField, onSubscription],
       [whenNoCardIsLeftField, cancelTheSubscription],
       [payerDigestField, which.payerDigest],
+      ...(coupon === null ? [] : [[discountCouponField, coupon] as const]),
     ]),
   });
 

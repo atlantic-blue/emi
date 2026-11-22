@@ -15,7 +15,7 @@ import {
   theBlackFridayOfferIsOpen,
 } from '../lib/theBlackFridayOffer';
 import { theStoreListingIsOpen } from '../lib/theStoreListing';
-import { theOfferPrice } from '../lib/theOnePrice';
+import { amountsOfMoneyIn, theAmountOf, theOfferAmount } from '../lib/theOnePrice';
 import { thePagesOfTheSite } from '../tools/theFilesACrawlerReads';
 
 /**
@@ -141,8 +141,9 @@ describe('the Black Friday page', () => {
         expect(page).toContain(words.blackFridayInsteadOf);
         expect(page).toContain(words.blackFridayEnds);
 
-        // The free month is part of the price it asks for, so the sentence carries both.
-        expect(words.blackFridayPrice).toBe(theOfferPrice[language]);
+        // The free month is part of the price it asks for, so the sentence carries both, and
+        // the figure is half of the one the home page sends her to the till with.
+        expect(amountsOfMoneyIn(words.blackFridayPrice).map(theAmountOf)).toEqual([theOfferAmount]);
         expect(words.blackFridayPrice).toContain(words.price.split(',')[0] ?? '');
       },
     );

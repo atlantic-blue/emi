@@ -27,6 +27,7 @@ import {
   problemsWithTheAddress,
   problemsWithWhatItCosts,
   theAmountOf,
+  theAmountsThePageMayName,
   theOfferAmount,
   theOneAmount,
   theOneHost,
@@ -338,9 +339,10 @@ defineFeature(feature, (test) => {
 
         expect(amounts).toHaveLength(languages.length * theWordsThatNameMoney.length);
 
-        // The offer is half of the price, and the page that offers it is the one place that says
-        // so, so a figure anywhere else is a second price nobody explained.
-        expect([...new Set(figures)].sort()).toEqual([theOfferAmount, theOneAmount].sort());
+        // The Black Friday offer is half of that one price rather than a second price, so the
+        // words name those two amounts and no third one, and the page that carries the offer and
+        // the till she presses through to are the only places half of it is written.
+        expect([...new Set(figures)].sort()).toEqual([...theAmountsThePageMayName].sort());
         expect(isHalfOfThePrice(theOfferAmount)).toBe(true);
         expect(figures.filter((figure) => figure === theOfferAmount)).toHaveLength(
           languages.length * theWordsThatNameTheOffer.length,
@@ -367,7 +369,7 @@ defineFeature(feature, (test) => {
       const elsewhere = language.replace('myemi.app', 'emi-tracker.com');
 
       expect(problemsWithWhatItCosts({ file: 'english.ts', text: cheaper })).toEqual([
-        'english.ts asks for €24.99, and the price is 39 a year, or 19.50 while the offer is open',
+        'english.ts asks for €24.99, and the one price is 39 a year',
         `english.ts names money outside the one price, which reads "${theOnePrice.en}"`,
       ]);
       expect(problemsWithWhatItCosts({ file: 'english.ts', text: monthly })).toEqual([

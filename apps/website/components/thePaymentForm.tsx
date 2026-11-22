@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import type { Language, SiteWords } from '@/app/words';
 import { SITE_ORIGIN } from '@/lib/addresses';
+import { type AnOffer, theOfferOnThePage } from '@/lib/theOfferSheArrivedWith';
 import { theSessionHeld } from '@/lib/theSessionSheHolds';
 import {
   type HowStripeArrives,
@@ -50,6 +51,8 @@ export interface WhatThePaymentFormNeeds {
   readonly publishableKey: string;
   readonly stripeArrives?: HowStripeArrives;
   readonly asks?: HowItAsks;
+  /** Taken as an argument so a case can press on either side of the end of the offer. */
+  readonly now?: Date;
 }
 
 const theRoute =
@@ -61,7 +64,11 @@ export function ThePaymentForm({
   publishableKey,
   stripeArrives: arrives = stripeArrives,
   asks,
+  now,
 }: WhatThePaymentFormNeeds) {
+  // Read once, when the form draws, which is the same read the plan above it makes. The press and
+  // the words on it then agree with the amount she was shown, whatever the clock does afterwards.
+  const [offer] = useState<AnOffer | null>(() => theOfferOnThePage(now));
   const [hasAWallet, setHasAWallet] = useState(false);
   const [paying, setPaying] = useState(false);
   const [whatWentWrong, setWhatWentWrong] = useState<string | null>(null);
@@ -135,7 +142,9 @@ export function ThePaymentForm({
       // an account page that says so.
       const setupRef = said.setupIntent?.id;
       const created =
-        setupRef === undefined ? false : await finishASubscription(session.idToken, setupRef, asks);
+        setupRef === undefined
+          ? false
+          : await finishASubscription(session.idToken, setupRef, asks, offer);
 
       if (!created) {
         setPaying(false);
@@ -146,7 +155,7 @@ export function ThePaymentForm({
 
       goTo(`/${language}/${WHERE_A_PAYMENT_LANDS}`);
     },
-    [asks, confirms, isComplete, language, paying, words.checkoutCouldNotStart],
+    [asks, confirms, isComplete, language, offer, paying, words.checkoutCouldNotStart],
   );
 
   useEffect(() => {
@@ -211,7 +220,7 @@ export function ThePaymentForm({
           }}
           type="button"
         >
-          {words.checkoutPay}
+          {offer === null ? words.checkoutPay : words.checkoutOfferPay}
         </button>
       </div>
     </>

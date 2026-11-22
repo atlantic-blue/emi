@@ -309,6 +309,13 @@ export const spanish: SiteWords = {
   checkoutNoPaymentFormYet:
     'Pagar en este sitio aún no está abierto. Hoy Emi está en la App Store.',
 
+  checkoutOfferEveryYear: 'Emi, a mitad de precio cada año.',
+  checkoutOfferRenews: 'Se renueva cada año a mitad de precio',
+  checkoutOfferAmount: '19,50 € al año',
+  checkoutOfferPrice:
+    'Un mes gratis, después 19,50 euros al año, impuesto sobre el valor añadido incluido.',
+  checkoutOfferPay: 'Pagar 19,50 €',
+
   // The subscription card of the account, from boards/Profile.dc.html.
   accountSubscriptionHeading: 'SUSCRIPCIÓN',
   accountPlanName: 'Emi, anual',
