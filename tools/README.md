@@ -19,13 +19,13 @@ feature with no section and every picture in `brand/screens` that no section sho
 against this one.
 
 `pipeline/checkPatches.ts` is the command behind `npm run check:patches`. It reads the copy of
-`expo-modules-jsi` that the install wrote, and it fails when any of the three changes in
-`patches/expo-modules-jsi+57.1.0.patch` is absent. An install rewrites `node_modules`, and
-patch-package reports a patch it cannot match as a warning and still leaves with a zero status, so
-the check reads the files rather than the status. The changes make the iOS build compile. The
-pipeline runs on Linux and cannot build the application, so reading the files is the only proof it
-can give. `pipeline/nativePatches.ts` holds the list of changes and the readers, so each one runs
-against a fixture tree as well as against this one.
+`expo-modules-jsi` that the install wrote, and it fails when any of the three changes the iOS build
+needs is absent, or when the installed copy predates 57.1.3, the release that took all three
+upstream. This repository carried them as a patch of its own until then, and patch-package reports
+a patch it cannot match as a warning and still leaves with a zero status, so the check reads the
+files rather than the status. The pipeline runs on Linux and cannot build the application, so
+reading the files is the only proof it can give. `pipeline/nativePatches.ts` holds the list of
+changes and the readers, so each one runs against a fixture tree as well as against this one.
 
 `pipeline/checkReleaseTag.ts` is the first step of `.github/workflows/release.yml`. It fails when
 the tag is not `v` and the version in `apps/mobile/app.json`, so a tag on the wrong commit builds

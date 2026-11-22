@@ -2,14 +2,18 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * The changes this repository makes to an installed package, held against the files on disk.
+ * The shape the installed copy of a native package must have for the iOS build to compile, held
+ * against the files on disk.
  *
  * An install rewrites node_modules, so a change made by hand inside it is gone the next time
- * anybody installs. patch-package puts each change back from `patches/` on postinstall. It reports
- * a patch it could not match as a warning and still exits 0, so the exit code of the install says
- * nothing. This reads the installed files instead, and the iOS build that needs them is the reason
- * it runs in the pipeline: the pipeline runs on Linux and cannot build the application, so reading
- * the files is the only proof it can offer.
+ * anybody installs. patch-package puts a change this repository makes back from `patches/` on
+ * postinstall, and it reports a patch it could not match as a warning and still exits 0, so the
+ * exit code of the install says nothing. This reads the installed files instead, and the iOS build
+ * that needs them is the reason it runs in the pipeline: the pipeline runs on Linux and cannot
+ * build the application, so reading the files is the only proof it can offer.
+ *
+ * expo-modules-jsi carried these three shapes as a patch of this repository until 57.1.3, which
+ * took all three upstream. The reading stays, because a copy older than that carries none of them.
  *
  * The root is passed in so a test can point the same readers at a fixture tree rather than at this
  * repository.
@@ -33,9 +37,15 @@ export interface Change {
   readonly there: readonly Occurrence[];
 }
 
-/** A package the repository patches, and what the patch does to it. */
+/**
+ * A package whose installed sources the iOS build needs a particular shape of, and what that shape
+ * is. `patch` names the patch file that puts it there, or is null where the package carries the
+ * shape itself.
+ */
 export interface PatchedPackage {
   readonly name: string;
+  readonly patch: string | null;
+  /** Read exactly when a patch is written against it, and as a floor when none is. */
   readonly version: string;
   readonly changes: readonly Change[];
 }
@@ -45,32 +55,30 @@ const runtimeFile = 'apple/Sources/ExpoModulesJSI/Runtime/JavaScriptRuntime.swif
 export const patchedPackages: readonly PatchedPackage[] = [
   {
     name: 'expo-modules-jsi',
-    version: '57.1.0',
+    patch: null,
+    version: '57.1.3',
     changes: [
       {
         name: 'the two scheduler constructors claim no retained return',
         file: 'apple/Sources/ExpoModulesJSI-Cxx/include/RuntimeScheduler.h',
-        gone: ['SWIFT_RETURNS_RETAINED'],
+        gone: ['SWIFT_RETURNS_RETAINED RuntimeScheduler('],
         there: [
           { text: '  RuntimeScheduler(void *scheduler, ScheduleFn fn) noexcept', times: 1 },
-          { text: '  RuntimeScheduler() {}', times: 1 },
+          { text: '  RuntimeScheduler() noexcept {}', times: 1 },
+          {
+            text: 'static RuntimeScheduler *create(void *scheduler, ScheduleFn fn) noexcept SWIFT_RETURNS_RETAINED {',
+            times: 1,
+          },
+          { text: 'static RuntimeScheduler *create() noexcept SWIFT_RETURNS_RETAINED {', times: 1 },
         ],
       },
       {
-        name: 'the two pointer wrappers exist',
-        file: 'apple/Sources/ExpoModulesJSI/Utilities/NonisolatedUnsafeVar.swift',
+        name: 'the pointer wrapper exists',
+        file: 'apple/Sources/ExpoModulesJSI/Utilities/UncheckedSendable.swift',
         gone: [],
         there: [
-          {
-            text: 'internal struct NonisolatedUnsafePointer<Pointee: ~Copyable>: @unchecked Sendable {',
-            times: 1,
-          },
-          {
-            text: 'internal struct NonisolatedUnsafeMutablePointer<Pointee: ~Copyable>: @unchecked Sendable {',
-            times: 1,
-          },
-          { text: 'let pointer: UnsafePointer<Pointee>', times: 1 },
-          { text: 'let pointer: UnsafeMutablePointer<Pointee>', times: 1 },
+          { text: 'internal struct UncheckedSendable<Value>: @unchecked Sendable {', times: 1 },
+          { text: 'let value: Value', times: 1 },
         ],
       },
       {
@@ -82,12 +90,12 @@ export const patchedPackages: readonly PatchedPackage[] = [
           'nonisolated(unsafe) let resultPtr = resultPtr',
         ],
         there: [
-          { text: 'NonisolatedUnsafePointer(thisPtr)', times: 2 },
-          { text: 'NonisolatedUnsafePointer(argumentsPtr)', times: 2 },
-          { text: 'NonisolatedUnsafeMutablePointer(resultPtr)', times: 3 },
-          { text: 'thisBox.pointer', times: 2 },
-          { text: 'argumentsBox.pointer', times: 2 },
-          { text: 'resultBox.pointer', times: 3 },
+          { text: 'let thisPtr = UncheckedSendable(thisPtr)', times: 2 },
+          { text: 'let argumentsPtr = UncheckedSendable(argumentsPtr)', times: 2 },
+          { text: 'let resultPtr = UncheckedSendable(resultPtr)', times: 3 },
+          { text: 'thisPtr.value', times: 2 },
+          { text: 'argumentsPtr.value', times: 2 },
+          { text: 'resultPtr.value', times: 3 },
         ],
       },
     ],
@@ -98,8 +106,26 @@ export const patchedPackages: readonly PatchedPackage[] = [
 export const postinstallCommand = 'patch-package';
 export const patchTool = 'patch-package';
 
-export function patchFileOf(entry: PatchedPackage): string {
-  return join('patches', `${entry.name}+${entry.version}.patch`);
+/** True when the installed version is the floor or above it, read part by part. */
+function readsAtOrAbove(installed: string, floor: string): boolean {
+  const left = installed.split('.');
+  const right = floor.split('.');
+
+  for (let index = 0; index < right.length; index += 1) {
+    const here = Number(left[index]);
+
+    if (!Number.isInteger(here)) {
+      return false;
+    }
+
+    const wanted = Number(right[index]);
+
+    if (here !== wanted) {
+      return here > wanted;
+    }
+  }
+
+  return true;
 }
 
 export function installedDirectoryOf(entry: PatchedPackage): string {
@@ -161,15 +187,18 @@ export interface PatchResult {
   readonly rules: number;
 }
 
-export function patchProblems(root: string): PatchResult {
+export function patchProblems(
+  root: string,
+  packages: readonly PatchedPackage[] = patchedPackages,
+): PatchResult {
   const problems: string[] = [...installProblems(root)];
   let applied = 0;
   let rules = 0;
 
-  for (const entry of patchedPackages) {
-    const patch = patchFileOf(entry);
+  for (const entry of packages) {
+    const patch = entry.patch;
 
-    if (!existsSync(join(root, patch))) {
+    if (patch !== null && !existsSync(join(root, patch))) {
       problems.push(`${patch} is not in the repository, so an install has nothing to apply`);
     }
 
@@ -181,7 +210,14 @@ export function patchProblems(root: string): PatchResult {
       continue;
     }
 
-    if (manifest.version !== entry.version) {
+    if (patch === null) {
+      if (!readsAtOrAbove(manifest.version ?? '', entry.version)) {
+        problems.push(
+          `${entry.name} is installed at ${String(manifest.version)} and the changes below ` +
+            `arrived in ${entry.version}, so an older copy carries none of them`,
+        );
+      }
+    } else if (manifest.version !== entry.version) {
       problems.push(
         `${entry.name} is installed at ${String(manifest.version)} and ${patch} is written ` +
           `against ${entry.version}, so patch-package warns and applies nothing`,

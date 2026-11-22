@@ -48,9 +48,9 @@ be signed, so the first run asks which device to use and which Apple development
 Expo writes both answers into the generated Xcode project, which this repository does not track.
 That is why no team identifier is held in any file here.
 
-Expo Go is not used, and cannot be. `patches/expo-modules-jsi+57.1.0.patch` changes native sources
-that are compiled into the binary, and Expo Go is a binary Expo built, so no download of it carries
-them. The application needs a build of its own.
+Expo Go is not used, and cannot be. `plugins/withoutRemoteNotifications.ts` takes the push
+entitlement out of the native project, and Expo Go is a binary Expo built, so no download of it
+runs a plugin of ours. The application needs a build of its own.
 
     npm test --workspace apps/mobile
 
