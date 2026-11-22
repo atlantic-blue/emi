@@ -443,4 +443,17 @@ export const english = {
   footerCopyright: 'Copyright 2026 Atlantic Blue Solutions Limited.',
   footerPrivacyPolicy: 'Privacy policy',
   footerTerms: 'Terms',
+
+  // The Black Friday page, which draws the Home board with the offer in its hero.
+  blackFridayEyebrow: 'BLACK FRIDAY · HALF PRICE EVERY YEAR',
+  blackFridayHeading: 'Half price, every year you stay.',
+  blackFridayPrice:
+    'One month free, then 19.50 euros a year, every year, value added tax included.',
+  blackFridayInsteadOf:
+    'Emi is 39 euros a year. This offer is half of that, for as long as you stay.',
+  blackFridayEnds: 'The offer ends at midnight on 1 December 2026, Central European Time.',
+  blackFridayPress: 'Buy Emi at half price',
+  blackFridayTitle: 'Emi: half price for Black Friday',
+  blackFridayDescription:
+    'One month free, then 19.50 euros a year, every year. The offer ends on 1 December 2026.',
 };

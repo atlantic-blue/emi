@@ -44,6 +44,10 @@ export const thePagesOfTheSite: readonly PageOfTheSite[] = [
   { path: 'account/', serves: 'her account, which she reaches once she has signed in' },
   { path: 'checkout/', serves: 'the page she buys Emi on, which takes a card on this site' },
   {
+    path: 'black-friday/',
+    serves: 'the Black Friday offer, which sends a reader to the home page once it closes',
+  },
+  {
     path: 'sign-in/returning/',
     serves: 'where Apple and Google send her back to, which finishes the sign in',
   },

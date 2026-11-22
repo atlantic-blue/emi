@@ -9,17 +9,22 @@ import {
   type WhatOneFileSays,
   amountsOfMoneyIn,
   hostsIn,
+  isHalfOfThePrice,
   problemsWithTheAddress,
   problemsWithThePeriod,
   problemsWithWhatItCosts,
   theAmountOf,
   theOneAmount,
+  theOfferAmount,
+  theOfferPrice,
   theOneHost,
   theOnePeriod,
   theOnePrice,
   theWordsThatNameMoney,
+  theWordsThatNameTheOffer,
   whoseWordsAreIn,
   wordsNamingMoneyIn,
+  wordsNamingTheOfferIn,
 } from '../lib/theOnePrice';
 import { websiteWorkspace } from './stylesheet';
 
@@ -105,11 +110,15 @@ describe('the site asks for one price', () => {
     expect(amountsOfMoneyIn('39 € al año').map(theAmountOf)).toEqual([theOneAmount]);
   });
 
-  it('names 39 a year and no other amount anywhere in the words', () => {
+  it('names 39 a year, or half of it where the offer says so, and no other amount', () => {
     const found = everyFileOfTheWords().flatMap(({ text }) => amountsOfMoneyIn(text));
+    const figures = found.map((amount) => theAmountOf(amount));
 
     expect(found.length).toBe(languages.length * theWordsThatNameMoney.length);
-    expect(found.map((amount) => theAmountOf(amount))).toEqual(found.map(() => theOneAmount));
+    expect([...new Set(figures)].sort()).toEqual([theOfferAmount, theOneAmount].sort());
+    expect(figures.filter((figure) => figure === theOfferAmount)).toHaveLength(
+      languages.length * theWordsThatNameTheOffer.length,
+    );
     expect(everyFileOfTheWords().flatMap(problemsWithWhatItCosts)).toEqual([]);
   });
 
@@ -132,7 +141,7 @@ describe('the site asks for one price', () => {
     const cheaper = theWordsBut('english.ts', '39 euros a year', '€24.99 a year');
 
     expect(problemsWithWhatItCosts(cheaper)).toEqual([
-      'english.ts asks for €24.99, and the one price is 39 a year',
+      'english.ts asks for €24.99, and the price is 39 a year, or 19.50 while the offer is open',
       `english.ts names money outside the one price, which reads "${theOnePrice.en}"`,
     ]);
   });
@@ -162,11 +171,75 @@ describe('the site asks for one price', () => {
 
   it('refuses an amount in a file that holds the words of no language', () => {
     expect(problemsWithWhatItCosts({ file: 'words.ts', text: 'it costs 19.99' })).toEqual([
-      'words.ts asks for 19.99, and the one price is 39 a year',
+      'words.ts asks for 19.99, and the price is 39 a year, or 19.50 while the offer is open',
       'words.ts names money, and it holds the words of no language of the site',
     ]);
     expect(whoseWordsAreIn('words.ts')).toBe(null);
     expect(whoseWordsAreIn(join(theWords, 'russian.ts'))).toBe('ru');
+  });
+});
+
+describe('the offer asks for half of the price', () => {
+  it('holds an offer for each language the site serves, and none of them empty', () => {
+    expect(Object.keys(theOfferPrice).sort()).toEqual([...languages].sort());
+    expect(languages.every((language) => theOfferPrice[language].length > 0)).toBe(true);
+  });
+
+  it('asks for half of the price, which is what makes it the offer and not a second price', () => {
+    expect(isHalfOfThePrice(theOfferAmount)).toBe(true);
+    expect(isHalfOfThePrice('24.99')).toBe(false);
+    expect(isHalfOfThePrice(theOneAmount)).toBe(false);
+  });
+
+  it.each(languages)('names half of the price and no other amount, in %s', (language) => {
+    expect(amountsOfMoneyIn(theOfferPrice[language]).map(theAmountOf)).toEqual([theOfferAmount]);
+  });
+
+  it.each(languages)('offers the first month free with the offer too, in %s', (language) => {
+    const [free = ''] = theOnePrice[language].split(',');
+
+    expect(free.length).toBeGreaterThan(0);
+    expect(theOfferPrice[language].startsWith(free)).toBe(true);
+  });
+
+  it.each(languages)('covers a year, as the price it halves does, in %s', (language) => {
+    const said = theOfferPrice[language];
+
+    expect(said).toContain(theOnePeriod[language].replace('.', ''));
+    expect(problemsWithThePeriod(language, said.replace(/,[^,]*,[^,]*$/, '.'))).toEqual([]);
+  });
+
+  it.each(languages)('says the offer on the page that offers it, in %s', (language) => {
+    expect(wordsIn(language).blackFridayPrice).toBe(theOfferPrice[language]);
+  });
+
+  it.each(languages)(
+    'names half of the price under the words of the offer, and no other, in %s',
+    (language) => {
+      expect(wordsNamingTheOfferIn(wordsIn(language))).toEqual(
+        [...theWordsThatNameTheOffer].sort(),
+      );
+    },
+  );
+
+  it('refuses half of the price where the sentence that explains it is gone', () => {
+    const unexplained = theWordsBut(
+      'english.ts',
+      theOfferPrice.en,
+      'One month free, then 19.50 euros a year.',
+    );
+
+    expect(problemsWithWhatItCosts(unexplained)).toEqual([
+      `english.ts names half of the price outside the offer, which reads "${theOfferPrice.en}"`,
+    ]);
+  });
+
+  it('refuses a figure that is neither the price nor half of it', () => {
+    const neither = theWordsBut('english.ts', '19.50 euros a year, every year.', '9 euros a year.');
+
+    expect(problemsWithWhatItCosts(neither)).toEqual([
+      'english.ts asks for 9 euros, and the price is 39 a year, or 19.50 while the offer is open',
+    ]);
   });
 });
 

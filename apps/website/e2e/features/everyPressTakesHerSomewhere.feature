@@ -58,6 +58,9 @@ Feature: Where a press on a page of the site takes her
       | /en/sign-in/telegram/  |
       | /ru/sign-in/telegram/  |
       | /es/sign-in/telegram/  |
+      | /en/black-friday/      |
+      | /ru/black-friday/      |
+      | /es/black-friday/      |
 
   Scenario Outline: the press that offers her the community opens the community
     Given a woman opens the page at "<address>"
