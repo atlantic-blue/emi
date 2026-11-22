@@ -23,14 +23,18 @@ import {
 } from '../../apps/website/e2e/theReadingRules';
 import {
   amountsOfMoneyIn,
+  isHalfOfThePrice,
   problemsWithTheAddress,
   problemsWithWhatItCosts,
   theAmountOf,
+  theOfferAmount,
   theOneAmount,
   theOneHost,
   theOnePrice,
   theWordsThatNameMoney,
+  theWordsThatNameTheOffer,
   wordsNamingMoneyIn,
+  wordsNamingTheOfferIn,
 } from '../../apps/website/lib/theOnePrice';
 import { declarationsOf, stylesheetFor } from '../../apps/website/test/stylesheet';
 
@@ -313,31 +317,47 @@ defineFeature(feature, (test) => {
       },
     );
 
-    and('the pages ask her for one price, 39 euros a year, in each of the three languages', () => {
-      expect(languages.map((language) => theOnePrice[language])).toEqual([
-        'One month free, then 39 euros a year.',
-        'Первый месяц бесплатно, затем 39 евро в год.',
-        'Un mes gratis, después 39 euros al año.',
-      ]);
+    and(
+      'the pages ask her for one price, 39 euros a year, and half of it where the offer says so, in each of the three languages',
+      () => {
+        expect(languages.map((language) => theOnePrice[language])).toEqual([
+          'One month free, then 39 euros a year.',
+          'Первый месяц бесплатно, затем 39 евро в год.',
+          'Un mes gratis, después 39 euros al año.',
+        ]);
 
-      for (const language of languages) {
-        expect(wordsIn(language).price).toBe(theOnePrice[language]);
-        expect(theOnePrice[language]).toBe(theApplication[language]['onboarding.tour.price.line']);
-      }
+        for (const language of languages) {
+          expect(wordsIn(language).price).toBe(theOnePrice[language]);
+          expect(theOnePrice[language]).toBe(
+            theApplication[language]['onboarding.tour.price.line'],
+          );
+        }
 
-      const amounts = everyFileOfTheWords().flatMap(({ text }) => amountsOfMoneyIn(text));
+        const amounts = everyFileOfTheWords().flatMap(({ text }) => amountsOfMoneyIn(text));
+        const figures = amounts.map((amount) => theAmountOf(amount));
 
-      expect(amounts).toHaveLength(languages.length * theWordsThatNameMoney.length);
-      expect(amounts.map((amount) => theAmountOf(amount))).toEqual(amounts.map(() => theOneAmount));
+        expect(amounts).toHaveLength(languages.length * theWordsThatNameMoney.length);
 
-      for (const language of languages) {
-        expect(wordsNamingMoneyIn(wordsIn(language))).toEqual([...theWordsThatNameMoney].sort());
-      }
+        // The offer is half of the price, and the page that offers it is the one place that says
+        // so, so a figure anywhere else is a second price nobody explained.
+        expect([...new Set(figures)].sort()).toEqual([theOfferAmount, theOneAmount].sort());
+        expect(isHalfOfThePrice(theOfferAmount)).toBe(true);
+        expect(figures.filter((figure) => figure === theOfferAmount)).toHaveLength(
+          languages.length * theWordsThatNameTheOffer.length,
+        );
 
-      expect(everyFileOfTheWords().flatMap(problemsWithWhatItCosts)).toEqual([]);
-      expect(everyFileOfTheWords().flatMap(problemsWithTheAddress)).toEqual([]);
-      expect(theOneHost).toBe('myemi.app');
-    });
+        for (const language of languages) {
+          expect(wordsNamingMoneyIn(wordsIn(language))).toEqual([...theWordsThatNameMoney].sort());
+          expect(wordsNamingTheOfferIn(wordsIn(language))).toEqual(
+            [...theWordsThatNameTheOffer].sort(),
+          );
+        }
+
+        expect(everyFileOfTheWords().flatMap(problemsWithWhatItCosts)).toEqual([]);
+        expect(everyFileOfTheWords().flatMap(problemsWithTheAddress)).toEqual([]);
+        expect(theOneHost).toBe('myemi.app');
+      },
+    );
 
     and('words that named another amount, another period or another address are refused', () => {
       const english = read(join(theWords, 'english.ts'));
@@ -347,7 +367,7 @@ defineFeature(feature, (test) => {
       const elsewhere = language.replace('myemi.app', 'emi-tracker.com');
 
       expect(problemsWithWhatItCosts({ file: 'english.ts', text: cheaper })).toEqual([
-        'english.ts asks for €24.99, and the one price is 39 a year',
+        'english.ts asks for €24.99, and the price is 39 a year, or 19.50 while the offer is open',
         `english.ts names money outside the one price, which reads "${theOnePrice.en}"`,
       ]);
       expect(problemsWithWhatItCosts({ file: 'english.ts', text: monthly })).toEqual([

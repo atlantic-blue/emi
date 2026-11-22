@@ -14,6 +14,9 @@ import ReturningPage from '../../apps/website/app/[lang]/sign-in/returning/page'
 import TelegramReturnPage from '../../apps/website/app/[lang]/sign-in/telegram/page';
 import SupportPage from '../../apps/website/app/[lang]/support/page';
 import AccountPage from '../../apps/website/app/[lang]/account/page';
+import BlackFridayPage, {
+  THE_BLACK_FRIDAY_PAGE,
+} from '../../apps/website/app/[lang]/black-friday/page';
 import CheckoutPage from '../../apps/website/app/[lang]/checkout/page';
 import { type Language, languages, wordsIn } from '../../apps/website/app/words';
 import { LANGUAGES_ANCHOR } from '../../apps/website/components/siteHeader';
@@ -52,6 +55,16 @@ const whatTheBrowserReads = join(
  * sitemap is written from, so an address in it is an address a crawler is promised and a reader
  * gets a page for, and a page that ships is added there once.
  */
+/**
+ * The page a press leads to, without what it hands that page. A press to the till carries the
+ * offer she pressed in, and the page it leads to is the till either way.
+ */
+function thePageAPressLeadsTo(address: string): string {
+  const [path = ''] = address.split('?');
+
+  return path;
+}
+
 function everyAddressTheSiteServes(): string[] {
   return languages.flatMap((language) =>
     thePagesOfTheSite.map((page) => `/${language}/${page.path}`),
@@ -110,6 +123,7 @@ const whatDrawsThePageAt: Readonly<
   'checkout/': CheckoutPage,
   'sign-in/returning/': ReturningPage,
   'sign-in/telegram/': TelegramReturnPage,
+  'black-friday/': BlackFridayPage,
 };
 
 /**
@@ -270,12 +284,19 @@ defineFeature(feature, (test) => {
           (press) => press.address === `/${page.language}/${THE_SUPPORT_PAGE}`,
         );
 
+        // Two of the three are in the bands every page shares. The third is a card of the band
+        // of two offers, and two pages draw that band: the page she meets Emi on, and the page
+        // of the Black Friday offer, which draws the same board below its own hero.
+        const drawsTheBandOfOffers = ['', THE_BLACK_FRIDAY_PAGE].map(
+          (path) => `/${page.language}/${path}`,
+        );
+
         expect({
           onThePage: page.address,
           presses: carryingHer.length,
         }).toEqual({
           onThePage: page.address,
-          presses: page.address === `/${page.language}/` ? 3 : 2,
+          presses: drawsTheBandOfOffers.includes(page.address) ? 3 : 2,
         });
       }
 
@@ -310,7 +331,7 @@ defineFeature(feature, (test) => {
               called: press.called,
               address: press.address,
               leadsSomewhere:
-                served.includes(press.address) ||
+                served.includes(thePageAPressLeadsTo(press.address)) ||
                 theAddressesOffTheSite.includes(press.address) ||
                 press.address === `#${LANGUAGES_ANCHOR}`,
             }).toEqual({
