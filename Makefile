@@ -16,6 +16,7 @@ install: ## install every dependency from the lock file
 
 check: ## everything the pipeline runs, in the pipeline's order, stopping at the first failure
 	npm run check:patches
+	npm run check:fingerprint
 	npm run build:functions
 	npm run check:bundles
 	npm run format:check
