@@ -26,6 +26,8 @@ import {
   problemsWithTheAddress,
   problemsWithWhatItCosts,
   theAmountOf,
+  theAmountsThePageMayName,
+  theOfferAmount,
   theOneAmount,
   theOneHost,
   theOnePrice,
@@ -328,7 +330,12 @@ defineFeature(feature, (test) => {
       const amounts = everyFileOfTheWords().flatMap(({ text }) => amountsOfMoneyIn(text));
 
       expect(amounts).toHaveLength(languages.length * theWordsThatNameMoney.length);
-      expect(amounts.map((amount) => theAmountOf(amount))).toEqual(amounts.map(() => theOneAmount));
+      // The Black Friday offer is half of that one price rather than a second price, so the words
+      // name those two amounts and no third one.
+      expect([...new Set(amounts.map((amount) => theAmountOf(amount)))].sort()).toEqual(
+        [...theAmountsThePageMayName].sort(),
+      );
+      expect(Number(theOfferAmount) * 2).toBe(Number(theOneAmount));
 
       for (const language of languages) {
         expect(wordsNamingMoneyIn(wordsIn(language))).toEqual([...theWordsThatNameMoney].sort());

@@ -4,6 +4,7 @@ import { type ReactNode, useEffect, useSyncExternalStore } from 'react';
 
 import type { Language } from '@/app/words';
 import { WHERE_A_READER_WITH_NO_SESSION_GOES } from '@/components/theAccountHeader';
+import { theOfferAnAddressNames, whatHerAddressSays } from '@/lib/theOfferSheArrivedWith';
 import {
   theSessionHasRunOut,
   theSessionHeld,
@@ -62,7 +63,9 @@ export function TheCheckoutBehindASignIn({
 
   useEffect(() => {
     if (known === 'she is signed out') {
-      comeBackToThisPage(WHERE_SHE_BUYS_EMI);
+      // The address goes with her, not only the path. A woman sent here by the offer would come
+      // back to the full price otherwise, and read a price she never agreed to.
+      comeBackToThisPage(WHERE_SHE_BUYS_EMI, theOfferAnAddressNames(whatHerAddressSays()));
       goInsteadTo(`/${language}/${WHERE_A_READER_WITH_NO_SESSION_GOES}`);
     }
   }, [known, language]);

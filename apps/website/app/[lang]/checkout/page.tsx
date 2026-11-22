@@ -5,6 +5,7 @@ import { type SiteWords, isLanguage, wordsIn } from '@/app/words';
 import { TheCheckoutBehindASignIn } from '@/components/theCheckoutBehindASignIn';
 import { TheSignedInLine } from '@/components/theSignedInLine';
 import { ThePaymentForm } from '@/components/thePaymentForm';
+import { ThePlanSheIsBuying } from '@/components/thePlanSheIsBuying';
 import { theLinksOf } from '@/lib/theAddressesOfAPage';
 import { thePublishableKey } from '@/lib/theStripeOnThePage';
 
@@ -19,9 +20,9 @@ import { thePublishableKey } from '@/lib/theStripeOnThePage';
  * column is drawn until her browser has read it, and a reader with no session is moved to the page
  * she signs in on.
  *
- * The plan is laid out by this page, on the server, because it says the same thing to every woman
- * who reads it. The half that takes money is drawn in her browser, because it needs the session
- * that lives there.
+ * The plan and the half that takes money are both drawn in her browser. The form needs the session
+ * that lives there, and the plan needs the address she arrived with: an offer in it halves the
+ * yearly amount, and a server of this site answers one cached page to every reader of a language.
  *
  * Every value is a class and none is a style attribute, because the content policy of SITE-6 names
  * a secret for a style and a style written on an element cannot carry one, so a browser would
@@ -77,26 +78,7 @@ export default async function CheckoutPage({ params }: { params: Promise<{ lang:
           </header>
 
           <div className="flex flex-col gap-[28px]">
-            <section aria-labelledby="her-plan" className="flex flex-col gap-spaceMd">
-              <h2 className="text-[19px] leading-[26px] font-semibold" id="her-plan">
-                {words.checkoutPlanHeading}{' '}
-                <span className="font-normal text-siteQuietText">
-                  {words.checkoutPlanEveryYear}
-                </span>
-              </h2>
-              <div className="flex items-center justify-between gap-spaceMd rounded-lg border-2 border-siteAccent px-margin py-margin">
-                <span className="flex flex-col">
-                  <span className="text-body-lg font-semibold">{words.checkoutPlanYearly}</span>
-                  <span className="text-body-sm text-siteQuietText">
-                    {words.checkoutPlanRenews}
-                  </span>
-                </span>
-                <span className="font-mono text-body-lg font-medium">
-                  {words.checkoutPlanAmount}
-                </span>
-              </div>
-              <p className="text-body-sm text-siteQuietText">{words.checkoutPrice}</p>
-            </section>
+            <ThePlanSheIsBuying words={words} />
 
             <ThePaymentForm language={lang} publishableKey={thePublishableKey()} words={words} />
 
