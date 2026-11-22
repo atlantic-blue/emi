@@ -21,6 +21,11 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run check:patches
+      # The Expo build service takes this fingerprint of its own accord before it queues a build,
+      # out of the copy of @expo/fingerprint the lock file wrote, so a lock that leaves a nested
+      # dependency unsatisfied stops a release after the upload. Taking it here moves that failure
+      # onto the pull request that writes the lock.
+      - run: npm run check:fingerprint
       # The bundles are built and then loaded through the runtime interface emulator, which needs
       # the Docker the runner already carries. A pull request proves them and uploads nothing.
       - run: npm run build:functions

@@ -27,6 +27,15 @@ files rather than the status. The pipeline runs on Linux and cannot build the ap
 reading the files is the only proof it can give. `pipeline/nativePatches.ts` holds the list of
 changes and the readers, so each one runs against a fixture tree as well as against this one.
 
+`pipeline/checkFingerprint.ts` is the command behind `npm run check:fingerprint`. The Expo build
+service takes a fingerprint of `apps/mobile` of its own accord before it queues a build, out of
+the copy of `@expo/fingerprint` the install wrote. A lock file that leaves one of that package's
+nested dependencies unsatisfied stops a release after the upload and before the build. This runs
+the same command Expo runs, with `--no` so it uses the installed copy rather than fetching one,
+and it reads the printed hash and counts the sources the hash was taken over, because the command
+prints its usage and leaves with a zero status as well. `pipeline/fingerprint.ts` holds the
+readers, so each one runs against output a test wrote as well as against a real run.
+
 `pipeline/checkReleaseTag.ts` is the first step of `.github/workflows/release.yml`. It fails when
 the tag is not `v` and the version in `apps/mobile/app.json`, so a tag on the wrong commit builds
 nothing. `pipeline/releaseTag.ts` holds the rule.
@@ -72,7 +81,9 @@ that finds no test fails. `firstRunContract.test.ts` holds SCREEN-1 in `docs/con
 copy `docs/design/first-run.md` writes out, word for word, and reads that it names the hold as the
 only moment the first run writes. `pipeline/firstRunContract.ts` holds its readers, and it counts
 the contracts each document wrote out, so a read of nothing is not taken for agreement.
-`nativePatches.test.ts` copies the three installed files into a
+`fingerprint.test.ts` refuses the words the failed
+release printed, and refuses a hash taken over no source. `nativePatches.test.ts` copies the three
+installed files into a
 fixture, takes one change back out to watch the check go red, and puts it back. `story.test.ts`
 covers the story check, renames a real picture to watch it go red, and puts it back.
 
@@ -85,6 +96,7 @@ From the root of the repository:
     npm run check:reference
     npm run check:story
     npm run check:patches
+    npm run check:fingerprint
     npm run test:workspace
 
 The Hermes tier runs inside the mobile suite and fetches the engine once, into
