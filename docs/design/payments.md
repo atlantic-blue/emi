@@ -1,8 +1,8 @@
 # Payments: a card and a wallet on myemi.app, and Telegram Stars later
 
-Emi has one price and three ways to pay it. The store route is built into the application and
-contracts PAY-1 to PAY-4 already describe it. This document designs the other two: a payment on our
-own page through Stripe, and Telegram Stars in the Emi bot.
+Emi has one price and three ways to pay it. The store route is not built: contracts PAY-1 to PAY-4
+describe it and `docs/design/app-store-payments.md` designs it. This document designs the other
+two: a payment on our own page through Stripe, and Telegram Stars in the Emi bot.
 
 Two sentences hold the design up.
 
