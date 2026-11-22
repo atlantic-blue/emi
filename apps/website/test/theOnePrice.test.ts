@@ -13,6 +13,9 @@ import {
   problemsWithThePeriod,
   problemsWithWhatItCosts,
   theAmountOf,
+  theAmountsThePageMayName,
+  theOfferAmount,
+  theOfferPrice,
   theOneAmount,
   theOneHost,
   theOnePeriod,
@@ -105,12 +108,43 @@ describe('the site asks for one price', () => {
     expect(amountsOfMoneyIn('39 € al año').map(theAmountOf)).toEqual([theOneAmount]);
   });
 
-  it('names 39 a year and no other amount anywhere in the words', () => {
+  it('names 39 a year, half of it on the offer, and no other amount anywhere in the words', () => {
     const found = everyFileOfTheWords().flatMap(({ text }) => amountsOfMoneyIn(text));
 
     expect(found.length).toBe(languages.length * theWordsThatNameMoney.length);
-    expect(found.map((amount) => theAmountOf(amount))).toEqual(found.map(() => theOneAmount));
+    expect([...new Set(found.map((amount) => theAmountOf(amount)))].sort()).toEqual(
+      [...theAmountsThePageMayName].sort(),
+    );
     expect(everyFileOfTheWords().flatMap(problemsWithWhatItCosts)).toEqual([]);
+  });
+
+  it('asks for half of the one price on the offer, and not an amount of its own', () => {
+    expect(Number(theOfferAmount) * 2).toBe(Number(theOneAmount));
+    expect(theAmountsThePageMayName).toEqual([theOneAmount, theOfferAmount]);
+  });
+
+  it.each(languages)(
+    'writes the offer price as the one price with half the amount, in %s',
+    (language) => {
+      expect(wordsIn(language).checkoutOfferPrice).toBe(theOfferPrice[language]);
+      expect(amountsOfMoneyIn(theOfferPrice[language]).map(theAmountOf)).toEqual([theOfferAmount]);
+    },
+  );
+
+  it('refuses the offer amount in words that do not carry the offer price', () => {
+    const halved = theWordsBut('english.ts', theOfferPrice.en, 'Half off, every year.');
+
+    expect(problemsWithWhatItCosts(halved)).toEqual([
+      `english.ts names the offer amount outside the offer price, which reads "${theOfferPrice.en}"`,
+    ]);
+  });
+
+  it('refuses an offer that is not half of the one price', () => {
+    const cheaper = theWordsBut('english.ts', '€19.50 a year', '€9.99 a year');
+
+    expect(problemsWithWhatItCosts(cheaper)).toEqual([
+      'english.ts asks for €9.99, and the one price is 39 a year',
+    ]);
   });
 
   it.each(languages)(

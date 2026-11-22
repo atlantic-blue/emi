@@ -15,6 +15,12 @@ export const WHERE_A_SUBSCRIPTION_STARTS = `${THE_API_HOST}/v1/payments/subscrip
 /** The one field the second call carries, as the route names it. */
 export const THE_FIELD_A_SETUP_TRAVELS_IN = 'setupRef';
 
+/**
+ * The field the offer travels in, as the route names it. It is sent only when the page drew the
+ * offer to her, because the route refuses any value but the one offer it sells.
+ */
+export const THE_FIELD_AN_OFFER_TRAVELS_IN = 'offer';
+
 /** What the route answers with when it has started one. */
 export interface TheSetupSheConfirms {
   readonly clientSecret: string;
@@ -75,11 +81,15 @@ interface WhatTheCreationSaid {
  * It answers whether she is on one. A route that answered anything other than a subscription reads
  * as no subscription, because a page that says she is paying when she is not leaves her reading a
  * date nothing charges.
+ *
+ * The offer is carried only by a page that drew the offer to her. The route decides the discount
+ * from the offer and its own clock, so this call asks for an offer and never for an amount.
  */
 export async function finishASubscription(
   idToken: string,
   setupRef: string,
   asks: HowItAsks = fetch,
+  offer?: string | null,
 ): Promise<boolean> {
   let answered: Response;
 
@@ -87,7 +97,12 @@ export async function finishASubscription(
     answered = await asks(WHERE_A_SUBSCRIPTION_STARTS, {
       method: 'PUT',
       headers: { authorization: `Bearer ${idToken}`, 'content-type': 'application/json' },
-      body: JSON.stringify({ [THE_FIELD_A_SETUP_TRAVELS_IN]: setupRef }),
+      body: JSON.stringify({
+        [THE_FIELD_A_SETUP_TRAVELS_IN]: setupRef,
+        ...(offer === undefined || offer === null
+          ? {}
+          : { [THE_FIELD_AN_OFFER_TRAVELS_IN]: offer }),
+      }),
     });
   } catch {
     return false;

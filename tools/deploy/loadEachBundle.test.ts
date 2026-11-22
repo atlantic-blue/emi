@@ -567,6 +567,7 @@ describe('every bundle is loaded in a container of its own, and two in a row can
       reaches: () => Promise.reject(new Error('Stripe was called')),
       secretKey: () => Promise.reject(new Error('the parameter store was read')),
       poolId: 'eu-central-1_NOTAPOOL',
+      clock: () => new Date('2026-11-20T09:00:00.000Z'),
     });
 
     it('owes a seventh answer, which is the setup her browser finished on Buy Emi', () => {

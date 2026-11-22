@@ -14,11 +14,17 @@ import type {
   TheElementsOfTheForm,
   TheStripeOnThePage,
 } from '../lib/theStripeOnThePage';
+import { THE_BLACK_FRIDAY_OFFER } from '../lib/theBlackFridayOffer';
+import { THE_OFFER_IN_AN_ADDRESS } from '../lib/theOfferSheArrivedWith';
 import {
+  THE_FIELD_AN_OFFER_TRAVELS_IN,
   THE_FIELD_A_SETUP_TRAVELS_IN,
   WHERE_A_SUBSCRIPTION_STARTS,
 } from '../lib/theSubscriptionSheStarts';
-import { WHERE_SHE_WAS_GOING_ENTRY } from '../lib/whereASignInComesBackTo';
+import {
+  WHERE_SHE_WAS_GOING_ENTRY,
+  WHICH_OFFER_SHE_ARRIVED_WITH_ENTRY,
+} from '../lib/whereASignInComesBackTo';
 
 /**
  * The page she buys Emi on and the form that takes her money, driven in a browser.
@@ -40,6 +46,10 @@ const words = wordsIn('en');
 const thePressThatPays = words.checkoutPay;
 
 const A_KEY = 'pk_test_not_a_real_key';
+
+/** A minute before the Black Friday offer closes, and the instant it closes at. */
+const WHILE_THE_OFFER_IS_OPEN = new Date('2026-11-30T22:59:00.000Z');
+const ONCE_THE_OFFER_HAS_CLOSED = new Date('2026-11-30T23:00:00.000Z');
 
 /** Where her browser was told to go, which is the end of this page in a browser. */
 const whereSheWentNext: string[] = [];
@@ -245,9 +255,14 @@ async function aFormOnThePage(
      * network, so it lands after the press that asked for it, and she may have moved on by then.
      */
     readonly stripeArrivesLate?: boolean;
+    /** The address she opened the page on, which is what carries an offer. */
+    readonly search?: string;
+    /** When she is reading it, which is what says whether an offer she arrived with is open. */
+    readonly now?: Date;
   } = {},
 ): Promise<ADrivenForm> {
   const language = options.language ?? 'en';
+  const search = options.search ?? '';
   const stripe = options.stripe ?? fakeStripe();
   const api = anApi(options.api ?? {});
   const holder = document.createElement('div');
@@ -266,7 +281,8 @@ async function aFormOnThePage(
   Object.defineProperty(window, 'location', {
     configurable: true,
     value: {
-      href: 'https://myemi.app/en/checkout/',
+      href: `https://myemi.app/en/checkout/${search}`,
+      search,
       assign: (address: string) => whereSheWentNext.push(address),
       replace: (address: string) => whereSheWentNext.push(address),
     },
@@ -290,6 +306,7 @@ async function aFormOnThePage(
       <ThePaymentForm
         asks={api.asks}
         language={language}
+        now={options.now}
         publishableKey={options.publishableKey ?? A_KEY}
         stripeArrives={() => theArrival.then(() => stripe.stripe)}
         words={wordsIn(language)}
@@ -339,6 +356,9 @@ async function aFormOnThePage(
 beforeEach(() => {
   // React draws nothing outside an act environment, and the runner sets no such flag of its own.
   (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+  // A case that moved the clock leaves it moved for every case after it, and the offer those
+  // cases read is decided by the clock.
+  jest.useRealTimers();
 });
 
 describe('the line under the title', () => {
@@ -620,6 +640,8 @@ let theLastPage: ReturnType<typeof createRoot> | null = null;
 async function theCheckoutPageWhileSheHolds(
   idToken: string | null,
   stripe: AFakeStripe = fakeStripe(),
+  /** The address she opened, and the instant she opened it at, which decide the price she reads. */
+  reading: { readonly search?: string; readonly now?: Date } = {},
 ): Promise<HTMLElement> {
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY = A_KEY;
 
@@ -634,10 +656,23 @@ async function theCheckoutPageWhileSheHolds(
   window.sessionStorage.clear();
   whereSheWentNext.length = 0;
 
+  const search = reading.search ?? '';
+
+  // The page reads the clock for itself, the way it does in her browser, so the instant is moved
+  // rather than handed in. Nothing else of the runner is faked: React flushes on microtasks and a
+  // faked one leaves every render of this file waiting for a tick nobody advances.
+  if (reading.now !== undefined) {
+    jest.useFakeTimers({
+      doNotFake: ['nextTick', 'queueMicrotask', 'setImmediate', 'performance'],
+      now: reading.now,
+    });
+  }
+
   Object.defineProperty(window, 'location', {
     configurable: true,
     value: {
-      href: 'https://myemi.app/en/checkout/',
+      href: `https://myemi.app/en/checkout/${search}`,
+      search,
       assign: (address: string) => whereSheWentNext.push(address),
       replace: (address: string) => whereSheWentNext.push(address),
     },
@@ -721,6 +756,193 @@ describe('the page she buys Emi on', () => {
       // nowhere at all.
       expect(whereSheWentNext).toEqual([]);
       expect(window.sessionStorage.getItem(WHERE_SHE_WAS_GOING_ENTRY)).toBeNull();
+    });
+  });
+
+  /**
+   * The Black Friday offer, from the address the landing page sends her to through to the body
+   * the press puts on the wire.
+   *
+   * The clock is moved rather than handed in, because the page reads it for itself in her
+   * browser, and a case that read the real clock would start failing on the first of December.
+   */
+  describe('a woman who arrived on the Black Friday offer', () => {
+    const herToken = (): string => anIdToken(`${THE_APPLE_NAME}_000482910`);
+    const onTheOffer = `?${THE_OFFER_IN_AN_ADDRESS}=${THE_BLACK_FRIDAY_OFFER}`;
+
+    it('reads the halved amount, that it is half price every year, and the free month', async () => {
+      const page = await theCheckoutPageWhileSheHolds(herToken(), fakeStripe(), {
+        search: onTheOffer,
+        now: WHILE_THE_OFFER_IS_OPEN,
+      });
+      const said = page.textContent ?? '';
+
+      expect(said).toContain(words.checkoutOfferAmount);
+      expect(said).toContain(words.checkoutOfferEveryYear);
+      expect(said).toContain(words.checkoutOfferRenews);
+      expect(said).toContain(words.checkoutOfferPrice);
+      expect(said).toContain(words.checkoutOfferPay);
+      // The one price is nowhere on the page she is reading, or she reads two amounts at once.
+      expect(said).not.toContain(words.checkoutPlanAmount);
+      expect(said).not.toContain(words.checkoutPay);
+    });
+
+    it('reads the free month in the halved sentence, which is the month she pays nothing', async () => {
+      const page = await theCheckoutPageWhileSheHolds(herToken(), fakeStripe(), {
+        search: onTheOffer,
+        now: WHILE_THE_OFFER_IS_OPEN,
+      });
+
+      expect(words.checkoutOfferPrice).toContain('One month free');
+      expect(page.textContent ?? '').toContain('One month free');
+    });
+
+    it('reads the one price once the offer has closed, however the address reads', async () => {
+      const page = await theCheckoutPageWhileSheHolds(herToken(), fakeStripe(), {
+        search: onTheOffer,
+        now: ONCE_THE_OFFER_HAS_CLOSED,
+      });
+      const said = page.textContent ?? '';
+
+      expect(said).toContain(words.checkoutPlanAmount);
+      expect(said).toContain(words.checkoutPrice);
+      expect(said).toContain(words.checkoutPay);
+      expect(said).not.toContain(words.checkoutOfferAmount);
+      expect(said).not.toContain(words.checkoutOfferPay);
+    });
+
+    /**
+     * An address is a thing anybody may type, so every value but the one the operator approved
+     * leaves the page asking the one price.
+     */
+    it.each([
+      '',
+      '?offer=',
+      '?offer=half-off-for-ever',
+      '?offer=BLACK-FRIDAY',
+      '?offer=black-friday-2025',
+      '?offers=black-friday',
+    ])('reads the one price on %s, while the offer is open', async (search) => {
+      const page = await theCheckoutPageWhileSheHolds(herToken(), fakeStripe(), {
+        search,
+        now: WHILE_THE_OFFER_IS_OPEN,
+      });
+      const said = page.textContent ?? '';
+
+      expect(said).toContain(words.checkoutPlanAmount);
+      expect(said).toContain(words.checkoutPay);
+      expect(said).not.toContain(words.checkoutOfferAmount);
+    });
+
+    it.each(languages)('reads the halved amount of her own language, in %s', async (language) => {
+      const said = wordsIn(language);
+      const form = await aFormOnThePage({
+        language,
+        now: WHILE_THE_OFFER_IS_OPEN,
+        search: onTheOffer,
+      });
+
+      expect(form.text()).toContain(said.checkoutOfferPay);
+      expect(form.text()).not.toContain(said.checkoutPay);
+    });
+
+    describe('the press that pays on the offer', () => {
+      /** The body the second call put on the wire, read as the fields the route reads. */
+      const theBodyOfTheCreate = (form: ADrivenForm): Record<string, unknown> =>
+        JSON.parse(form.calls.find((call) => call.method === 'PUT')?.body ?? '{}');
+
+      it('names the offer beside the setup, and nothing else at all', async () => {
+        const form = await aFormOnThePage({ now: WHILE_THE_OFFER_IS_OPEN, search: onTheOffer });
+
+        await form.press(wordsIn('en').checkoutOfferPay);
+
+        expect(theBodyOfTheCreate(form)).toEqual({
+          [THE_FIELD_A_SETUP_TRAVELS_IN]: A_SETUP,
+          [THE_FIELD_AN_OFFER_TRAVELS_IN]: THE_BLACK_FRIDAY_OFFER,
+        });
+      });
+
+      it('names no offer once the offer has closed, so she is charged the one price', async () => {
+        const form = await aFormOnThePage({ now: ONCE_THE_OFFER_HAS_CLOSED, search: onTheOffer });
+
+        await form.press(thePressThatPays);
+
+        expect(theBodyOfTheCreate(form)).toEqual({ [THE_FIELD_A_SETUP_TRAVELS_IN]: A_SETUP });
+      });
+
+      it('names no offer for a woman who arrived with none', async () => {
+        const form = await aFormOnThePage({ now: WHILE_THE_OFFER_IS_OPEN });
+
+        await form.press(thePressThatPays);
+
+        expect(theBodyOfTheCreate(form)).toEqual({ [THE_FIELD_A_SETUP_TRAVELS_IN]: A_SETUP });
+      });
+
+      it('names no offer for a value nobody approved', async () => {
+        const form = await aFormOnThePage({
+          now: WHILE_THE_OFFER_IS_OPEN,
+          search: '?offer=half-off-for-ever',
+        });
+
+        await form.press(thePressThatPays);
+
+        expect(theBodyOfTheCreate(form)).toEqual({ [THE_FIELD_A_SETUP_TRAVELS_IN]: A_SETUP });
+      });
+
+      it('leaves her on her account, the way a press at the one price does', async () => {
+        const form = await aFormOnThePage({ now: WHILE_THE_OFFER_IS_OPEN, search: onTheOffer });
+
+        await form.press(wordsIn('en').checkoutOfferPay);
+
+        expect(whereSheWentNext).toEqual(['/en/account/']);
+      });
+    });
+
+    describe('a reader with no session who arrived on the offer', () => {
+      it('is brought back to the page with the offer still in the address', async () => {
+        await theCheckoutPageWhileSheHolds(null, fakeStripe(), {
+          search: onTheOffer,
+          now: WHILE_THE_OFFER_IS_OPEN,
+        });
+
+        expect(whereSheWentNext).toEqual(['/en/sign-in/']);
+        expect(window.sessionStorage.getItem(WHERE_SHE_WAS_GOING_ENTRY)).toBe('checkout/');
+        expect(window.sessionStorage.getItem(WHICH_OFFER_SHE_ARRIVED_WITH_ENTRY)).toBe(
+          THE_BLACK_FRIDAY_OFFER,
+        );
+      });
+
+      it('keeps no offer for a reader who arrived with a value nobody approved', async () => {
+        await theCheckoutPageWhileSheHolds(null, fakeStripe(), {
+          search: '?offer=half-off-for-ever',
+          now: WHILE_THE_OFFER_IS_OPEN,
+        });
+
+        expect(window.sessionStorage.getItem(WHERE_SHE_WAS_GOING_ENTRY)).toBe('checkout/');
+        expect(window.sessionStorage.getItem(WHICH_OFFER_SHE_ARRIVED_WITH_ENTRY)).toBeNull();
+      });
+
+      /**
+       * The address is kept as she opened it, and the page decides whether it shows an offer when
+       * she lands, so a sign in that ran over the end leaves her reading the one price.
+       */
+      it('keeps the offer of an address opened after the end, and the page then asks for 39', async () => {
+        await theCheckoutPageWhileSheHolds(null, fakeStripe(), {
+          search: onTheOffer,
+          now: ONCE_THE_OFFER_HAS_CLOSED,
+        });
+
+        expect(window.sessionStorage.getItem(WHICH_OFFER_SHE_ARRIVED_WITH_ENTRY)).toBe(
+          THE_BLACK_FRIDAY_OFFER,
+        );
+
+        const page = await theCheckoutPageWhileSheHolds(herToken(), fakeStripe(), {
+          search: onTheOffer,
+          now: ONCE_THE_OFFER_HAS_CLOSED,
+        });
+
+        expect(page.textContent ?? '').toContain(words.checkoutPlanAmount);
+      });
     });
   });
 
