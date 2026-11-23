@@ -31,6 +31,10 @@ import {
  * The offer the page was showing rides in the body, and it buys a coupon rather than an amount.
  * The discount is worked out from the one offer this service sells and the instant the create is
  * made at, so a caller can ask for the offer and never for a price.
+ *
+ * The free month belongs to the one price. A subscription bought on the offer is charged at once,
+ * so this call answers the secret her browser confirms that charge on, and she is paid until
+ * nothing until the payment lands.
  */
 
 /** What a caller is told when no payer is read. It reads as the press on the same path does. */
@@ -63,6 +67,11 @@ export const nothingWasCreated =
 /** What the page reads once she is on the free month of a subscription. */
 export interface WhatTheSubscriptionConfirms {
   readonly started: boolean;
+  /**
+   * The secret her browser confirms the first charge on, where one is waiting. It is absent on the
+   * one price, which pays nothing for a month, and on a press that bought her nothing new.
+   */
+  readonly paymentSecret?: string;
 }
 
 /** What the call is bound to: the payment partition, Stripe, the key, the pool and the clock. */
@@ -192,7 +201,8 @@ export async function finishSubscriptionFor(
     }
 
     await chargeTheCustomerTo(calling, payerRef, collected.paymentMethodRef);
-    await yearlySubscriptionFor(calling, {
+
+    const made = await yearlySubscriptionFor(calling, {
       customerRef: payerRef,
       payerDigest,
       oneOfAKind: oneSubscriptionPer(setupRef),
@@ -200,7 +210,10 @@ export async function finishSubscriptionFor(
       now: held.clock(),
     });
 
-    return answer(200, { started: true } satisfies WhatTheSubscriptionConfirms);
+    return answer(200, {
+      started: true,
+      ...(made.paymentSecret === null ? {} : { paymentSecret: made.paymentSecret }),
+    } satisfies WhatTheSubscriptionConfirms);
   } catch {
     // Every way this stops reads the same to her, from a key the parameter store does not hold
     // yet to a card network that is down, so no caller learns which of them it was.

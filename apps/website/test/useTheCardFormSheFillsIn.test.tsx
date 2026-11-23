@@ -8,6 +8,7 @@ import type {
   AnElementOfStripe,
   TheElementsOfTheForm,
   TheStripeOnThePage,
+  WhatTheConfirmationSaid,
 } from '../lib/theStripeOnThePage';
 import { useTheCardFormSheFillsIn } from '../lib/useTheCardFormSheFillsIn';
 
@@ -41,6 +42,8 @@ interface WhatStripeDid {
   readonly went: WhereAnElementWent[];
   readonly destroyed: string[];
   readonly groups: TheElementsOfTheForm[];
+  /** Each charge it was asked to confirm, which carries a secret and no elements. */
+  readonly paid: Record<string, unknown>[];
 }
 
 interface AFakeStripe {
@@ -49,7 +52,7 @@ interface AFakeStripe {
 }
 
 function fakeStripe(): AFakeStripe {
-  const did: WhatStripeDid = { mounted: [], went: [], destroyed: [], groups: [] };
+  const did: WhatStripeDid = { mounted: [], went: [], destroyed: [], groups: [], paid: [] };
 
   const element = (kind: string): AnElementOfStripe => ({
     mount: (into) => {
@@ -74,6 +77,11 @@ function fakeStripe(): AFakeStripe {
         return group;
       },
       confirmSetup: () => Promise.resolve({}),
+      confirmPayment: (asked) => {
+        did.paid.push(asked);
+
+        return Promise.resolve({});
+      },
     },
   };
 }
@@ -97,6 +105,8 @@ interface ADrivenHook {
   readonly draws: (what: WhatTheHostDraws) => Promise<void>;
   readonly letsStripeArrive: () => Promise<void>;
   readonly theElements: () => TheElementsOfTheForm | null;
+  /** The one charge of a plan with no free month, confirmed on the secret of its invoice. */
+  readonly confirmsThePayment: (clientSecret: string) => Promise<WhatTheConfirmationSaid>;
 }
 
 /** The elements of Stripe that went into a node the host still holds, which is what she sees. */
@@ -120,6 +130,8 @@ async function aFormDrivenByTheHook(
 
   let drawsNext: (what: WhatTheHostDraws) => void = () => undefined;
   let readsTheElements: () => TheElementsOfTheForm | null = () => null;
+  let paysWith: (clientSecret: string) => Promise<WhatTheConfirmationSaid> = () =>
+    Promise.resolve({});
 
   /**
    * A page that draws the card form, and draws it again on a node of its own.
@@ -131,7 +143,7 @@ async function aFormDrivenByTheHook(
   function AHostThatRedraws() {
     const [drawing, setDrawing] = useState({ count: 0, holds: true });
     const theWallets = useRef<HTMLDivElement | null>(null);
-    const { drawsTheCardForm, theElements } = useTheCardFormSheFillsIn({
+    const { drawsTheCardForm, theElements, confirmsThePayment } = useTheCardFormSheFillsIn({
       publishableKey: A_KEY,
       stripeArrives: () => theArrival.then(() => stripe.stripe),
       comesBackTo: WHERE_A_BANK_SENDS_HER_BACK,
@@ -155,6 +167,7 @@ async function aFormDrivenByTheHook(
         holds: !what.takesTheNodeAway,
       }));
     readsTheElements = theElements;
+    paysWith = confirmsThePayment;
 
     return drawing.holds ? (
       <>
@@ -175,6 +188,7 @@ async function aFormDrivenByTheHook(
     did: stripe.did,
     theNode: () => [...host.querySelectorAll('div')].at(-1) ?? null,
     theElements: () => readsTheElements(),
+    confirmsThePayment: (clientSecret: string) => paysWith(clientSecret),
     draws: async (what: WhatTheHostDraws) => {
       await act(async () => {
         drawsNext(what);
@@ -266,6 +280,47 @@ describe('the card form of a page that draws its children again', () => {
 
       expect(driven.did.mounted).toEqual([]);
       expect(driven.theElements()).toBeNull();
+    });
+  });
+
+  /**
+   * The one charge of a plan with no free month. Her card is on the customer by then, so the
+   * charge carries the secret of the invoice and no elements: nothing is collected here, and the
+   * only thing that may still happen is her bank asking her a question.
+   */
+  describe('the charge of a plan with no free month', () => {
+    const theSecret = 'in_000000000001_secret_the-double-wrote-this';
+
+    it('confirms the charge on the secret it was given, and collects nothing', async () => {
+      const driven = await aFormDrivenByTheHook();
+
+      const said = await driven.confirmsThePayment(theSecret);
+
+      expect(said.error).toBeUndefined();
+      expect(driven.did.paid).toHaveLength(1);
+      expect(driven.did.paid[0]).toEqual({
+        clientSecret: theSecret,
+        confirmParams: { return_url: WHERE_A_BANK_SENDS_HER_BACK },
+        redirect: 'if_required',
+      });
+    });
+
+    it('sends her bank the address it sends her back to, which is her account', async () => {
+      const driven = await aFormDrivenByTheHook();
+
+      await driven.confirmsThePayment(theSecret);
+
+      const asked = driven.did.paid[0] as { confirmParams?: { return_url?: string } };
+
+      expect(asked.confirmParams?.return_url).toBe(WHERE_A_BANK_SENDS_HER_BACK);
+    });
+
+    it('confirms no setup, because the card was collected by the press before it', async () => {
+      const driven = await aFormDrivenByTheHook();
+
+      await driven.confirmsThePayment(theSecret);
+
+      expect(driven.did.paid[0]?.elements).toBeUndefined();
     });
   });
 });

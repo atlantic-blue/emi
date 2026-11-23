@@ -4,9 +4,10 @@ import { THE_API_HOST } from './theTelegramSignIn';
  * The two calls the page makes to Emi: start a subscription, and say which setup her browser
  * finished so the subscription is created.
  *
- * Each one carries her identity token and nothing else. The route cuts the payer digest from a
- * claim of that token, so the page sends no account identifier, no address and no name, and the
- * values it reads back open nothing on their own.
+ * Each one carries her identity token. The second also names the setup her browser finished and
+ * the offer the page was showing, and nothing else. The route cuts the payer digest from a claim
+ * of that token, so the page sends no account identifier, no address and no name, and the values
+ * it reads back open nothing on their own.
  */
 
 /** The route that makes the customer and the setup, behind the token authorizer of the pool. */
@@ -72,15 +73,27 @@ export async function startASubscription(
 
 interface WhatTheCreationSaid {
   readonly started?: unknown;
+  readonly paymentSecret?: unknown;
 }
 
 /**
- * The setup she finished, named to the service, which creates the yearly subscription on the free
- * month.
+ * What the route answers once the subscription exists: nothing to pay, or the secret of the one
+ * charge her browser has to confirm.
  *
- * It answers whether she is on one. A route that answered anything other than a subscription reads
- * as no subscription, because a page that says she is paying when she is not leaves her reading a
- * date nothing charges.
+ * The free month belongs to the one price, so a press at that price leaves nothing to confirm. A
+ * press on an offer is charged at once, and the charge is confirmed in her browser so her bank can
+ * ask her its question there.
+ */
+export interface TheSubscriptionSheIsOn {
+  readonly paymentSecret: string | null;
+}
+
+/**
+ * The setup she finished, named to the service, which creates the yearly subscription.
+ *
+ * It answers what she is on, or nothing at all. A route that answered anything other than a
+ * subscription reads as no subscription, because a page that says she is paying when she is not
+ * leaves her reading a date nothing charges.
  *
  * The offer is carried only by a page that drew the offer to her. The route decides the discount
  * from the offer and its own clock, so this call asks for an offer and never for an amount.
@@ -90,7 +103,7 @@ export async function finishASubscription(
   setupRef: string,
   asks: HowItAsks = fetch,
   offer?: string | null,
-): Promise<boolean> {
+): Promise<TheSubscriptionSheIsOn | null> {
   let answered: Response;
 
   try {
@@ -105,11 +118,11 @@ export async function finishASubscription(
       }),
     });
   } catch {
-    return false;
+    return null;
   }
 
   if (!answered.ok) {
-    return false;
+    return null;
   }
 
   let said: WhatTheCreationSaid;
@@ -117,8 +130,17 @@ export async function finishASubscription(
   try {
     said = (await answered.json()) as WhatTheCreationSaid;
   } catch {
-    return false;
+    return null;
   }
 
-  return said.started === true;
+  if (said.started !== true) {
+    return null;
+  }
+
+  const paymentSecret = said.paymentSecret;
+
+  return {
+    paymentSecret:
+      typeof paymentSecret === 'string' && paymentSecret.length > 0 ? paymentSecret : null,
+  };
 }

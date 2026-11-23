@@ -33,6 +33,10 @@ import { theStoreListingIsOpen } from '@/lib/theStoreListing';
  * Nothing links to it and no sitemap names it. It is written for a woman who was handed the
  * address, so the band at the top and the band at the foot of the site offer no way here, and a
  * search engine is asked to find it and not to keep it.
+ *
+ * It promises no free month, which the home page does. The free month is part of the one price,
+ * and a woman who presses here is charged half of the year at once, so the line beside the press
+ * says what she may do about it afterwards and nothing about a month.
  */
 
 /** The path this page sits at under a language, which its own head names and the sitemap does not. */
@@ -129,8 +133,6 @@ export default async function BlackFridayPage({ params }: { params: Promise<{ la
                 </a>
                 {theStoreListingIsOpen ? <TheStorePress words={words} /> : null}
                 <span className="text-[14px] leading-[20px] text-siteQuietText">
-                  {words.heroPriceLine}
-                  <br />
                   {words.heroCancel}
                 </span>
               </div>

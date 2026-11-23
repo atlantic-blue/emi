@@ -15,7 +15,13 @@ import {
   theBlackFridayOfferIsOpen,
 } from '../lib/theBlackFridayOffer';
 import { theStoreListingIsOpen } from '../lib/theStoreListing';
-import { amountsOfMoneyIn, theAmountOf, theOfferAmount } from '../lib/theOnePrice';
+import {
+  amountsOfMoneyIn,
+  problemsWithWhatTheOfferPromises,
+  theAmountOf,
+  theOfferAmount,
+  theWordForFree,
+} from '../lib/theOnePrice';
 import {
   everyPageTheSiteServes,
   thePagesOfTheSite,
@@ -123,34 +129,67 @@ function theBandsOf(markup: string): string[] {
   return [...markup.matchAll(/<section aria-labelledby="([^"]+)"/g)].map(([, name]) => name ?? '');
 }
 
+/** The home page, as a reader meets it, which is what this page keeps the free month out of. */
+async function theHomePageIn(language: Language): Promise<string> {
+  const HomePage = (await import('../app/[lang]/page')).default;
+  const page = await HomePage({ params: Promise.resolve({ lang: language }) });
+
+  return renderToStaticMarkup(page as never);
+}
+
 /** The bands of the home page, which is the board this page draws. */
 async function theBandsOfTheHomePage(): Promise<string[]> {
-  const HomePage = (await import('../app/[lang]/page')).default;
-  const page = await HomePage({ params: Promise.resolve({ lang: 'en' }) });
-
-  return theBandsOf(renderToStaticMarkup(page as never));
+  return theBandsOf(await theHomePageIn('en'));
 }
 
 describe('the Black Friday page', () => {
   describe('what it says the offer is', () => {
-    it.each(languages)(
-      'draws what it costs, the free month and the end, in %s',
-      async (language) => {
-        const words = wordsIn(language);
-        const page = await thePageWhileItIsOpenIn(language);
+    it.each(languages)('draws what it costs and the end, in %s', async (language) => {
+      const words = wordsIn(language);
+      const page = await thePageWhileItIsOpenIn(language);
 
-        expect(page).toContain(words.blackFridayEyebrow);
-        expect(page).toContain(words.blackFridayHeading);
-        expect(page).toContain(words.blackFridayPrice);
-        expect(page).toContain(words.blackFridayInsteadOf);
-        expect(page).toContain(words.blackFridayEnds);
+      expect(page).toContain(words.blackFridayEyebrow);
+      expect(page).toContain(words.blackFridayHeading);
+      expect(page).toContain(words.blackFridayPrice);
+      expect(page).toContain(words.blackFridayInsteadOf);
+      expect(page).toContain(words.blackFridayEnds);
 
-        // The free month is part of the price it asks for, so the sentence carries both, and
-        // the figure is half of the one the home page sends her to the till with.
-        expect(amountsOfMoneyIn(words.blackFridayPrice).map(theAmountOf)).toEqual([theOfferAmount]);
-        expect(words.blackFridayPrice).toContain(words.price.split(',')[0] ?? '');
-      },
-    );
+      // The figure is half of the one the home page sends her to the till with.
+      expect(amountsOfMoneyIn(words.blackFridayPrice).map(theAmountOf)).toEqual([theOfferAmount]);
+    });
+
+    /**
+     * The free month belongs to the one price. A woman who presses here is charged half of the
+     * year at once, so a month free on this page is a month she never gets.
+     *
+     * The claim is read as the sentences that make it, not as the word anywhere on the page. The
+     * band at the foot says the App Store subscription carries a free month, which it does, and
+     * two sentences below the hero use the word about a calculator and about a space to ask in.
+     * What this page may not do is promise her one, which is what the three sentences below are.
+     */
+    it.each(languages)('promises her no free month, in %s', async (language) => {
+      const words = wordsIn(language);
+      const page = await thePageWhileItIsOpenIn(language);
+      const [free = ''] = words.price.split(',');
+
+      expect(problemsWithWhatTheOfferPromises(language, words)).toEqual([]);
+      expect(theWordForFree[language].some((said) => free.toLocaleLowerCase().includes(said))).toBe(
+        true,
+      );
+      expect(page).not.toContain(words.heroPriceLine);
+      expect(page).not.toContain(words.price);
+      expect(page).not.toContain(words.checkoutPrice);
+    });
+
+    it.each(languages)('is the one page of the two that drops it, in %s', async (language) => {
+      const words = wordsIn(language);
+      const [free = ''] = words.price.split(',');
+
+      // The home page keeps the free month, because the one price keeps it.
+      expect(await theHomePageIn(language)).toContain(words.heroPriceLine);
+      expect(words.price).toContain(free);
+      expect(await thePageWhileItIsOpenIn(language)).not.toContain(words.heroPriceLine);
+    });
 
     it.each(languages)(
       'says half of the price and names the price it halves, in %s',

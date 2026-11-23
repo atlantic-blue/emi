@@ -185,6 +185,9 @@ function fakeStripe(
             : refused(),
         );
       },
+      // The card change confirms a setup and never a charge. A double that answered one would
+      // let a form that charged her here pass.
+      confirmPayment: () => Promise.reject(new Error('a card change confirms no payment')),
     },
   };
 }

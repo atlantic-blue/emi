@@ -312,8 +312,7 @@ export const spanish: SiteWords = {
   checkoutOfferEveryYear: 'Emi, a mitad de precio cada año.',
   checkoutOfferRenews: 'Se renueva cada año a mitad de precio',
   checkoutOfferAmount: '19,50 € al año',
-  checkoutOfferPrice:
-    'Un mes gratis, después 19,50 euros al año, impuesto sobre el valor añadido incluido.',
+  checkoutOfferPrice: '19,50 euros al año, cada año, impuesto sobre el valor añadido incluido.',
   checkoutOfferPay: 'Pagar 19,50 €',
 
   // The subscription card of the account, from boards/Profile.dc.html.
@@ -375,8 +374,7 @@ export const spanish: SiteWords = {
   // La página de Black Friday, que dibuja el tablero de la página principal con la oferta.
   blackFridayEyebrow: 'BLACK FRIDAY · MITAD DE PRECIO CADA AÑO',
   blackFridayHeading: 'Mitad de precio, cada año que te quedes.',
-  blackFridayPrice:
-    'Un mes gratis, después 19,50 euros al año, cada año, impuesto sobre el valor añadido incluido.',
+  blackFridayPrice: '19,50 euros al año, cada año, impuesto sobre el valor añadido incluido.',
   blackFridayInsteadOf:
     'Emi cuesta 39 euros al año. Con esta oferta pagas la mitad, mientras te quedes.',
   blackFridayEnds:
@@ -384,5 +382,5 @@ export const spanish: SiteWords = {
   blackFridayPress: 'Compra Emi a mitad de precio',
   blackFridayTitle: 'Emi: mitad de precio en Black Friday',
   blackFridayDescription:
-    'Un mes gratis, después 19,50 euros al año, cada año. La oferta termina el 1 de diciembre de 2026.',
+    '19,50 euros al año, cada año. La oferta termina el 1 de diciembre de 2026.',
 };
