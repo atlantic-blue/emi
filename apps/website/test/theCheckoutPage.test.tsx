@@ -54,6 +54,9 @@ const ONCE_THE_OFFER_HAS_CLOSED = new Date('2026-11-30T23:00:00.000Z');
 /** Where her browser was told to go, which is the end of this page in a browser. */
 const whereSheWentNext: string[] = [];
 const A_SETUP = 'seti_000000000001';
+
+/** The secret of the invoice a plan with no free month leaves to be paid. Not a real one. */
+const THE_SECRET_OF_THE_FIRST_INVOICE = 'in_000000000001_secret_the-double-wrote-this';
 const A_CLIENT_SECRET = `${A_SETUP}_secret_000000000001`;
 
 /**
@@ -87,6 +90,8 @@ interface WhatStripeDid {
   readonly went: WhereAnElementWent[];
   readonly destroyed: string[];
   readonly confirmed: Record<string, unknown>[];
+  /** Each charge it was asked to confirm, which is what a plan with no free month needs. */
+  readonly paid: Record<string, unknown>[];
   submitted: number;
   /** The listeners each element was given, so a test can answer an event the way Stripe does. */
   readonly listeners: Map<string, (said: Record<string, unknown>) => void>;
@@ -104,6 +109,8 @@ function fakeStripe(
     readonly submitRefuses?: string;
     /** Stripe takes the card and answers no setup, which names nothing to create against. */
     readonly confirmsNoSetup?: boolean;
+    /** Her bank refuses the one charge of a plan with no free month, or it never arrives. */
+    readonly refusesTheCharge?: string;
   } = {},
 ): AFakeStripe {
   const did: WhatStripeDid = {
@@ -111,6 +118,7 @@ function fakeStripe(
     went: [],
     destroyed: [],
     confirmed: [],
+    paid: [],
     submitted: 0,
     listeners: new Map(),
   };
@@ -156,6 +164,15 @@ function fakeStripe(
           options.confirmsNoSetup === true ? {} : { setupIntent: { id: A_SETUP } },
         );
       },
+      confirmPayment: (asked) => {
+        did.paid.push(asked);
+
+        return Promise.resolve(
+          options.refusesTheCharge === undefined
+            ? {}
+            : { error: { message: options.refusesTheCharge } },
+        );
+      },
     },
   };
 }
@@ -176,6 +193,8 @@ interface HowTheApiBehaves {
   readonly refusesToCreate?: boolean;
   /** The second call is taken and the route answers that nothing was created. */
   readonly createsNothing?: boolean;
+  /** The route creates one on the offer and names no charge to confirm, which buys her nothing. */
+  readonly answersNoPaymentSecret?: boolean;
 }
 
 /** The api, answering the press with the secret of a setup and the put with the subscription. */
@@ -198,10 +217,20 @@ function anApi(behaves: HowTheApiBehaves): {
     });
 
     if (method === 'PUT') {
+      // The route answers the secret of the first invoice for a plan with no free month, which is
+      // every plan bought on an offer, and nothing of the kind for the one price.
+      const onAnOffer = (body ?? '').includes(THE_FIELD_AN_OFFER_TRAVELS_IN);
+
       return Promise.resolve({
         ok: behaves.refusesToCreate !== true,
         status: behaves.refusesToCreate === true ? 502 : 200,
-        json: () => Promise.resolve({ started: behaves.createsNothing !== true }),
+        json: () =>
+          Promise.resolve({
+            started: behaves.createsNothing !== true,
+            ...(onAnOffer && behaves.answersNoPaymentSecret !== true
+              ? { paymentSecret: THE_SECRET_OF_THE_FIRST_INVOICE }
+              : {}),
+          }),
       } as Response);
     }
 
@@ -787,13 +816,29 @@ describe('the page she buys Emi on', () => {
       expect(said).not.toContain(words.checkoutPay);
     });
 
-    it('reads the free month in the halved sentence, which is the month she pays nothing', async () => {
+    /**
+     * The free month belongs to the one price. A woman who arrives on the offer is charged half of
+     * the year the moment she presses, so the halved sentence promises her no month.
+     */
+    it('reads no free month in the halved sentence, because she pays at once', async () => {
       const page = await theCheckoutPageWhileSheHolds(herToken(), fakeStripe(), {
         search: onTheOffer,
         now: WHILE_THE_OFFER_IS_OPEN,
       });
+      const said = page.textContent ?? '';
 
-      expect(words.checkoutOfferPrice).toContain('One month free');
+      expect(words.checkoutOfferPrice).not.toContain('One month free');
+      expect(said).toContain(words.checkoutOfferPrice);
+      expect(said).not.toContain('One month free');
+      expect(said).not.toContain(words.checkoutPrice);
+    });
+
+    it('still reads the free month at the one price, which keeps it', async () => {
+      const page = await theCheckoutPageWhileSheHolds(herToken(), fakeStripe(), {
+        now: WHILE_THE_OFFER_IS_OPEN,
+      });
+
+      expect(words.checkoutPrice).toContain('One month free');
       expect(page.textContent ?? '').toContain('One month free');
     });
 
@@ -895,6 +940,80 @@ describe('the page she buys Emi on', () => {
         await form.press(wordsIn('en').checkoutOfferPay);
 
         expect(whereSheWentNext).toEqual(['/en/account/']);
+      });
+
+      /**
+       * The one charge of the offer. Her card is on the customer by the time the create is made,
+       * so the only thing left is the charge itself and the question her bank may ask about it,
+       * which Stripe asks in front of her rather than against a payment made while she is gone.
+       */
+      it('confirms the charge the route answered with, and then leaves her on her account', async () => {
+        const form = await aFormOnThePage({ now: WHILE_THE_OFFER_IS_OPEN, search: onTheOffer });
+
+        await form.press(wordsIn('en').checkoutOfferPay);
+
+        expect(form.did.paid).toHaveLength(1);
+        expect(form.did.paid[0]?.clientSecret).toBe(THE_SECRET_OF_THE_FIRST_INVOICE);
+        expect(whereSheWentNext).toEqual(['/en/account/']);
+      });
+
+      it('confirms a charge and not a second setup, because the card is already hers', async () => {
+        const form = await aFormOnThePage({ now: WHILE_THE_OFFER_IS_OPEN, search: onTheOffer });
+
+        await form.press(wordsIn('en').checkoutOfferPay);
+
+        // One setup, which collected the card, and one charge, which took the money.
+        expect(form.did.confirmed).toHaveLength(1);
+        expect(form.did.confirmed[0]?.clientSecret).toBe(A_CLIENT_SECRET);
+        expect(form.did.paid[0]?.elements).toBeUndefined();
+      });
+
+      it('confirms no charge at the one price, because a free month charges nothing', async () => {
+        const form = await aFormOnThePage({ now: WHILE_THE_OFFER_IS_OPEN });
+
+        await form.press(thePressThatPays);
+
+        expect(form.did.confirmed).toHaveLength(1);
+        expect(form.did.paid).toEqual([]);
+        expect(whereSheWentNext).toEqual(['/en/account/']);
+      });
+
+      it('confirms no charge once the offer has closed, because the free month is back', async () => {
+        const form = await aFormOnThePage({ now: ONCE_THE_OFFER_HAS_CLOSED, search: onTheOffer });
+
+        await form.press(thePressThatPays);
+
+        expect(form.did.paid).toEqual([]);
+        expect(whereSheWentNext).toEqual(['/en/account/']);
+      });
+
+      it('leaves her on the form, told what her bank said, when the charge is refused', async () => {
+        const refused = 'Your bank refused that payment.';
+        const form = await aFormOnThePage({
+          now: WHILE_THE_OFFER_IS_OPEN,
+          search: onTheOffer,
+          stripe: fakeStripe({ refusesTheCharge: refused }),
+        });
+
+        await form.press(wordsIn('en').checkoutOfferPay);
+
+        expect(form.text()).toContain(refused);
+        expect(whereSheWentNext).toEqual([]);
+      });
+
+      it('leaves her on the form when the route names no charge to confirm', async () => {
+        const form = await aFormOnThePage({
+          api: { answersNoPaymentSecret: true },
+          now: WHILE_THE_OFFER_IS_OPEN,
+          search: onTheOffer,
+        });
+
+        await form.press(wordsIn('en').checkoutOfferPay);
+
+        // Nothing was confirmed, so the subscription Stripe holds is unpaid and she is told so
+        // rather than being sent to an account page that says she is paying.
+        expect(form.did.paid).toEqual([]);
+        expect(whereSheWentNext).toEqual([]);
       });
     });
 
