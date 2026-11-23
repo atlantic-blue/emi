@@ -6,9 +6,11 @@ import { createRoot } from 'react-dom/client';
 
 import CheckoutPage from '../app/[lang]/checkout/page';
 import { type Language, languages, wordsIn } from '../app/words';
-import { ThePaymentForm } from '../components/thePaymentForm';
+import { ThePaymentForm, WHERE_THE_TERMS_ARE } from '../components/thePaymentForm';
 import { TheSignedInLine } from '../components/theSignedInLine';
 import { THE_SESSION_ENTRY } from '../lib/theSessionSheHolds';
+import { theTermsPageIsBuilt } from '../lib/theTermsPage';
+import { everyPageTheSiteServes } from '../tools/theFilesACrawlerReads';
 import type {
   AnElementOfStripe,
   TheElementsOfTheForm,
@@ -288,6 +290,8 @@ async function aFormOnThePage(
     readonly search?: string;
     /** When she is reading it, which is what says whether an offer she arrived with is open. */
     readonly now?: Date;
+    /** Whether the site serves a terms page, which is what the terms line reads. */
+    readonly theTermsHaveAPage?: boolean;
   } = {},
 ): Promise<ADrivenForm> {
   const language = options.language ?? 'en';
@@ -338,6 +342,7 @@ async function aFormOnThePage(
         now={options.now}
         publishableKey={options.publishableKey ?? A_KEY}
         stripeArrives={() => theArrival.then(() => stripe.stripe)}
+        theTermsHaveAPage={options.theTermsHaveAPage}
         words={wordsIn(language)}
       />,
     );
@@ -625,6 +630,44 @@ describe('the form she pays on', () => {
       await form.answerTheWalletEvent({ availablePaymentMethods: { applePay: true } });
 
       expect(form.text()).toContain(words.checkoutOrPayByCard);
+    });
+  });
+
+  describe('the terms she agrees to by paying', () => {
+    it('says the line the board says, with the terms named inside the sentence', async () => {
+      const form = await aFormOnThePage();
+
+      expect(form.text()).toContain(
+        words.checkoutTerms.replace('{terms}', words.checkoutTermsLink),
+      );
+    });
+
+    it('offers her no press at all while the site serves no terms page', async () => {
+      const form = await aFormOnThePage();
+
+      expect(theTermsPageIsBuilt).toBe(false);
+      expect(
+        [...form.holder.querySelectorAll('a[href]')].map((press) => press.getAttribute('href')),
+      ).toEqual([]);
+    });
+
+    it('presses to the terms once the site serves them', async () => {
+      const form = await aFormOnThePage({ theTermsHaveAPage: true });
+
+      expect(
+        [...form.holder.querySelectorAll('a[href]')].map((press) => ({
+          address: press.getAttribute('href'),
+          called: press.textContent,
+        })),
+      ).toEqual([{ address: `/en/${WHERE_THE_TERMS_ARE}`, called: words.checkoutTermsLink }]);
+    });
+
+    it('is held back because the site answers 404 for that address', () => {
+      // The one list that says which addresses the site answers. A press to a page nobody has
+      // built answers 404 with the Emi page, at the moment she decides to pay, so the day the
+      // page joins this list is the day `theTermsPageIsBuilt` turns true and this case says so.
+      expect(everyPageTheSiteServes().map((page) => page.path)).not.toContain(WHERE_THE_TERMS_ARE);
+      expect(theTermsPageIsBuilt).toBe(false);
     });
   });
 

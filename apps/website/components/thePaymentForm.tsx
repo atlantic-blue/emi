@@ -6,6 +6,7 @@ import type { Language, SiteWords } from '@/app/words';
 import { SITE_ORIGIN } from '@/lib/addresses';
 import { type AnOffer, theOfferOnThePage } from '@/lib/theOfferSheArrivedWith';
 import { theSessionHeld } from '@/lib/theSessionSheHolds';
+import { theTermsPageIsBuilt } from '@/lib/theTermsPage';
 import {
   type HowStripeArrives,
   type TheElementsOfTheForm,
@@ -44,7 +45,10 @@ import { goTo } from '@/lib/whereSheGoesNext';
 /** Where a finished setup leaves her, which is the account page in the language she is reading. */
 export const WHERE_A_PAYMENT_LANDS = 'account/';
 
-/** Where the terms sit, under the language she is reading. That page is built by its own step. */
+/**
+ * Where the terms sit, under the language she is reading. Nobody has written that page, so the
+ * line below names the terms without a press until `theTermsPageIsBuilt` says the page is there.
+ */
 export const WHERE_THE_TERMS_ARE = 'terms/';
 
 /** What the form is driving, so a test runs the real component against doubles of both. */
@@ -57,6 +61,8 @@ export interface WhatThePaymentFormNeeds {
   readonly asks?: HowItAsks;
   /** Taken as an argument so a case can press on either side of the end of the offer. */
   readonly now?: Date;
+  /** Taken as an argument so a case can draw the terms line with its page and without it. */
+  readonly theTermsHaveAPage?: boolean;
 }
 
 const theRoute =
@@ -69,6 +75,7 @@ export function ThePaymentForm({
   stripeArrives: arrives = stripeArrives,
   asks,
   now,
+  theTermsHaveAPage = theTermsPageIsBuilt,
 }: WhatThePaymentFormNeeds) {
   // Read once, when the form draws, which is the same read the plan above it makes. The press and
   // the words on it then agree with the amount she was shown, whatever the clock does afterwards.
@@ -227,9 +234,13 @@ export function ThePaymentForm({
         <div ref={drawsTheCardForm} />
         <p className="text-body-sm text-siteQuietText">
           {terms[0]}
-          <a className="text-siteAccent" href={`/${language}/${WHERE_THE_TERMS_ARE}`}>
-            {words.checkoutTermsLink}
-          </a>
+          {theTermsHaveAPage ? (
+            <a className="text-siteAccent" href={`/${language}/${WHERE_THE_TERMS_ARE}`}>
+              {words.checkoutTermsLink}
+            </a>
+          ) : (
+            words.checkoutTermsLink
+          )}
           {terms[1]}
         </p>
         {whatWentWrong === null ? null : (
