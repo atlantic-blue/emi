@@ -1,8 +1,8 @@
-# Payments: a card and a wallet on myemi.app, and Telegram Stars later
+# Payments: a card and a wallet on myemi.app
 
-Emi has one price and three ways to pay it. The store route is not built: contracts PAY-1 to PAY-4
-describe it and `docs/design/app-store-payments.md` designs it. This document designs the other
-two: a payment on our own page through Stripe, and Telegram Stars in the Emi bot.
+Emi has three plans in the app, sold through the App Store, and one yearly plan on myemi.app, sold
+through Stripe. The store route is not built: contracts PAY-1 to PAY-4 describe it and
+`docs/design/app-store-payments.md` designs it. This document designs the route on our own page.
 
 Two sentences hold the design up.
 
@@ -40,8 +40,10 @@ The operator made each one. Do not argue with them here.
    reads is the figure she pays, in every country.
 3. Atlantic Blue Solutions Limited is the seller of record and handles the tax itself. The operator
    set that on 4 November 2026.
-4. The Stripe route is built first. The Telegram Stars route stays in this document as a later
-   route, and every step of it comes after the Stripe steps.
+4. Telegram Stars is dropped. The operator decided that on 23 November 2026, and this document no
+   longer designs it. Nothing of it was built. The Stripe route is the only route this document
+   carries. Signing in with Telegram is a different thing and it stays, because it is built and
+   `docs/design/accounts.md` holds it.
 5. She pays with Apple Pay, Google Pay or a card, on our own page. It is not Stripe's hosted
    Checkout page. Change card, receipts and cancel are on our account page too.
 6. The account is required to pay. She signs in on myemi.app first. Sign in with Apple, Google,
@@ -62,12 +64,13 @@ Two approved boards carry the screens.
 
 `docs/design/website/checkout/boards/Checkout.dc.html` is the page she buys on. The operator
 approved this drawing of it on 16 November 2026. It shows a plan card and two choices: "Apple Pay,
-Google Pay or card" on this site, and "Telegram Stars" in the Emi bot. Section 3 reads the first
-choice row by row. Its words carry the yearly price.
+Google Pay or card" on this site, and "Telegram Stars" in the Emi bot. The second choice is a row
+the drawing still carries and the page does not build, because decision 4 dropped that route.
+Section 3 reads the first choice row by row. Its words carry the yearly price.
 
 `docs/design/website/sign-in/boards/Profile.dc.html` is her account. Its subscription card reads
 "Emi, yearly", the yearly price, a renewal date, "Active", "Paid with Card, on this site", and
-three rows: Receipts, Change card and Cancel renewal. Question 5 of section 8 is that board.
+three rows: Receipts, Change card and Cancel renewal. Question 4 of section 7 is that board.
 
 ## What I read, and when
 
@@ -142,24 +145,6 @@ A domain is registered with one call to `/v1/payment_method_domains` using the l
 with one press in the dashboard. Every host is registered on its own, "including registering
 top-level domains and subdomains". The page names no file for the site to serve.
 
-Telegram, payments for digital goods: https://core.telegram.org/bots/payments-stars
-It says: "Remember to specify `XTR` in the `currency` field, since all sales of digital goods and
-services are carried out exclusively in Telegram Stars." It says the bot must answer a pre checkout
-query within 10 seconds or the transaction is cancelled. It names `refundStarPayment` as the way to
-refund.
-
-Telegram, the Bot api reference: https://core.telegram.org/bots/api
-`createInvoiceLink` takes `subscription_period`, and the reference says: "Currently, it must always
-be 2592000 (30 days) if specified", and "Subscription price must no exceed 10000 Telegram Stars".
-`prices` "Must contain exactly one item for payments in Telegram Stars". `SuccessfulPayment`
-carries `is_recurring`, `is_first_recurring`, `subscription_expiration_date` and
-`telegram_payment_charge_id`. `editUserStarSubscription` cancels or re-enables the extension of a
-Stars subscription.
-
-Telegram, bot star subscriptions: https://core.telegram.org/api/subscriptions
-It says the only allowed period is 30 days. A woman cancels her own subscription from her Telegram
-client. The page names no trial and no discount.
-
 Apple, App Review Guidelines: https://developer.apple.com/app-store/review/guidelines/
 Guideline 3.1.1 says: "In all other storefronts, except for the United States storefront, where
 this prohibition does not apply, apps and their metadata may not include buttons, external links,
@@ -215,17 +200,18 @@ one day of anybody's history, and a test reads that policy rather than trusting 
 It is the one field every reader wants. The free month belongs to the one price of 39 euros a year,
 so a subscription bought on an offer is charged at once.
 
-`route` is a string. It is `card` or `stars`. It is what the account page says she paid with.
+`route` is a string. It is `card`. It is what the account page says she paid with. The built type
+also allows `stars`, which no route writes now, and the last section names taking it out.
 
 `state` is a string. It is `active`, `cancelling`, `lapsed` or `refunded`. `cancelling` means she
 stopped the renewal and the year she paid for still runs.
 
-`payerRef` is a string, the Stripe customer identifier. It is absent on the Stars route.
+`payerRef` is a string, the Stripe customer identifier.
 
-`subscriptionRef` is a string, the Stripe subscription identifier. It is absent on the Stars route.
+`subscriptionRef` is a string, the Stripe subscription identifier.
 
-`chargeRef` is a string, the Telegram payment charge identifier of the last payment. It is absent
-on the card route. Section 4 says what it is for.
+`chargeRef` is a string in the built type and nothing writes it. It belonged to the route decision 4
+dropped, and the last section names taking it out.
 
 `eventAt` is a number, the seconds of the event that last wrote this item. Every write is
 conditional on a newer `eventAt`, because Stripe does not promise an order of delivery. Without it,
@@ -233,8 +219,8 @@ a late `customer.subscription.updated` can put an old date back over a new one.
 
 `firstSeenAt` and `updatedAt` are strings, instants.
 
-The item holds no name, no address, no card number, no country, no Telegram user identifier, no
-account identifier and no record identifier. A reader who holds the table learns that a digest paid
+The item holds no name, no address, no card number, no country, no account identifier and no record
+identifier. A reader who holds the table learns that a digest paid
 until a date. The digest names no person and opens nothing.
 
 ### How a phone gets from an account to a payment
@@ -258,8 +244,7 @@ A delete does not touch the payment. Contract KEEP-3 carries that now: the local
 keychain items and her account go, and the payment record stays.
 
 The item holds afterwards exactly what it held before. The payer digest in its key, the paid until
-instant, the route, the state, the reference into Stripe or the Telegram charge identifier, and the
-three instants. It never held an account identifier or a record identifier, so a delete takes
+instant, the route, the state, the two references into Stripe, and the three instants. It never held an account identifier or a record identifier, so a delete takes
 nothing out of it and leaves nothing of her records in it. A reader who holds the table after a
 delete reads that a digest paid until a date.
 
@@ -295,7 +280,7 @@ each `IDY#` item before removing it, reads `subscriptionRef` off the `PAY#` item
 call. So the delete needs the Stripe secret key, which it does not hold today, and step 10 of the
 path is that change.
 
-The delete screen says all of this before she presses it. Board question 8 is that screen.
+The delete screen says all of this before she presses it. Board question 6 is that screen.
 
 ---
 
@@ -305,49 +290,42 @@ Status: designed
 
 ### The payer digest
 
-A web payment is made by a user of the pool. A Stars payment is made by a Telegram user, and no
-user of the pool has to exist yet, because the board tells her to pay in the bot first and sign in
-afterwards.
+A payment on the site is made by a user of the pool. So the key could be the pool subject, and it
+is not, for one reason: a delete removes her user from the pool, and a new sign in then makes a new
+subject. A key built on the subject would be lost with it.
 
-So the key cannot be the pool subject. The pool makes a subject when it makes a user, and the bot
-cannot make one.
-
-The key is the pool user name, which both sides can work out alone.
+The key is the pool user name. Three of the four ways in give the same user name back after a
+delete, which is what the last part of section 1 is about.
 
 It is read from the identity token, in the `cognito:username` claim. The site reads it to pay, and
-the identity token reader of the vault reads it so the link can write it. The bot works the same
-name out from the Telegram subject. `services/vault/src/telegram/userName.ts` already builds that
-name today: it is `tg_` and 26 characters of the keyed hash of the subject under the salt in the
-parameter store. The bot reads the same salt and gets the same name, whether or not the pool holds
-a user by it.
+the identity token reader of the vault reads it so the link can write it.
 
 The payer digest is then 26 characters of Crockford base 32, cut from the first 16 bytes of the
 SHA-256 of the pool identifier, a newline, and the pool user name. The helper that makes an account
 identifier makes this one, the same as the identity digest, the transaction digest and the answer
 digest. One shape, one implementation.
 
-The raw user name is written nowhere. A reader who already knows which Telegram account to test for
-still needs the salt, and the salt is a secure string nobody has ever read.
+The raw user name is written nowhere. The user name of a Telegram sign in is a keyed hash of her
+Telegram subject, so a reader who already knows which account to test for still needs the salt, and
+the salt is a secure string nobody has ever read.
 
-### She pays with Stars and signs in with Apple
+### She pays one way and comes back another way
 
 This case is a refusal, and it must read as one.
 
-Each way she signs in is its own user of the pool, so each one has its own payer digest. A Stars
-payment names the Telegram digest. Sign in with Apple names the Apple digest. Her account holds one
-link for each way she has linked, and the entitlement read walks those links. The Apple way finds
-no payment, because none was made against it.
+Each way she signs in is its own user of the pool, so each one has its own payer digest. A payment
+names the digest of the way she was signed in when she paid. Her account holds one link for each way
+she has linked, and the entitlement read walks those links. A way she never paid with finds no
+payment.
 
-So she sees no subscription, and the money is not lost. The fix is to link Telegram to the same
-account, in Emi on her phone, which the board already tells her to do: "Then log in with Telegram
-on your iPhone, and Emi unlocks by itself." The site cannot link a second way in: the link needs a
-request signed by a device key, and only the phone holds one.
+So she sees no subscription, and the money is not lost. The fix is to sign in again the way that
+paid, or to link both ways to one account.
 
 Linking a second way in to one account is https://github.com/atlantic-blue/emi/issues/558. It is
 not built. Until it is, one account reaches one payment through the one way in that paid.
 
 The line she reads on the account page, when she is signed in a way that paid for nothing, is in
-section 7.
+section 6.
 
 ---
 
@@ -430,7 +408,7 @@ builds the page names it.
 
 Stripe limits Apple Pay for a digital subscription sold inside an iOS application. myemi.app is a
 web site in a browser and the Emi application sells nothing through this page. The rule that binds
-the application is in section 6, not here.
+the application is in section 5, not here.
 
 ### The first payment, with a free month
 
@@ -553,116 +531,11 @@ back on, which is the same call with false.
 
 ---
 
-## 4. The Telegram Stars route, which comes later
+## 4. Where each secret lives
 
 Status: designed
 
-This route is designed and it is not next. The operator put every step of it after the Stripe
-steps on 16 November 2026. The sections below stand so that the Stripe work does not design itself
-into a corner.
-
-### A year does not fit a Stars subscription
-
-The price is a year. A Stars subscription renews only every 30 days: the reference says
-`subscription_period` "must always be 2592000 (30 days) if specified". So a Stars subscription
-cannot sell a year.
-
-Two shapes answer that, and neither is chosen. An invoice with no `subscription_period` is a single
-payment, so it can sell a year and renew nothing, and she buys it again each year. A Stars
-subscription at a twelfth of the year renews every 30 days, and twelve of those is 360 days rather
-than a year.
-
-The operator decides the shape and the number of Stars when the Stars steps start. Nothing is built
-on it now, and section 9 says those steps wait.
-
-### The invoice
-
-The bot sells one thing. `createInvoiceLink` is called with `currency` set to `XTR`, exactly one
-price component, and a `payload` that carries the payer digest and nothing else.
-`subscription_period` is set only if the operator chooses the renewing shape above.
-
-The reference is strict about two of those. Digital goods are sold in Stars only. `prices` must
-hold exactly one item for a Stars payment.
-
-The payload is at most 128 bytes and the digest is 26 characters, so the whole payer digest fits
-and is read straight back on the payment.
-
-### The payment, and each renewal
-
-```mermaid
-sequenceDiagram
-  participant She as She, in Telegram
-  participant Bot as The Emi bot
-  participant TG as Telegram
-  participant Table as The vault table
-  She->>Bot: opens the bot from the Buy Emi page
-  Bot->>TG: createInvoiceLink, XTR, one price
-  TG-->>Bot: an invoice link
-  Bot-->>She: the invoice
-  She->>TG: pays in Stars
-  TG->>Bot: pre checkout query
-  Bot-->>TG: answerPreCheckoutQuery, ok, within 10 seconds
-  TG->>Bot: successful payment, is first recurring
-  Bot->>Table: write paid until, from the expiration date
-  TG->>Bot: on a renewing invoice, a later successful payment
-  Bot->>Table: move paid until forward
-```
-
-A pre checkout query must be answered within 10 seconds or Telegram cancels the transaction. The
-bot answers it before it writes anything, because the write is not what the clock is waiting for.
-
-The payment itself arrives as a message carrying `successful_payment`. The bot reads four fields.
-`invoice_payload` gives the payer digest. `subscription_expiration_date` gives the instant that
-becomes `paidUntil` on a renewing invoice. `is_first_recurring` says this is the first period.
-`telegram_payment_charge_id` becomes `chargeRef`.
-
-On a single payment there is no expiration date, so the bot works `paidUntil` out from the instant
-of the payment and the length the operator chose.
-
-The bot writes `route` as `stars` and `state` as `active`. It writes no Telegram user identifier at
-all.
-
-### How she cancels, and what a refund costs
-
-She cancels in Telegram. That is where Telegram puts the control, and a Stars subscription is
-listed in her own client beside every other one. The account page sends her there and does not
-pretend to do it itself.
-
-The bot can also cancel the extension with `editUserStarSubscription`, passing `is_canceled` as
-true. That call needs her Telegram user identifier and the charge identifier. The bot has her
-identifier only inside a chat she wrote in, and the charge identifier is on the item. So the bot
-offers cancel as a command in the chat, where both values are in hand, and the table never holds
-the identifier.
-
-A refund is `refundStarPayment`, with the same two values, and the same rule: the operator answers
-it in the chat she asked in. The entitlement item then moves to `refunded` and `paidUntil` is set
-to the instant of the refund.
-
-### What Stars cannot do
-
-Each one is a fact with a source, not an opinion.
-
-There is no period but 30 days. The section above is the whole consequence.
-
-There is no free trial. `createInvoiceLink` has no trial parameter, and the first payment happens
-when she confirms. The Telegram page on bot star subscriptions names no trial and no discount. So
-the free month on this route must come from Emi itself, written as a `paidUntil` before any
-payment, which means a person with many Telegram accounts gets many free months.
-
-There is no price above 10000 Stars on a subscription. The reference says "Subscription price must
-no exceed 10000 Telegram Stars".
-
-The money does not arrive as money. Issue 427 records the terms: each payment is held for up to 21
-days, the smallest withdrawal is 1000 Stars, and the payout comes through Fragment as Toncoin,
-which then has to be sold. None of that is in this repository and none of it is a code decision.
-
----
-
-## 5. Where each secret lives
-
-Status: designed
-
-Three values are secret. Each one lives in the parameter store in eu-central-1, as a secure string,
+Two values are secret. Each one lives in the parameter store in eu-central-1, as a secure string,
 written by hand by the operator. No value is in this repository, in a manifest, in a variable of
 the pipeline or in a comment.
 
@@ -672,14 +545,10 @@ function read it. The domain registration of section 3 uses the same key, by han
 `/emi/payments/stripe/webhook-secret` is the signing secret of the webhook endpoint. The webhook
 function reads it, and refuses a body it cannot verify.
 
-`/emi/accounts/telegram/bot-token` is the bot token. The Telegram sign in names this parameter and
-reads nothing from it. The bot function reads it. It is the one credential that can act as the bot,
-so no other function is given it.
-
 The publishable key of Stripe is not a secret and sits in the site, which is how Stripe ships it.
 
 Each function reads its own parameter and no other. The role names the parameter by its whole path,
-the same way the Telegram sign in names its three.
+the same way the sign in names the three it reads.
 
 ### The trap in the deploy log
 
@@ -695,22 +564,21 @@ key. The environment holds the name of a parameter, which is public by design.
 
 ---
 
-## 6. What the application reads, and the App Store rule
+## 5. What the application reads, and the App Store rule
 
 Status: designed
 
 The application asks the api one question on launch and reads one instant back. It never learns
-which route paid. The wallet, the card, Stars and the store all answer the same shape, so no screen
-of the application can name a route it is not allowed to name.
+which route paid. The wallet, the card and the store all answer the same shape, so no screen of the
+application can name a route it is not allowed to name.
 
 Guideline 3.1.1 says, for every storefront but the United States one, that an application and its
 metadata "may not include buttons, external links, or other calls to action that direct customers
 to purchasing mechanisms other than in-app purchase".
 
-So the application names no price of the website, no price in Stars, and no address of myemi.app on
-any screen that sells anything. It carries no button to the site and no button to the bot. The
-words that tell a woman these routes exist live outside the application: the website, the Emi
-Community, and a message the operator sends.
+So the application names no price of the website and no address of myemi.app on any screen that
+sells anything. It carries no button to the site. The words that tell a woman the route exists live
+outside the application: the website, the Emi Community, and a message the operator sends.
 
 Guideline 3.1.3(b) is what makes the unlock allowed. An application that works across platforms may
 let her reach what she bought on a web site, "provided those items are also available as in-app
@@ -724,7 +592,7 @@ is enforced by a run and not by a memory.
 
 ---
 
-## 7. Every refusal she can meet
+## 6. Every refusal she can meet
 
 Status: designed
 
@@ -743,14 +611,14 @@ Action: Use a card. Line: "Emi charges once a year, and this wallet cannot be ch
 **The payment went through and the page does not know yet.** Title: Thank you. Action: Refresh.
 Line: "Your payment is taken. Your account updates in a moment."
 
-**She paid in Stars and she is signed in another way.** Title: No subscription here. Action: Sign
-in with Telegram. Line: "A payment in Stars shows up when you sign in with Telegram."
+**She paid signed in one way and came back another way.** Title: No subscription here. Action: Sign
+in another way. Line: "Your subscription shows up when you sign in the way you paid."
 
 **She deletes her account while the subscription runs.** Title: Your year is already paid.
 Actions: Delete everything, Keep my account. Line: "Emi stops the renewal, and the rest of this
 year is not refunded."
 
-**A Stars payment is refunded.** Title: Refunded. Action: Buy Emi. Line: "Your Stars are back.
+**Her payment is refunded.** Title: Refunded. Action: Buy Emi. Line: "Your money is back.
 Everything you wrote stays, and new entries stop."
 
 **The year ran out.** Title: Emi needs renewing. Action: Buy Emi. Line: "Everything you wrote
@@ -761,7 +629,7 @@ cases. Reading, exporting and deleting stay open forever. Only new writes stop.
 
 ---
 
-## 8. The boards that are missing
+## 7. The boards that are missing
 
 Status: designed
 
@@ -774,18 +642,16 @@ has no board.
    payment form stay open?
 3. What does the account page show for a woman who has not paid? The approved board draws an active
    subscription and nothing else.
-4. What does the account page show for a woman who paid in Stars? The approved card reads "Paid
-   with Card, on this site", and the three rows under it are Receipts, Change card and Cancel
-   renewal. None of the three is possible on the Stars route.
-5. The approved account board names a card rather than a wallet. What does that card read now?
-6. What does the account page show after she cancels, while the year she paid for still runs?
-7. What does the Emi bot say first, and what does the Open the Emi bot button point at?
-8. What does the delete screen say to a woman whose subscription is still running? The delete
+4. The approved account board names a card rather than a wallet. What does that card read now?
+5. What does the account page show after she cancels, while the year she paid for still runs?
+6. What does the delete screen say to a woman whose subscription is still running? The delete
    stops the renewal and refunds nothing, so she has to read that before she presses it.
+7. The approved checkout board draws a second choice, Telegram Stars in the Emi bot. Decision 4
+   dropped that route. Does the drawing lose that row?
 
 ---
 
-## 9. The path
+## 8. The path
 
 Status: designed
 
@@ -793,13 +659,14 @@ Each step is one pull request with one intention. Each one ships its tests in th
 infrastructure is applied from a machine: every step that adds a resource adds its Terraform, and
 the merge deploys it.
 
-Steps 1 to 4 are the shared half. Steps 5 to 11 are the Stripe route, which is built first. Steps
-12 to 14 are Telegram Stars, and they come after all of the above.
+Steps 1 to 4 are the shared half. Steps 5 to 11 are the Stripe route. There are eleven steps,
+because decision 4 dropped the three that sold in Telegram Stars.
 
 **1. The contracts for the money.**
 Files: `docs/contracts.md`, `docs/features.md`.
 Behaviour: PAY-5 names the entitlement record and the one question it answers. PAY-6 names the
-Stripe route. PAY-7 names the Stars route. PAY-8 names the entitlement read.
+Stripe route. PAY-8 names the entitlement read. PAY-7 named the route decision 4 dropped, and the
+last section names taking it out.
 Proof: the documents gate holds the two files to each other, so a contract in one and not the other
 fails the run.
 Depends on: nothing.
@@ -808,8 +675,8 @@ Depends on: nothing.
 Files: `packages/crypto/src/`, and the test beside it.
 Behaviour: one function turns a pool identifier and a pool user name into 26 characters. It is the
 helper that already makes an account identifier.
-Proof: the digest of a known pair is a known value, and the same Telegram subject gives the same
-digest through the pool user name as through the bot.
+Proof: the digest of a known pair is a known value, and the same pool user name gives the same
+digest every time.
 Depends on: nothing.
 
 **3. The entitlement store.**
@@ -839,9 +706,9 @@ Depends on: step 3.
 
 **6. The payment form on the Buy Emi page.**
 Files: `apps/website/app/[lang]/checkout/`, `apps/website/components/`, the three word catalogues.
-Behaviour: the page of the approved board. The Express Checkout Element draws the wallets the
-device has, and the Payment Element draws the card form under the line. The Stars choice is drawn
-and says it is not ready yet.
+Behaviour: the page of the approved board, with the card route alone. The Express Checkout Element
+draws the wallets the device has, and the Payment Element draws the card form under the line. The
+second choice of the drawing is left out, because decision 4 dropped that route.
 Proof: a test drives the page, confirms the setup through a double, and reads the state the page
 leaves her in. A second test answers the wallet event with no wallet, and reads that neither button
 and no line that reads "or pay by card" is drawn. The one price gate holds the words.
@@ -861,7 +728,7 @@ Files: `apps/website/app/[lang]/account/`, `apps/website/components/`, the three
 Behaviour: the card of the approved board, with the date, the state and the route.
 Proof: a test renders each state and reads the words. A woman with no payment sees the board of
 question 3.
-Depends on: step 7, and board questions 3, 5, 6 and 8.
+Depends on: step 7, and board questions 3, 4, 5 and 6.
 
 **9. Change card, receipts and cancel.**
 Files: `services/vault/src/payments/`, `apps/website/components/`.
@@ -888,52 +755,29 @@ furthest date.
 Proof: a test gives the store nothing and the api a date, and the write stays open.
 Depends on: step 4.
 
-**12. The Emi bot, and the invoice.**
-Files: `services/bot/`, `infra/api.tf`, `infra/lambda.tf`.
-Behaviour: the bot answers one command with an invoice link. The token is read from the parameter
-store.
-Proof: the call carries `XTR` and one price, and the payload carries the digest.
-Depends on: step 11, the shape and the price of section 4, the sanctions answer of question 1, and
-board question 7.
-
-**13. The Stars payment and each renewal.**
-Files: `services/bot/`.
-Behaviour: the pre checkout query is answered first. A successful payment writes the item. A later
-payment moves the date.
-Proof: a first payment and a later one are fed in, and the item is read after each one. An answer
-to the pre checkout query that takes longer than the limit fails the test.
-Depends on: step 12.
-
-**14. The account page for a Stars payer.**
-Files: `apps/website/components/`, the three word catalogues.
-Behaviour: the card says Stars, and sends her to Telegram to cancel.
-Proof: a test reads that no Change card row and no Cancel renewal row is drawn.
-Depends on: step 13, and board question 4.
-
 ---
 
-## 10. What the operator must answer before the build
+## 9. What the operator must answer before the build
 
 Status: designed
 
-One question is open.
+No question blocks a step.
 
-1. **The sanctions check.** Issue 427 asks whether a company in the United Kingdom may take a
-   payment from a person in Russia. The Stars route exists for that case. Nothing of it is built
-   until the answer is in writing. Blocks steps 12 to 14, and nothing before them.
+Three were open and the operator answered them on 16 November 2026. Each one is a decision now, in
+"The decisions this design starts from". The Stripe account is verified, so nothing waits on it. The
+terms page has a board and its own pull request. A delete does not delete payments.
 
-Three more were open and the operator answered them on 16 November 2026. Each one is a decision
-now, in "The decisions this design starts from". The Stripe account is verified, so nothing waits
-on it. The terms page has a board and its own pull request. A delete does not delete payments.
+One more was open and the operator answered it on 23 November 2026, which is decision 4. Telegram
+Stars is dropped. The sanctions question of issue 427, which asked whether a company in the United
+Kingdom may take a payment from a person in Russia, went with that route and blocks nothing now.
 
-The shape and the price of the Stars route are a decision for later, by the operator, on
-16 November 2026. Section 4 holds what is already known about it.
+The board questions of section 7 still block three steps.
 
 ## How sure I am
 
 Status: designed
 
-The whole design: 80 per cent.
+The whole design: 85 per cent. Decision 4 took out the route that was least sure of itself.
 
 The entitlement record and the payer digest: 90 per cent. The shape follows the four digests this
 repository already makes, and the one new attribute sits on an item the delete already walks. What
@@ -951,16 +795,11 @@ setup mode, which I read out of a reference table rather than out of a sentence.
 Apple Pay on a device against this account, and a wallet that will not take a payment the shop
 starts later is a refusal I have written and not seen.
 
-The Stars route: 65 per cent. The Bot api is quoted exactly and the limits are its own words. What
-lowers it is that the price is a year and the subscription period is 30 days, so the shape is not
-chosen yet. The payout terms in issue 427 are from a blog and not from Telegram. The sanctions
-answer is not written anywhere.
-
 The App Store rule: 75 per cent. The two guidelines are quoted from Apple's own page. What lowers
 it is that no reviewer has read this build, and a wording gate can only catch the words we thought
 of.
 
-The path: 80 per cent. The board questions of section 8 block three steps, and a step with no board
+The path: 85 per cent. The board questions of section 7 block three steps, and a step with no board
 is a step that invents a screen.
 
 ## What this design does not answer
@@ -977,3 +816,18 @@ A refund of a Stripe payment. Stripe can do it and nobody has said when Emi woul
 A price in any currency but the euro.
 
 Whether a woman who already pays in a store should be shown a price on the website at all.
+
+What becomes of what Telegram Stars left behind. Five places still name it, and none of them is in
+this document's path, because taking each one out is a change of its own with its own tests.
+
+Contract PAY-7 names the route, in `docs/contracts.md` and in `docs/features.md`.
+
+The built entitlement type allows `stars` as a route and carries `chargeRef`. Nothing writes either
+one now.
+
+`docs/design/accounts.md` names Stars in three places, including the words of the sign in screen in
+all three languages.
+
+The privacy policy of the website names Telegram Stars as a way to pay, in all three languages.
+
+`docs/design/website/README.md` says the checkout shows a choice between a card and Telegram Stars.

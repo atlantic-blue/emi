@@ -41,7 +41,8 @@ the only thing in the product about money.
 
 The route on myemi.app is built. It sells one yearly plan through Stripe, and
 `docs/design/payments.md` designs it. The first sentence of that document said the store route was
-built into the application. This pull request corrects that sentence.
+built into the application, and this pull request corrects it. Decision 11 is the sentence it now
+carries.
 
 ## The decisions this design starts from
 
@@ -57,8 +58,8 @@ The operator made each one on 22 November 2026. Do not argue with them here.
 4. A person who has not paid reads a prompt to subscribe.
 5. This document says what the word free means in Emi, in every state.
 
-The operator answered five questions of this design on 23 November 2026. Each answer is a decision
-now.
+The operator answered the six open questions of this design on 23 November 2026. Each answer is a
+decision now.
 
 6. Black Friday is half price on every renewal, for ever, and it carries no free month. This year it
    runs until 1 December 2026 at 00:00 Central European Time. On myemi.app it is built and merged.
@@ -73,6 +74,11 @@ now.
     the App Store alone. It carries no link to myemi.app and never names it as a way to pay, because
     guideline 3.1.1(a) forbids that outside the United States. A woman who paid on myemi.app unlocks
     the application when she signs in, which guideline 3.1.3(b) allows.
+11. The first line of `docs/design/payments.md` now reads: "Emi has three plans in the app, sold
+    through the App Store, and one yearly plan on myemi.app, sold through Stripe."
+12. Telegram Stars is dropped. Nothing of it was built, and `docs/design/payments.md` no longer
+    designs it. Signing in with Telegram is a different thing and it stays. The wording gate still
+    refuses the word Stars on a screen of the application.
 
 Four earlier decisions still hold, from `docs/contracts.md` and `docs/features.md`. There is no free
 tier, because a free tier is paid for with her data. Reading, exporting and deleting stay open for
@@ -613,7 +619,7 @@ storefronts, except for the United States storefront, where this prohibition doe
 and their metadata may not include buttons, external links, or other calls to action that direct
 customers to purchasing mechanisms other than in-app purchase." The rule names buttons, links and
 calls to action, and does not name a bare sentence about a price. Emi is stricter than the rule
-anyway, by decision 10. No screen names the price on myemi.app, the price in Stars or the address of
+anyway, by decision 10. No screen names the price on myemi.app and no screen names the address of
 the site. The link entitlement is not applied for. `docs/design/payments.md` decided that first,
 and the operator agreed it again on 23 November 2026.
 
@@ -624,9 +630,12 @@ multi-platform games, provided those items are also available as in-app purchase
 The yearly plan is sold in both places, so the condition holds. The two prices need not match.
 
 **One gate enforces it.** The wording gate reads every screen and the store listing today. It gains
-the host of the website, the word Stars, and any amount of money that is not a plan price in section
+the host of the website, the word Stars, and any amount of money that is not one of the three
+product prices. A run holds the rule, not a memory.
 
-1. A run holds the rule, not a memory.
+The word Stars stays on that list even though no route sells in Stars now. The website privacy
+policy still names it, and a screen that learned the word from there would be a screen naming a way
+to pay that Apple does not allow it to name.
 
 ## 10. Which library the application uses
 
@@ -842,8 +851,8 @@ Waits for: steps 7 and 13.
 
 Status: designed
 
-The whole design: 85 per cent. The five answers of 23 November 2026 closed the open ends that the
-first draft carried.
+The whole design: 85 per cent. The answers of 23 November 2026 closed every open end the first
+draft carried.
 
 The products, the group and the move between plans: 90 per cent. Every rule is quoted from App Store
 Connect. What lowers it is that nobody has made the group, and a console refuses things a page does
@@ -890,16 +899,8 @@ no other step waits on an answer.
 
 Status: designed
 
-Five questions were open and the operator answered them on 23 November 2026. Each one is a decision
-now, above. One is left.
-
-**1. What the first line of `docs/design/payments.md` should say.** It reads "Emi has one price and
-three ways to pay it", and there are three plans in the application now. This pull request leaves
-that line alone. The proposed replacement is this sentence: "Emi has three plans in the app, sold
-through the App Store, and one yearly plan on myemi.app, sold through Stripe."
-
-Does Telegram Stars stay in that document? It is designed there and nothing of it is built, and the
-sentence above does not mention it.
+None. Six questions were open and the operator answered them all, five on 23 November 2026 and the
+sixth the same day. Each one is a decision above.
 
 ## What this design does not answer
 
