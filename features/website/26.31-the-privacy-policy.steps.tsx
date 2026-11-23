@@ -13,7 +13,6 @@ import PrivacyPolicyPage, {
 import { type Language, languages, wordsIn } from '../../apps/website/app/words';
 import { THE_PRIVACY_INBOX, thePrivacyAddress } from '../../apps/website/lib/addresses';
 import {
-  A_CARD_PROCESSOR_NOBODY_HAS_CHOSEN,
   A_LEGAL_BASIS_NOBODY_HAS_WRITTEN,
   A_RETENTION_NOBODY_HAS_SET,
   theHolesOfThePolicy,
@@ -53,11 +52,11 @@ const theBoardSetsTenInTheSerif = 10;
 
 /**
  * How many of the page are: the heading, the line under it, and one heading for each of its
- * fifteen sections. It is seven more than the board, because version 1 answers seven questions the
+ * fourteen sections. It is six more than the board, because version 1 answers six questions the
  * board never asked. A section that lost its serif is a section this reads rather than a
  * difference a picture has to find.
  */
-const thePageSetsSeventeenInTheSerif = 17;
+const thePageSetsSixteenInTheSerif = 16;
 
 /** The drawing of a line through an icon, as the board writes it on the first two cards. */
 const THE_LINE_THROUGH_AN_ICON = 'M3 3l18 18';
@@ -75,9 +74,9 @@ const THE_ANSWER_THAT_WENT_STALE =
  * and the month is a word, so the month is the part that is translated.
  */
 const theDayItChanged: Readonly<Record<Language, string>> = {
-  en: 'LAST UPDATED 4 NOVEMBER 2026',
-  ru: 'ПОСЛЕДНЕЕ ОБНОВЛЕНИЕ 4 НОЯБРЯ 2026',
-  es: 'ÚLTIMA ACTUALIZACIÓN 4 DE NOVIEMBRE DE 2026',
+  en: 'LAST UPDATED 23 NOVEMBER 2026',
+  ru: 'ПОСЛЕДНЕЕ ОБНОВЛЕНИЕ 23 НОЯБРЯ 2026',
+  es: 'ÚLTIMA ACTUALIZACIÓN 23 DE NOVIEMBRE DE 2026',
 };
 
 function read(file: string): string {
@@ -202,8 +201,8 @@ defineFeature(feature, (test) => {
 
     const inEnglish = (): string => drawn.en ?? '';
 
-    /** The headings of the fifteen sections, in the order the page draws them. */
-    const theFifteen = (language: Language): string[] => {
+    /** The headings of the fourteen sections, in the order the page draws them. */
+    const theFourteen = (language: Language): string[] => {
       const words = wordsIn(language);
 
       return [
@@ -212,7 +211,6 @@ defineFeature(feature, (test) => {
         words.policyCollectTitle,
         words.policyAccountTitle,
         words.policyPaymentsTitle,
-        words.policyUsageTitle,
         words.policyProcessorsTitle,
         words.policyRetentionTitle,
         words.policyRightsTitle,
@@ -241,7 +239,7 @@ defineFeature(feature, (test) => {
     });
 
     then(
-      'she reads the three cards and then the fifteen sections, in the order the questions arrive',
+      'she reads the three cards and then the fourteen sections, in the order the questions arrive',
       () => {
         const middle = theMiddleOf(inEnglish());
         const words = wordsIn('en');
@@ -251,7 +249,7 @@ defineFeature(feature, (test) => {
         expect(saidBy(middle, 'span')).toEqual([
           words.policyUpdated,
           words.policyAccountOptional,
-          words.policyUsageOptional,
+          words.policyNoTracking,
           words.policyEncrypted,
         ]);
 
@@ -271,53 +269,56 @@ defineFeature(feature, (test) => {
           expect(drawnBy(card, stylesheet)).toContain('border-radius: 24px');
         }
 
-        expect(saidBy(middle, 'h2')).toEqual(theFifteen('en'));
-        expect(openingTagsOf(middle, 'section')).toHaveLength(15);
+        expect(saidBy(middle, 'h2')).toEqual(theFourteen('en'));
+        expect(openingTagsOf(middle, 'section')).toHaveLength(14);
         expect(saidBy(middle, 'h1')).toEqual([words.policyTitle]);
 
-        // The eight the board drew are all still here, in the same order, with the seven new ones
+        // The eight the board drew are all still here, in the same order, with the six new ones
         // among them. The board is the record of what she used to be promised.
         const theBoardsEight = saidBy(theMiddleOfTheDesign(), 'h2');
 
         expect(theBoardsEight).toHaveLength(8);
-        expect(theFifteen('en').filter((title) => theBoardsEight.includes(title))).toEqual(
+        expect(theFourteen('en').filter((title) => theBoardsEight.includes(title))).toEqual(
           theBoardsEight,
         );
       },
     );
 
     and(
-      'the two cards that named something Emi does not do now name something she chooses, with no line drawn through either',
+      'the card about the account says it is optional, and the card about tracking still says there is none',
       () => {
         for (const language of languages) {
           const words = wordsIn(language);
           const middle = theMiddleOf(drawn[language] ?? '');
 
-          // What the board said, which version 1 made untrue.
+          // What the board said. The first became untrue when the account arrived, and the second
+          // is still true.
           expect(visibleTextOf(theMiddleOfTheDesign())).toContain('No account needed');
           expect(visibleTextOf(theMiddleOfTheDesign())).toContain('No tracking');
 
           expect(visibleTextOf(middle)).toContain(words.policyAccountOptional);
-          expect(visibleTextOf(middle)).toContain(words.policyUsageOptional);
+          expect(visibleTextOf(middle)).toContain(words.policyNoTracking);
           expect(visibleTextOf(middle)).not.toContain('No account needed');
-          expect(visibleTextOf(middle)).not.toContain('No tracking');
 
-          // The board draws the line twice, on the two cards that said no. The page draws it
-          // nowhere, because an account and the anonymous usage both exist now.
+          // The board draws the line twice, on the two cards that said no. The page draws it once,
+          // on the card that still says no.
           expect(timesIn(theMiddleOfTheDesign(), THE_LINE_THROUGH_AN_ICON)).toBe(2);
-          expect(timesIn(middle, THE_LINE_THROUGH_AN_ICON)).toBe(0);
+          expect(timesIn(middle, THE_LINE_THROUGH_AN_ICON)).toBe(1);
+
+          // Nothing on the page offers a choice about usage that the application does not have.
+          expect(visibleTextOf(middle).join(' ')).not.toMatch(/Sentry|TelemetryDeck/);
         }
       },
     );
 
-    and('the date at the top reads 4 November 2026, in all three languages', () => {
+    and('the date at the top reads 23 November 2026, in all three languages', () => {
       for (const language of languages) {
         const said = wordsIn(language).policyUpdated;
 
         // The board still draws its own hole, and the page no longer does.
         expect(theDesign()).toContain('LAST UPDATED [DATE]');
         expect(said).toBe(theDayItChanged[language]);
-        expect(said).toContain('4');
+        expect(said).toContain('23');
         expect(said).toContain('2026');
         expect(said).not.toContain('[');
 
@@ -327,15 +328,15 @@ defineFeature(feature, (test) => {
     });
 
     and(
-      'the account, the payments, the usage, the processors, the retention, the rights and the ground in law are each answered, in all three languages',
+      'the account, the payments, the processors, the retention, the rights and the ground in law are each answered, in all three languages',
       () => {
         for (const language of languages) {
           const words = wordsIn(language);
           const markup = drawn[language] ?? '';
 
-          // Each of the seven new headings, with the answer that belongs to it read inside its own
+          // Each of the six new headings, with the answer that belongs to it read inside its own
           // section rather than anywhere on the page.
-          expect(saidBy(theMiddleOf(markup), 'h2')).toEqual(theFifteen(language));
+          expect(saidBy(theMiddleOf(markup), 'h2')).toEqual(theFourteen(language));
 
           expect(theSectionCalled(markup, words.policyAccountTitle)).toContain(
             words.policyAccountLine,
@@ -347,10 +348,9 @@ defineFeature(feature, (test) => {
           expect(payments).toContain(words.policyPaymentsTelegramLine);
           expect(payments).toContain(words.policyPaymentsWebBefore);
           expect(payments).toContain(words.policyPaymentsWebAfter);
+          expect(payments).toContain('Stripe');
 
-          expect(theSectionCalled(markup, words.policyUsageTitle)).toContain(words.policyUsageLine);
-
-          // The six companies, each named with the one thing it does, as a list rather than a
+          // The four companies, each named with the one thing it does, as a list rather than a
           // paragraph, so she can find her own processor without reading a sentence.
           const processors = theSectionCalled(markup, words.policyProcessorsTitle);
 
@@ -358,9 +358,7 @@ defineFeature(feature, (test) => {
             `Apple ${words.policyProcessorsApple}`,
             `Amazon Web Services ${words.policyProcessorsAmazon}`,
             `Telegram ${words.policyProcessorsTelegram}`,
-            `${A_CARD_PROCESSOR_NOBODY_HAS_CHOSEN} ${words.policyProcessorsCard}`,
-            `Sentry ${words.policyProcessorsSentry}`,
-            `TelemetryDeck ${words.policyProcessorsTelemetry}`,
+            `Stripe ${words.policyProcessorsCard}`,
           ]);
 
           expect(theSectionCalled(markup, words.policyRetentionTitle)).toContain(
@@ -391,10 +389,9 @@ defineFeature(feature, (test) => {
     );
 
     and(
-      'the three answers nobody has written read as holes in brackets, in all three languages',
+      'the two answers nobody has written read as holes in brackets, in all three languages',
       () => {
         expect(theHolesOfThePolicy).toEqual([
-          A_CARD_PROCESSOR_NOBODY_HAS_CHOSEN,
           A_RETENTION_NOBODY_HAS_SET,
           A_LEGAL_BASIS_NOBODY_HAS_WRITTEN,
         ]);
@@ -406,18 +403,15 @@ defineFeature(feature, (test) => {
         for (const language of languages) {
           const middle = theMiddleOf(drawn[language] ?? '');
 
-          // Who takes a payment on the web is asked twice: once where she pays, and once in the
-          // list of everybody who handles something.
-          expect(timesIn(middle, A_CARD_PROCESSOR_NOBODY_HAS_CHOSEN)).toBe(2);
           expect(timesIn(middle, A_RETENTION_NOBODY_HAS_SET)).toBe(1);
           expect(timesIn(middle, A_LEGAL_BASIS_NOBODY_HAS_WRITTEN)).toBe(1);
 
-          // Every piece of text on the page that carries a bracket is one of the three, in every
+          // Every piece of text on the page that carries a bracket is one of the two, in every
           // language, so none of them was translated and none of them was quietly filled in one
           // language and not another.
           const bracketed = visibleTextOf(middle).filter((said) => said.includes('['));
 
-          expect(bracketed).toHaveLength(4);
+          expect(bracketed).toHaveLength(2);
           expect(
             bracketed.filter((said) => theHolesOfThePolicy.some((hole) => said.includes(hole))),
           ).toEqual(bracketed);
@@ -493,7 +487,7 @@ defineFeature(feature, (test) => {
           drawnBy(tag, stylesheet).includes('Newsreader'),
         );
 
-        expect(inTheFace).toHaveLength(thePageSetsSeventeenInTheSerif);
+        expect(inTheFace).toHaveLength(thePageSetsSixteenInTheSerif);
 
         // The board's own two files, byte for byte. Another release of one family measures
         // differently, and a heading that measures differently moves everything under it.
