@@ -23,8 +23,8 @@ const theDesign = theDesignAt('privacy-policy', 'render', 'Privacy.html');
  * and the element that closes it.
  *
  * The title is what the board still describes. The words under it are version 1 and the board is
- * not: the board has no account section, no payments, no usage, no processors, no retention, no
- * rights and no legal basis, and its three cards name three things Emi no longer does. The two
+ * not: the board has no account section, no payments, no processors, no retention, no rights
+ * and no legal basis, and its first card names a thing Emi no longer does. The two
  * bands the whole site shares are out for a newer reason: each drew presses to pages nobody has
  * built yet, so the site holds those presses back and the board still draws them. A comparison of
  * any of the three would report the same difference every run, and a comparison nobody can read is
