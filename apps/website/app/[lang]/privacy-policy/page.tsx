@@ -4,7 +4,6 @@ import { notFound } from 'next/navigation';
 import { type SiteWords, isLanguage, wordsIn } from '@/app/words';
 import { THE_PRIVACY_INBOX, thePrivacyAddress } from '@/lib/addresses';
 import {
-  A_CARD_PROCESSOR_NOBODY_HAS_CHOSEN,
   A_LEGAL_BASIS_NOBODY_HAS_WRITTEN,
   A_RETENTION_NOBODY_HAS_SET,
 } from '@/lib/thePlaceholders';
@@ -17,18 +16,19 @@ import { theLinksOf } from '@/lib/theAddressesOfAPage';
  *
  * The words are version 1 and the board is not. The board was drawn when Emi had no account, took
  * no payment and sent nothing anywhere, so it says "No account needed" and "No tracking" and
- * answers "What we collect" with "Nothing". Version 1 adds an optional account, the payments that
- * need it, and anonymous usage she can switch on, so each of those three became false. A browser
- * still holds the bands and the title of this page against the board; it no longer holds the words,
- * because the board draws the policy of a product that no longer exists.
+ * answers "What we collect" with "Nothing". Version 1 adds an optional account and the payments
+ * that need it, so two of those became false. "No tracking" is still true, so that card keeps the
+ * words and the struck drawing of the board. A browser still holds the bands and the title of this
+ * page against the board; it no longer holds the words, because the board draws the policy of a
+ * product that no longer exists.
  *
  * Every value is a class and none is a style attribute, because the content policy of SITE-6 names
  * a secret for a style and a style written on an element cannot carry one, so a browser would
  * refuse it and the page would quietly draw wrong.
  *
- * Three answers are holes rather than sentences: who takes a payment on the web, how long an
- * account is kept, and the ground in law for keeping it. Nobody has chosen, set or written any of
- * them, and a policy that answered anyway would be the first sentence on the page that is not true.
+ * Two answers are holes rather than sentences: how long an account is kept, and the ground in law
+ * for keeping it. Nobody has set or written either, and a policy that answered anyway would be the
+ * first sentence on the page that is not true.
  */
 
 /** The path this page sits at under a language, which its own head and the sitemap both name. */
@@ -49,7 +49,7 @@ interface ACard {
   readonly title: string;
 }
 
-/** What one of the fifteen sections is: a heading, and the blocks that answer it. */
+/** What one of the fourteen sections is: a heading, and the blocks that answer it. */
 interface ASection {
   readonly title: string;
   readonly answer: React.ReactNode;
@@ -114,18 +114,15 @@ export default async function PrivacyPolicyPage({ params }: { params: Promise<{ 
   );
 
   /**
-   * The six companies that handle something for Emi, each with the one thing it handles. A name is
+   * The four companies that handle something for Emi, each with the one thing it handles. A name is
    * written here rather than in a catalogue, because a company is called the same thing in all
-   * three languages and a name in a catalogue is a name somebody can translate by mistake. The
-   * fourth is a hole, because nobody has chosen who takes a payment on the web.
+   * three languages and a name in a catalogue is a name somebody can translate by mistake.
    */
   const theProcessors: readonly string[] = [
     `Apple ${words.policyProcessorsApple}`,
     `Amazon Web Services ${words.policyProcessorsAmazon}`,
     `Telegram ${words.policyProcessorsTelegram}`,
-    `${A_CARD_PROCESSOR_NOBODY_HAS_CHOSEN} ${words.policyProcessorsCard}`,
-    `Sentry ${words.policyProcessorsSentry}`,
-    `TelemetryDeck ${words.policyProcessorsTelemetry}`,
+    `Stripe ${words.policyProcessorsCard}`,
   ];
 
   const theCards: ACard[] = [
@@ -142,9 +139,10 @@ export default async function PrivacyPolicyPage({ params }: { params: Promise<{ 
       drawing: (
         <ACardDrawing>
           <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z" />
+          <path d="M3 3l18 18" />
         </ACardDrawing>
       ),
-      title: words.policyUsageOptional,
+      title: words.policyNoTracking,
     },
     {
       drawing: (
@@ -177,12 +175,11 @@ export default async function PrivacyPolicyPage({ params }: { params: Promise<{ 
       answer: (
         <p>
           {`${words.policyPaymentsAppleLine} ${words.policyPaymentsTelegramLine} `}
-          {`${words.policyPaymentsWebBefore} ${A_CARD_PROCESSOR_NOBODY_HAS_CHOSEN} `}
+          {`${words.policyPaymentsWebBefore} Stripe `}
           {words.policyPaymentsWebAfter}
         </p>
       ),
     },
-    { title: words.policyUsageTitle, answer: <p>{words.policyUsageLine}</p> },
     {
       title: words.policyProcessorsTitle,
       answer: (

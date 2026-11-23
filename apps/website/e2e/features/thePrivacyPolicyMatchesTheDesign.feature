@@ -12,11 +12,11 @@ Feature: The privacy policy is laid out the way it was approved
   measure wider, a band can reflow one column early, a tint can land a shade off, and every word is
   still there, so every test that reads words still passes.
 
-  The words are no longer the board's. The board was drawn when Emi had no account, took no payment
-  and sent nothing anywhere, so its three cards say "No account needed" and "No tracking" and its
-  eight sections answer "What we collect" with "Nothing". Version 1 adds an optional account, the
-  payments that need it, and anonymous usage she can switch on, so the page now carries fifteen
-  sections and says other things in its three cards. Nobody has redrawn the board.
+  The words are no longer the board's. The board was drawn when Emi had no account and took no
+  payment, so its first card says "No account needed" and its eight sections answer "What we
+  collect" with "Nothing". Version 1 adds an optional account and the payments that need it, so the
+  page now carries fourteen sections and says other things in its first card. Nobody has redrawn
+  the board.
 
   The two bands the whole site shares are out as well, and for a newer reason. Each of them drew
   presses to pages nobody has built yet, so the site holds those presses back and the board still

@@ -124,7 +124,7 @@ export const russian: SiteWords = {
   protectionReadTheCode: 'Открыть код',
   protectionReadTheDocument: 'Читать полный документ ›',
   protectionAlsoBefore:
-    'У Emi также есть необязательный аккаунт, она принимает платежи и отправляет анонимные отчёты о сбоях и об использовании, только если вы это включите. Прочитайте',
+    'У Emi также есть необязательный аккаунт, и она принимает платежи. Прочитайте',
   protectionAlsoPolicy: 'политику конфиденциальности',
   protectionAlsoAfter: ', чтобы узнать, что хранит каждый из них и зачем.',
   protectionScreenAlt:
@@ -169,11 +169,11 @@ export const russian: SiteWords = {
     'При синхронизации сервер узнаёт, сколько у вас записей и когда была сделана каждая.',
 
   // Политика приватности, по boards/Privacy.dc.html.
-  policyUpdated: 'ПОСЛЕДНЕЕ ОБНОВЛЕНИЕ 4 НОЯБРЯ 2026',
+  policyUpdated: 'ПОСЛЕДНЕЕ ОБНОВЛЕНИЕ 23 НОЯБРЯ 2026',
   policyTitle: 'Политика приватности',
   policyLine: 'Мы не можем прочитать ваши записи. На этой странице сказано почему.',
   policyAccountOptional: 'Аккаунт не обязателен',
-  policyUsageOptional: 'Анонимная статистика, только с вашего согласия',
+  policyNoTracking: 'Без отслеживания',
   policyEncrypted: 'Зашифровано на вашем телефоне',
   policyWhoTitle: 'Кто мы',
   policyWhoLine: 'Emi делает Atlantic Blue Solutions Limited.',
@@ -183,25 +183,20 @@ export const russian: SiteWords = {
   policyHowTheEncryptionWorks: 'Как работает шифрование ›',
   policyCollectTitle: 'Что мы собираем',
   policyCollectLine:
-    'Emi не может прочитать ваши записи. Ваш аккаунт знает только то, за что вы заплатили. Всё остальное анонимно и необязательно.',
+    'Emi не может прочитать ваши записи. Если вы создадите аккаунт, он хранит ваш адрес электронной почты, идентификатор аккаунта и то, за что вы заплатили. Emi работает и без аккаунта.',
   policyAccountTitle: 'Ваш аккаунт',
   policyAccountLine:
-    'Ваш аккаунт хранит хешированный идентификатор, способ входа и то, за что вы заплатили. Его хранит Amazon Web Services, в Amazon Cognito. С ним вы можете заплатить на сайте или через Telegram Stars. С ним вы можете вернуть покупки на новом телефоне. С ним вы можете управлять подпиской. Он никогда не хранит данные о здоровье. Он необязателен: Emi работает и без него.',
+    'Ваш аккаунт хранит ваш адрес электронной почты, идентификатор аккаунта, способ входа и то, за что вы заплатили. Если вы входите через Apple и скрываете адрес, мы получаем только адрес для пересылки от Apple. Если вы входите через Telegram, мы не получаем адрес электронной почты и храним только хеш вашего идентификатора Telegram, вычисленный с секретным ключом. Аккаунт хранит Amazon Web Services, в Amazon Cognito. С ним вы можете заплатить на сайте или через Telegram Stars. С ним вы можете вернуть покупки на новом телефоне. С ним вы можете управлять подпиской. Он никогда не хранит данные о здоровье. Он необязателен: Emi работает и без него.',
   policyPaymentsTitle: 'Платежи',
   policyPaymentsAppleLine: 'В App Store платёж принимает Apple.',
   policyPaymentsTelegramLine: 'При оплате через Telegram Stars платёж принимает Telegram.',
   policyPaymentsWebBefore: 'На сайте',
   policyPaymentsWebAfter: 'принимает платёж.',
-  policyUsageTitle: 'Анонимная статистика и отчёты об ошибках',
-  policyUsageLine:
-    'Emi может отправлять названия событий и отчёты об ошибках в Sentry и TelemetryDeck. Оба размещены в Европейском союзе. Они не связаны с вами и не содержат данных о здоровье. Emi отправляет их только если вы это включите. Они нужны, чтобы мы исправляли ошибки, считали пользователей и узнавали, какие руководства помогают.',
   policyProcessorsTitle: 'Кто обрабатывает данные для нас',
   policyProcessorsApple: 'принимает платёж в App Store.',
   policyProcessorsAmazon: 'хранит ваш аккаунт.',
   policyProcessorsTelegram: 'принимает платёж через Telegram Stars.',
   policyProcessorsCard: 'принимает платёж на сайте.',
-  policyProcessorsSentry: 'получает отчёты об ошибках.',
-  policyProcessorsTelemetry: 'получает названия событий.',
   policyRetentionTitle: 'Сколько мы это храним',
   policyRightsTitle: 'Ваши права',
   policyRightsBefore:

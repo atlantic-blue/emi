@@ -116,8 +116,7 @@ export const spanish: SiteWords = {
     'Emi cifra cada día en tu teléfono, con una clave que se queda en tu teléfono. El código es público, así que puedes comprobar esta página con él.',
   protectionReadTheCode: 'Lee el código',
   protectionReadTheDocument: 'Lee el documento completo ›',
-  protectionAlsoBefore:
-    'Emi también tiene una cuenta opcional, acepta pagos y envía informes anónimos de errores y de uso solo si tú los activas. Lee',
+  protectionAlsoBefore: 'Emi también tiene una cuenta opcional y acepta pagos. Lee',
   protectionAlsoPolicy: 'la política de privacidad',
   protectionAlsoAfter: ' para ver qué guarda cada uno y por qué.',
   protectionScreenAlt:
@@ -161,11 +160,11 @@ export const spanish: SiteWords = {
     'Con la sincronización, el servidor aprende cuántos registros guardas y cuándo se escribió cada uno.',
 
   // La política de privacidad, desde boards/Privacy.dc.html.
-  policyUpdated: 'ÚLTIMA ACTUALIZACIÓN 4 DE NOVIEMBRE DE 2026',
+  policyUpdated: 'ÚLTIMA ACTUALIZACIÓN 23 DE NOVIEMBRE DE 2026',
   policyTitle: 'Política de privacidad',
   policyLine: 'No podemos leer tus registros. Esta página dice por qué.',
   policyAccountOptional: 'La cuenta es opcional',
-  policyUsageOptional: 'Uso anónimo, solo si lo aceptas',
+  policyNoTracking: 'Sin rastreo',
   policyEncrypted: 'Cifrado en tu teléfono',
   policyWhoTitle: 'Quiénes somos',
   policyWhoLine: 'Emi la hace Atlantic Blue Solutions Limited.',
@@ -175,25 +174,20 @@ export const spanish: SiteWords = {
   policyHowTheEncryptionWorks: 'Cómo funciona el cifrado ›',
   policyCollectTitle: 'Qué recogemos',
   policyCollectLine:
-    'Emi no puede leer tus registros. Tu cuenta solo sabe qué has pagado. Todo lo demás es anónimo y opcional.',
+    'Emi no puede leer tus registros. Si creas una cuenta, guarda tu dirección de correo electrónico, un identificador de cuenta y qué has pagado. Emi funciona sin cuenta.',
   policyAccountTitle: 'Tu cuenta',
   policyAccountLine:
-    'Tu cuenta guarda un identificador con hash, cómo inicias sesión y qué has pagado. La guarda Amazon Web Services, en Amazon Cognito. Con ella puedes pagar en la web o con Telegram Stars. Con ella puedes restaurar tus compras en un teléfono nuevo. Con ella puedes gestionar tu suscripción. Nunca guarda datos de salud. Es opcional: Emi funciona sin ella.',
+    'Tu cuenta guarda tu dirección de correo electrónico, un identificador de cuenta, cómo inicias sesión y qué has pagado. Si inicias sesión con Apple y ocultas tu dirección, solo recibimos la dirección de reenvío de Apple. Si inicias sesión con Telegram, no recibimos ninguna dirección de correo y solo guardamos un hash con clave secreta de tu identificador de Telegram. La guarda Amazon Web Services, en Amazon Cognito. Con ella puedes pagar en la web o con Telegram Stars. Con ella puedes restaurar tus compras en un teléfono nuevo. Con ella puedes gestionar tu suscripción. Nunca guarda datos de salud. Es opcional: Emi funciona sin ella.',
   policyPaymentsTitle: 'Pagos',
   policyPaymentsAppleLine: 'En la App Store, Apple cobra el pago.',
   policyPaymentsTelegramLine: 'Con Telegram Stars, Telegram cobra el pago.',
   policyPaymentsWebBefore: 'En la web,',
   policyPaymentsWebAfter: 'cobra el pago.',
-  policyUsageTitle: 'Uso anónimo e informes de errores',
-  policyUsageLine:
-    'Emi puede enviar nombres de eventos e informes de errores a Sentry y TelemetryDeck. Los dos están alojados en la Unión Europea. No están ligados a ti y no llevan datos de salud. Emi los envía solo si tú lo activas. Sirven para que arreglemos errores, contemos usuarias y sepamos qué guías ayudan.',
   policyProcessorsTitle: 'Quién procesa datos por nosotros',
   policyProcessorsApple: 'cobra el pago en la App Store.',
   policyProcessorsAmazon: 'guarda tu cuenta.',
   policyProcessorsTelegram: 'cobra el pago con Telegram Stars.',
   policyProcessorsCard: 'cobra el pago en la web.',
-  policyProcessorsSentry: 'recibe informes de errores.',
-  policyProcessorsTelemetry: 'recibe nombres de eventos.',
   policyRetentionTitle: 'Cuánto tiempo lo guardamos',
   policyRightsTitle: 'Tus derechos',
   policyRightsBefore:

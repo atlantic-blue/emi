@@ -166,8 +166,7 @@ export const english = {
   // who meets them for the first time in the policy has been told half the answer on the page that
   // promised to tell her all of it. Each fact here is one the policy states, and the press goes to
   // the policy, because that is where the detail belongs.
-  protectionAlsoBefore:
-    'Emi also has an optional account, takes payments, and sends anonymous crash and usage reports only if you switch them on. Read',
+  protectionAlsoBefore: 'Emi also has an optional account and takes payments. Read',
   protectionAlsoPolicy: 'the privacy policy',
   protectionAlsoAfter: ' to see what each one holds and why.',
   protectionScreenAlt:
@@ -211,18 +210,17 @@ export const english = {
     'With sync, the server learns how many records you keep, and when each one was written.',
 
   // The privacy policy, from boards/Privacy.dc.html, grown to cover what version 1 adds: an
-  // optional account, the payments that need it, and the anonymous usage she can switch on. The
-  // board was drawn before any of those existed, so the words below are the policy and the board
-  // is the layout.
+  // optional account and the payments that need it. The board was drawn before either existed, so
+  // the words below are the policy and the board is the layout.
   //
-  // Three answers on this page are holes rather than words, because nobody has chosen the card
-  // processor, written the retention or named the legal basis. They sit in lib/thePlaceholders.ts,
-  // where a hole is read the same in all three languages.
-  policyUpdated: 'LAST UPDATED 4 NOVEMBER 2026',
+  // Two answers on this page are holes rather than words, because nobody has written the retention
+  // or named the legal basis. They sit in lib/thePlaceholders.ts, where a hole is read the same in
+  // all three languages.
+  policyUpdated: 'LAST UPDATED 23 NOVEMBER 2026',
   policyTitle: 'Privacy policy',
   policyLine: 'We cannot read your records. This page says why.',
   policyAccountOptional: 'Account is optional',
-  policyUsageOptional: 'Anonymous usage, only if you agree',
+  policyNoTracking: 'No tracking',
   policyEncrypted: 'Encrypted on your phone',
   policyWhoTitle: 'Who we are',
   policyWhoLine: 'Emi is made by Atlantic Blue Solutions Limited.',
@@ -232,25 +230,20 @@ export const english = {
   policyHowTheEncryptionWorks: 'How the encryption works ›',
   policyCollectTitle: 'What we collect',
   policyCollectLine:
-    'Emi cannot read your records. Your account only knows what you paid for. Anything else is anonymous and optional.',
+    'Emi cannot read your records. If you make an account, it holds your email address, an account identifier and what you paid for. Emi works without an account.',
   policyAccountTitle: 'Your account',
   policyAccountLine:
-    'Your account holds a hashed identifier, how you sign in, and what you paid for. Amazon Web Services keeps it, in Amazon Cognito. It lets you pay on the web or with Telegram Stars. It lets you restore your purchases on a new phone. It lets you manage your subscription. It never holds health data. It is optional: Emi works without it.',
+    'Your account holds your email address, an account identifier, how you sign in, and what you paid for. If you sign in with Apple and hide your address, we get only the relay address from Apple. If you sign in with Telegram, we get no email address, and we keep only a keyed hash of your Telegram identifier. Amazon Web Services keeps your account, in Amazon Cognito. It lets you pay on the web or with Telegram Stars. It lets you restore your purchases on a new phone. It lets you manage your subscription. It never holds health data. It is optional: Emi works without it.',
   policyPaymentsTitle: 'Payments',
   policyPaymentsAppleLine: 'In the App Store, Apple takes the payment.',
   policyPaymentsTelegramLine: 'With Telegram Stars, Telegram takes the payment.',
   policyPaymentsWebBefore: 'On the web,',
   policyPaymentsWebAfter: 'takes the payment.',
-  policyUsageTitle: 'Anonymous usage and crash reports',
-  policyUsageLine:
-    'Emi can send event names and crash reports to Sentry and TelemetryDeck. Both are hosted in the European Union. They are not linked to you and they carry no health values. Emi sends them only if you switch them on. They exist so we can fix crashes, count users and learn which guides help.',
   policyProcessorsTitle: 'Who processes data for us',
   policyProcessorsApple: 'takes the payment in the App Store.',
   policyProcessorsAmazon: 'keeps your account.',
   policyProcessorsTelegram: 'takes the payment with Telegram Stars.',
   policyProcessorsCard: 'takes the payment on the web.',
-  policyProcessorsSentry: 'receives crash reports.',
-  policyProcessorsTelemetry: 'receives event names.',
   policyRetentionTitle: 'How long we keep it',
   policyRightsTitle: 'Your rights',
   policyRightsBefore:
