@@ -57,6 +57,23 @@ The operator made each one on 22 November 2026. Do not argue with them here.
 4. A person who has not paid reads a prompt to subscribe.
 5. This document says what the word free means in Emi, in every state.
 
+The operator answered five questions of this design on 23 November 2026. Each answer is a decision
+now.
+
+6. Black Friday is half price on every renewal, for ever, and it carries no free month. This year it
+   runs until 1 December 2026 at 00:00 Central European Time. On myemi.app it is built and merged.
+   In the App Store a price that never goes back up is a separate product, and section 3 is that
+   product.
+7. The free month belongs to the yearly plan alone. The monthly plan and the Black Friday product
+   carry no offer of any kind.
+8. The paywall comes after the questions of the first run.
+9. She cannot close the paywall, for now. What a person who has not paid may do is decided later, in
+   https://github.com/atlantic-blue/emi/issues/622.
+10. Emi is for iPhone only, for now, and Google Play is out of scope. The application sells through
+    the App Store alone. It carries no link to myemi.app and never names it as a way to pay, because
+    guideline 3.1.1(a) forbids that outside the United States. A woman who paid on myemi.app unlocks
+    the application when she signs in, which guideline 3.1.3(b) allows.
+
 Four earlier decisions still hold, from `docs/contracts.md` and `docs/features.md`. There is no free
 tier, because a free tier is paid for with her data. Reading, exporting and deleting stay open for
 ever. A lapse stops new writes and nothing else. The value added tax sits inside the price she
@@ -82,8 +99,8 @@ the sandbox purchase itself needs a device.
 
 Status: designed
 
-Google Play. The contracts name both stores, and this design builds Apple only. Nothing here
-refuses Android later, and the server fields already carry which store paid.
+Google Play, by decision 10. Emi is for iPhone only for now. The contracts name both stores, and
+nothing here refuses Android later: the server fields already carry which store paid.
 
 A third party subscription service. A service such as RevenueCat would hold every purchase of every
 woman on Emi. That is a second party reading the one thing Emi promises to hold alone. Apple's own
@@ -121,14 +138,12 @@ product identifier is unique across every application on the store.
 Offer: one month free, as an introductory offer. Sold in the application, and the same plan is sold
 on myemi.app through Stripe.
 
-**The monthly plan.** Identifier `blue.atlantic.emi.monthly`. Period one month. Price 5 euros.
-Offer: question 2 of the last section decides whether it carries the free month. Sold in the
-application only.
+**The monthly plan.** Identifier `blue.atlantic.emi.monthly`. Period one month. Price 5 euros. No
+offer, so no free month, by decision 7. Sold in the application only.
 
-**The Black Friday yearly plan.** Period one year. Price 19.50 euros, which is half of 39 euros.
-Offer: section 3 names the five ways Apple can carry this price, and the identifier depends on
-which one the operator picks. Sold in the application, and question 1 asks whether the site sells
-it too.
+**The Black Friday product.** Identifier `blue.atlantic.emi.yearly.halfprice`. Period one year.
+Price 19.50 euros, which is half of 39 euros. No offer, so no free month. Sold in the application
+from the next Black Friday, and sold on myemi.app today. Section 3 is the whole of it.
 
 ## 2. How she moves between the yearly plan and the monthly plan
 
@@ -158,81 +173,69 @@ application does not build its own plan switch.
 Apple tells the server about the move with a `DID_CHANGE_RENEWAL_PREF` notification. Section 7
 reads it.
 
-## 3. The Black Friday price
+## 3. The Black Friday product
 
 Status: designed
 
-Apple has five ways to carry a discounted price. Four of them are refused here, for reasons that
-are each one sentence of Apple's own documentation. The fifth splits into two, and the choice
-between them is a product decision, not a technical one.
+Half price on every renewal, for ever, with no free month. Decision 6 settles that, and it settles
+the shape with it. A price that never goes back up is a product and not an offer.
 
-One rule decides most of this. App Store Connect says "New and returning customers are only
-eligible to use one introductory offer per subscription group."
-(https://developer.apple.com/help/app-store-connect/manage-subscriptions/set-up-introductory-offers-for-auto-renewable-subscriptions/)
+Apple has four offer mechanisms and none of them can hold a price for ever. An introductory offer,
+a promotional offer, an offer code and a win back offer each discount a bounded number of periods.
+After that the subscription renews at the price of the product she bought. So half price on every
+renewal cannot be an offer of any kind, and the design is a product of its own.
 
-So the free month and a half price first year cannot both be introductory offers for the same
-woman. She gets one of them.
+Two of those mechanisms are closed to a new buyer as well, and the reasons are worth keeping for the
+next time somebody reaches for one.
 
-**A win back offer is impossible.** App Store Connect says "Customers are only eligible for win-back
-offers for their most recently lapsed subscription product within each group", and the minimum paid
-duration starts at one month with at least one month since the subscription ended.
+**A win back offer reaches nobody yet.** App Store Connect says "Customers are only eligible for
+win-back offers for their most recently lapsed subscription product within each group", and the
+minimum paid duration starts at one month with at least one month since the subscription ended.
 (https://developer.apple.com/help/app-store-connect/manage-subscriptions/set-up-win-back-offers/)
-Emi has no subscriber at all. Nobody can be eligible for a year.
+Emi has no subscriber at all, so nobody can be eligible for a year.
 
-**A promotional offer is impossible for a new buyer.** App Store Connect says a promotional offer
-gives "a discounted price for a specific duration for existing and previously subscribed
-customers".
+**A promotional offer reaches no new buyer.** App Store Connect says a promotional offer gives "a
+discounted price for a specific duration for existing and previously subscribed customers".
 (https://developer.apple.com/help/app-store-connect/manage-subscriptions/set-up-promotional-offers-for-auto-renewable-subscriptions/)
 A woman buying Emi for the first time is neither. It also needs the server to sign each offer:
-Apple lists "Promotional offer signatures" among the features that need a signed JSON Web
-Signature from your own server.
+Apple lists "Promotional offer signatures" among the features that need a signed JSON Web Signature
+from your own server.
 (https://developer.apple.com/documentation/storekit/generating-jws-to-sign-app-store-requests)
-Keep it for a woman who is cancelling, later.
 
-**A separate product at 19.50 euros is a permanent price, not a first year price.** A product's
-price is the renewal price for ever. A woman who buys it renews at 19.50 euros next November, and
-the only way to stop that is to raise her price, which needs her consent. It also uses her one
-introductory offer if it carries the free month. Choose this only if the operator means a founder
-price that never goes up.
+**The product.** Identifier `blue.atlantic.emi.yearly.halfprice`. Period one year. Price
+19.50 euros, with the value added tax inside it. No introductory offer and no other offer. Level 1,
+beside the yearly plan and the monthly plan, so a move between them is the crossgrade of section 2.
 
-Two candidates remain.
+**The free month is not on it, and that is a rule as well as a decision.** App Store Connect says
+"New and returning customers are only eligible to use one introductory offer per subscription
+group."
+(https://developer.apple.com/help/app-store-connect/manage-subscriptions/set-up-introductory-offers-for-auto-renewable-subscriptions/)
+The yearly plan carries the free month as its introductory offer, and this product carries none. So
+a woman who buys at half price is charged 19.50 euros the moment she presses, exactly as she is on
+myemi.app. The same quoted rule says she gets no free month later either, because a woman already
+subscribed in the group is neither a new nor a returning customer. I read that and did not test it.
 
-**Candidate A: a dated introductory offer on the yearly plan.** The offer type is pay up front, the
-duration is one year, and the price is 19.50 euros. App Store Connect says "Choose the start and end
-dates for your introductory offer", so the window is set in the console and needs no code. She taps
-once and reads the price on the paywall.
+**The product stays on sale for ever, and the window lives in the application.** This is the trap of
+the whole section. Taking a subscription off sale does not only stop new buyers. It stops the
+renewals of the women who already bought it. Apple gives that reason as "The product wasn't
+available for purchase at the time of renewal"
+(https://developer.apple.com/documentation/appstoreservernotifications/expirationintent) and sends
+an `EXPIRED` notification whose subtype is `PRODUCT_NOT_FOR_SALE`.
+(https://developer.apple.com/documentation/appstoreservernotifications/notificationtype) So the
+operator never removes this product once a woman holds it. The window is what the paywall offers,
+and the paywall reads an instant the application holds, the way the site holds the end of this
+year's offer.
 
-The cost is the free month. During the window the yearly plan's introductory offer is the half price
-year, so a new woman gets no free month on that plan. The same page says "You can have one current
-and one future introductory offer per storefront", and "If you create new offers that have
-overlapping dates, the latest action overwrites existing introductory offers", and "Once you create
-an introductory offer, you won't be able to edit it". So the operator sets the free month as the
-current offer, schedules the half price year as the future offer, and after the window creates the
-free month again. That is three deliberate acts in the console, in order, per storefront.
+**The application cannot sell it before 1 December 2026.** This year's offer closes at
+00:00 Central European Time on that day. The application has no purchase code, no products in App
+Store Connect and no App Review pass, and it has not shipped. So this product is for the next Black
+Friday, and the dates of that one are the operator's to set.
 
-**Candidate B: an offer code for new subscribers.** App Store Connect lets a code reach "New
-subscribers: Customers who have never subscribed to any subscription product within the group", and
-it answers the stacking question directly: "Yes. Eligible customers will redeem your app's
-introductory offer first, then automatically renew to the offer they redeemed with the code."
-(https://developer.apple.com/help/app-store-connect/manage-subscriptions/set-up-subscription-offer-codes/)
-
-So candidate B is the only one that keeps both. She gets the free month, then the first year at
-19.50 euros, then 39 euros a year.
-
-The cost is a code. She types it, or she follows a redemption link, and a code is a thing to lose.
-The application can open the system redemption sheet, so she does not leave Emi. A custom code such
-as `BLACKFRIDAY` works for up to 25,000 redemptions at a time, and an application may create codes
-for up to one million redemptions per quarter.
-
-The recommendation is candidate B. The free month is the argument the tour already makes, and losing
-it for the busiest week of the year costs more than one extra tap. The operator decides, in
-question 1.
-
-**What is possible by Friday 27 November 2026.** Nothing of this route is possible in the
-application by then. There is no purchase library, no product in App Store Connect, no server route
-and no App Review pass, and the application has not shipped. The route on myemi.app is built, so a
-Black Friday price there is possible, and it needs a new Stripe price object and a change to the
-checkout page. Question 1 asks whether the operator wants that.
+**On myemi.app it is built and merged.** The site sells 19.50 euros a year, every year, with the tax
+inside the amount and no free month, and it closes the offer at the same instant. The two pull
+requests are https://github.com/atlantic-blue/emi/pull/617 and
+https://github.com/atlantic-blue/emi/pull/623. The site holds two amounts and refuses a third, so
+the App Store product is held to being half of 39 euros by the same rule, in step 15 of the path.
 
 ## 4. Whether the prices are valid App Store price points
 
@@ -259,6 +262,9 @@ So whole numbers are a convention Apple supports, and a 50 cent ending below 50 
 supported step. On that rule 39.00 euros, 5.00 euros and 19.50 euros are each expected to be
 available. I have not seen the euro list, so expected is the strongest word this section may use.
 
+All three are product prices now, because decision 6 made the half price a product. So each one is
+read from the same list, and none of them is an offer amount that a different list could govern.
+
 If one of them is absent, the nearest values on the published steps are these. For 39.00 euros:
 38.50 or 39.50, or 38.99 or 39.99 on the .99 convention. For 5.00 euros: 4.90 or 5.10, or 4.99. For
 19.50 euros: 19.00 or 20.00, or 19.49 or 19.99. The operator picks, and no code holds a price, so a
@@ -279,9 +285,11 @@ where the tax is higher.
 
 Status: designed
 
-There is no free tier. The only free thing is the first month, and that month lives inside a
-subscription. Apple has no way to give a month away outside one. So a woman who starts the free
-month starts a subscription, and she stops it by turning the renewal off before the month ends.
+There is no free tier. The only free thing is the first month of the yearly plan, and that month
+lives inside a subscription. Apple has no way to give a month away outside one. So a woman who
+starts the free month starts a subscription, and she stops it by turning the renewal off before the
+month ends. The monthly plan and the Black Friday product charge her the moment she presses, by
+decision 7.
 
 Six states. Each one says what she may read, write and export.
 
@@ -294,8 +302,8 @@ stateDiagram-v2
     state "lapsed" as Lapsed
     state "refunded" as Refunded
     [*] --> NeverPaid
-    NeverPaid --> FreeMonth : "she starts the free month"
-    NeverPaid --> Paid : "she buys with no free month left"
+    NeverPaid --> FreeMonth : "she starts the yearly plan"
+    NeverPaid --> Paid : "she starts a plan with no free month"
     FreeMonth --> Paid : "the month ends and the price is taken"
     FreeMonth --> Cancelling : "she turns the renewal off"
     Paid --> Cancelling : "she turns the renewal off"
@@ -308,10 +316,16 @@ stateDiagram-v2
     Refunded --> Paid : "she subscribes again"
 ```
 
-**Never paid.** She finishes the first run, so her three answers and her name are written. Nothing
-else is. She reads her own answers, exports them and deletes everything. She cannot log a day, edit
-a day or write anything new. The first run is the one write this state allows. Her answers are
-what draws the ring at all, so refusing them would leave her with a product that shows nothing.
+**Never paid.** She finishes the first run, so her three answers and her name are written. Then the
+paywall, and she cannot close it, by decision 9. She reaches no other screen and writes nothing
+else. The first run is the one write this state allows. Her answers are what draws the ring at all,
+so refusing them would leave her with a product that shows nothing.
+
+Deleting everything stays open from the paywall, because her answers are already written and a wall
+with no way out would hold them. Everything else about this state is open:
+https://github.com/atlantic-blue/emi/issues/622 decides what she may read and export before she
+pays, and the paywall gets a close control when it does. Nothing below depends on that answer,
+because the states that follow all start with a payment.
 
 **Free month.** Everything. This is the paid state with no money taken. It ends on the instant Apple
 reports, and the application reads that instant and not a count of days.
@@ -345,24 +359,30 @@ Status: designed
 
 Four places, and no more. A prompt in a fifth place reads as nagging.
 
-**The paywall in the first run.** Once, as part of the first run. Question 3 asks whether it sits
-between the tour and the questions or after them. It carries the brand argument, the two plans and
-every line App Review asks for. Section 9 lists it as a board.
+**The paywall in the first run.** Once, at the end of the first run, after the questions, by
+decision 8. Her answers are written before she is asked for money, so she has something to come back
+to. It carries the brand argument, the plans and every line App Review asks for. Section 11 lists it
+as a board.
+
+It has no close control, by decision 9, and that is the one thing that makes it different from the
+three prompts below. A woman inside Emi reads a prompt she can dismiss. A woman who has never paid
+reads a wall.
 
 **Where the write was refused.** She taps to log a day and nothing is written. A sheet rises. The
 title says what happened and the line says what it costs. Title: Emi needs a subscription. Line:
 "Everything you wrote stays, and new entries start again when you subscribe." Actions: See the
 plans, Not now.
 
-**The line in Settings.** One row that reads the state and the date. A woman who never paid reads
-the plans. A woman who lapsed reads the same prompt as the sheet.
+**The line in Settings.** One row that reads the state and the date. A woman who lapsed reads the
+same prompt as the sheet. A woman who never paid never reaches Settings, because the paywall holds
+her.
 
 **The home screen, after a lapse.** One line under the ring, not a banner over it. The ring still
 draws every day she ever wrote.
 
 Three rules hold every one of them.
 
-The words never name a price outside the App Store. Section 8 says why.
+The words never name a price outside the App Store. Decision 10 and section 9 say why.
 
 The words never claim a day is anything. The claims gate reads every screen already.
 
@@ -435,7 +455,7 @@ which route paid.
 
 One case needs a screen and not a mechanism. A woman can pay on the site and in the application, and
 Apple refunds neither. So the paywall reads the server before it sells, and a woman who is already
-paid reads a line that says so instead of two plan rows. Section 9 lists that board.
+paid reads a line that says so instead of the plan rows. Section 11 lists it as board 5.
 
 ## 8. How the server checks a purchase, and how it learns what happens next
 
@@ -593,9 +613,9 @@ storefronts, except for the United States storefront, where this prohibition doe
 and their metadata may not include buttons, external links, or other calls to action that direct
 customers to purchasing mechanisms other than in-app purchase." The rule names buttons, links and
 calls to action, and does not name a bare sentence about a price. Emi is stricter than the rule
-anyway. No screen names the price on myemi.app, the price in Stars or the address of the site. The
-link entitlement is not applied for. `docs/design/payments.md` already decided that, and this
-design keeps it.
+anyway, by decision 10. No screen names the price on myemi.app, the price in Stars or the address of
+the site. The link entitlement is not applied for. `docs/design/payments.md` decided that first,
+and the operator agreed it again on 23 November 2026.
 
 **Unlocking what she bought elsewhere is allowed.** Guideline 3.1.3(b) says "Apps that operate
 across multiple platforms may allow users to access content, subscriptions, or features they have
@@ -633,35 +653,37 @@ a different surface and a different route.
 
 Each entry names the words and the states that board must carry.
 
-**1. The paywall of the first run.** Two plan rows, the yearly one first. Each row carries the plan
-name, the period and the full renewal price. The free month line says how long it lasts and what is
-taken when it ends. The argument says there is no free version, because a free version is paid for
-with her data. A Restore purchases control. Links to the terms and to the privacy page. States: the
-plain state, the Black Friday state if the operator picks candidate A, and the state where the
-monthly plan carries no free month.
+**1. The paywall of the first run.** The plan rows, the yearly one first. Each row carries the plan
+name, the period and the full renewal price. The yearly row carries the free month line, which says
+how long it lasts and what is taken when it ends. The monthly row carries no free month, by
+decision 7. The argument says there is no free version, because a free version is paid for with her
+data. A Restore purchases control. Links to the terms and to the privacy page. No close control, by
+decision 9.
 
-**2. Whether the paywall can be closed.** The same board, in two versions, because question 4
-decides it. One has a close control and one does not. If it closes, draw where it goes.
-
-**3. The prompt where a write was refused.** A sheet. Title, one line, two actions. The words are in
+**2. The prompt where a write was refused.** A sheet. Title, one line, two actions. The words are in
 section 6.
 
-**4. The plan list in Settings.** The current plan, the renewal date, and the state in words for all
+**3. The plan list in Settings.** The current plan, the renewal date, and the state in words for all
 six states of section 5. Rows for Change plan, Restore purchases and Manage in the App Store. A row
 that offers a sign in, with the one line about carrying the year to another place.
 
-**5. The home screen after a lapse.** One line under the ring, with the ring still drawing every day
+**4. The home screen after a lapse.** One line under the ring, with the ring still drawing every day
 she wrote.
 
-**6. The paywall for a woman who already paid on the website.** No plan rows. One line that says she
+**5. The paywall for a woman who already paid on the website.** No plan rows. One line that says she
 is paid until a date, and a way back.
 
-**7. The refusal screens.** A purchase she cancelled, a purchase the store refused, a store that
+**6. The refusal screens.** A purchase she cancelled, a purchase the store refused, a store that
 cannot be reached, and a purchase already filed against another account. One title, one line and one
 action each.
 
-**8. The Black Friday paywall.** Only if the operator picks an offer. Candidate A changes the price
-on the yearly row. Candidate B adds a code field or a redemption control.
+**7. The Black Friday row on the paywall.** One extra row for the product of section 3, at
+19.50 euros a year, every year, with no free month. It shows only while the window is open.
+
+One board that the first draft of this design asked for is no longer needed now. A screen for a
+woman who has never paid waits for
+https://github.com/atlantic-blue/emi/issues/622, because she cannot close the paywall and reaches no
+screen behind it.
 
 ## 12. The path
 
@@ -671,20 +693,24 @@ Each step is one pull request with one intention, and ships its tests in the sam
 infrastructure is applied from a machine. Each step names what it changes, what proves it, and what
 it waits for.
 
-Steps 1 and 2 need no board and no decision, so they can start at once.
+Steps 1 and 2 need no board, so they can start at once. Every decision this path waited on is
+answered, apart from the dates of the next Black Friday in step 17.
 
 **1. The contracts and the features.**
-Changes: PAY-1 names three plans, their prices, their periods, the one group, the equal levels and
-the free month rule. PAY-5 and PAY-8 gain the store half. A new contract names the pointer item and
+Changes: PAY-1 names the three products, their prices, their periods, the one group, the equal
+levels, and the free month on the yearly plan alone. PAY-5 and PAY-8 gain the store half. A new contract names the pointer item and
 the one purchase one vault rule. The data model document gains the three new account fields.
 Proves it: the documents gate holds the contracts and the features to each other, so a contract in
 one and not the other fails the run.
 Waits for: nothing.
 
 **2. The product configuration, and a test that reads it.**
-Changes: one module names the group, the plan identifiers, the periods, the prices and the offer of
-each plan. Nothing else in the application may write a price.
-Proves it: a test asserts every value. A wrong price, a wrong period or a missing plan fails it. A
+Changes: one module names the group, the three product identifiers, the periods, the prices, the
+free month on the yearly plan alone, and the instant the Black Friday window closes. Nothing else in
+the application may write a price.
+Proves it: a test asserts every value. A wrong price, a wrong period or a missing product fails it.
+A test asserts that the Black Friday price is half of the yearly price, the rule the site already
+holds. A test asserts that the monthly product and the Black Friday product carry no offer. A
 mutation of each value is watched going red.
 Waits for: step 1. The products exist in App Store Connect first, and the operator makes them.
 
@@ -704,8 +730,10 @@ transaction is asserted absent.
 Waits for: step 3.
 
 **5. The write gate on the phone.**
-Changes: a write is refused in the never paid, lapsed and refunded states, and allowed in the other
-three. Reading, exporting and deleting are untouched in every state.
+Changes: a write is refused in the lapsed and refunded states, and allowed in the free month, the
+paid state and the cancelling state. Reading, exporting and deleting are untouched in every state.
+The never paid state is not a case here, because the paywall holds her and she reaches no screen
+that writes.
 Proves it: one case per state, driven through the screen and asserted on what she is left with. A
 mutation that gates a read is watched failing.
 Waits for: step 4.
@@ -714,21 +742,24 @@ Waits for: step 4.
 Changes: the sheet of section 6 rises when a write is refused, with its words in three languages.
 Proves it: a test taps to log a day in the lapsed state, reads the sheet, presses Not now, and
 asserts the day screen is still there and nothing was written. The claims gate reads the new words.
-Waits for: step 5, and board 3.
+Waits for: step 5, and board 2.
 
 **7. The paywall.**
-Changes: the screen of board 1, with the two plan rows, the free month line, the full renewal price,
-Restore purchases and the two links.
+Changes: the screen of board 1, with the plan rows, the free month line on the yearly row only, the
+full renewal price, Restore purchases and the two links. It carries no close control.
 Proves it: a test asserts every line App Review asks for is present, in all three languages. A test
-buys through a double and asserts the application is left in the paid state with the ring drawn. A
-test of a cancelled purchase asserts she is left where she was.
-Waits for: step 4, and boards 1 and 7.
+asserts the monthly row promises no free month. A test asserts there is no way out of the screen
+except a purchase or a restore. A test buys through a double and asserts the application is left in
+the paid state with the ring drawn. A test of a cancelled purchase asserts she is left on the
+paywall.
+Waits for: step 4, and boards 1 and 6.
 
 **8. The paywall in the first run.**
-Changes: the paywall takes its place on the first run path.
-Proves it: a test walks the whole first run and asserts the order, and asserts the state she is left
-in at the end of each branch. The pictures of the first run are generated again.
-Waits for: step 7, and questions 3 and 4.
+Changes: the paywall takes its place at the end of the first run, after the questions.
+Proves it: a test walks the whole first run, asserts the paywall comes after the last question, and
+asserts her answers are written before it. A test asserts the skip of the tour still reaches the
+questions and then the paywall. The pictures of the first run are generated again.
+Waits for: step 7, and board 1.
 
 **9. The filing route on the server.**
 Changes: one route takes a transaction identifier, signed by her device key. It asks Apple, then
@@ -757,44 +788,50 @@ Waits for: step 9.
 **12. The read that joins both routes.**
 Changes: the entitlement read of PAY-8 keeps the account item's own date beside the furthest date of
 the payment items.
+The paywall reads it before it sells, and a woman who is already paid reads the
+line of board 5 instead of the plan rows.
 Proves it: an account paid only in the App Store reads its date. An account paid only on the site
 reads its date. An account paid in both reads the furthest one, and nothing in the answer says which
-route paid.
-Waits for: step 9.
+route paid. A test puts a date in the future on the server and asserts the paywall sells nothing.
+Waits for: step 9, and board 5.
 
 **13. The plan list in Settings.**
-Changes: the screen of board 4, with the state in words, Change plan, Restore purchases, Manage in
+Changes: the screen of board 3, with the state in words, Change plan, Restore purchases, Manage in
 the App Store, and the sign in row.
 Proves it: a test per state asserts the words. A test presses Restore purchases and asserts the
 system call happens once and only on the press. A test asserts Change plan opens the system sheet
 and that the application builds no plan switch of its own.
-Waits for: step 4, and board 4.
+Waits for: step 4, and board 3.
 
 **14. The lapse, end to end.**
-Changes: the home screen line of board 5, and nothing else.
+Changes: the home screen line of board 4, and nothing else.
 Proves it: a test in the lapsed state opens the history, exports a file and deletes everything, and
 asserts each one finishes. A test asserts the ring still draws her days.
-Waits for: step 5, and board 5.
+Waits for: step 5, and board 4.
 
 **15. The wording gate gains the new words.**
 Changes: the gate refuses the host of the website, the word Stars, and any amount of money that is
-not a plan price.
-Proves it: a screen carrying each refused word fails the gate, one case each.
+not one of the three product prices. The Black Friday amount is held to being half of the yearly
+amount, which is the rule the site already holds.
+Proves it: a screen carrying each refused word fails the gate, one case each. A fourth amount fails
+it. An amount that is not half of the yearly price fails it.
 Waits for: step 2.
 
 **16. The tour line, and every other price in the product.**
-Changes: the one line of the tour, the readme and the features document say what the three plans
-say.
+Changes: the one line of the tour, the readme and the features document say what the three products
+say. The free month belongs to the yearly plan in every one of them.
 Proves it: a test reads the price out of the configuration of step 2 rather than out of a string, so
 the line cannot drift from the product again.
-Waits for: step 2, and question 2.
+Waits for: step 2.
 
-**17. The Black Friday offer.**
-Changes: whichever candidate the operator picked. Candidate A needs the price on the yearly row and
-nothing else. Candidate B needs the redemption control and the code.
-Proves it: a test asserts the offer price is read from the store and not written in the application.
-A test asserts the free month line is correct for the candidate chosen.
-Waits for: step 7, and question 1.
+**17. The Black Friday product, and the window the paywall holds.**
+Changes: the paywall draws the row of board 7 while the window is open, and drops it when the
+instant of step 2 passes. The product itself is never taken off sale.
+Proves it: a test one second before the instant draws the row, and a test one second after it does
+not. A test asserts the price is read from the store rather than written in the application. A test
+asserts the row promises no free month.
+Waits for: step 7, board 7, and the dates of the next Black Friday from the operator. The
+application cannot sell this product before 1 December 2026, so nothing here is urgent.
 
 **18. The store listing and the App Review material.**
 Changes: the listing, the screenshots and the privacy answers carry the subscription.
@@ -805,20 +842,25 @@ Waits for: steps 7 and 13.
 
 Status: designed
 
-The whole design: 80 per cent.
+The whole design: 85 per cent. The five answers of 23 November 2026 closed the open ends that the
+first draft carried.
 
 The products, the group and the move between plans: 90 per cent. Every rule is quoted from App Store
 Connect. What lowers it is that nobody has made the group, and a console refuses things a page does
 not mention.
 
-The Black Friday offer: 85 per cent. The one introductory offer per group rule, the one current and
-one future rule, and the stacking answer for an offer code are each Apple's own words. What lowers it
-is that I have not redeemed a code against a group that also carries an introductory offer, so the
-order Apple describes is read and not seen.
+The Black Friday product: 85 per cent. A separate product is the only thing Apple has that holds a
+price for ever, and the reason each offer mechanism cannot is quoted. The expiry reason that makes
+taking a product off sale dangerous is Apple's own words too. What lowers it is two things I read
+and did not test. Whether a woman already subscribed in the group is refused the free month on a
+later move, and whether App Store Connect lets a product sit on sale with no offer at all for as
+long as this design needs.
 
-The prices: 60 per cent, and this is the weakest section. I did not read the euro price list,
+The prices: 60 per cent, and this is still the weakest section. I did not read the euro price list,
 because that needs App Store Connect. The spacing rule I quote is for the United States storefront.
-The operator confirms three numbers before anybody creates a product.
+The operator confirms three numbers before anybody creates a product. The site already charges
+19.50 euros through Stripe, which proves nothing about the App Store, because the two take their
+prices from different lists.
 
 The states and what free means: 85 per cent. The states come from Apple's own status values and
 notification types. What lowers it is the decision to treat a billing retry as paid, which is a
@@ -832,53 +874,32 @@ The join with the payment on myemi.app: 75 per cent. Contract PAY-8 already desi
 design only fills the store half. What lowers it is the woman who pays twice, which has a screen and
 no mechanism.
 
-The sign in question: 85 per cent. It rests on her vault account existing with no sign in, which
-contract WIRE-1 and `docs/design/accounts.md` both say. What lowers it is that the hard sign in gate
-of that document is designed and not built, and if it lands first the order of the first run changes.
+The sign in: 85 per cent. It rests on her vault account existing with no sign in, which contract
+WIRE-1 and `docs/design/accounts.md` both say. What lowers it is that the hard sign in gate of that
+document is designed and not built. If it lands first, the order of the first run changes.
 
 The App Review rules: 75 per cent. The four paywall lines, the restore rule and the three guidelines
 are quoted. What lowers it is that no reviewer has read this build, and a gate only catches the words
 we thought of.
 
-The path: 80 per cent. Six of its eighteen steps wait on a board or a decision, and a step with no
-board is a step that invents a screen.
+The path: 85 per cent. Six of its eighteen steps wait on a board, and a step with no board is a
+step that invents a screen. One step waits on dates the operator sets for the next Black Friday, and
+no other step waits on an answer.
 
 ## Questions for the operator
 
 Status: designed
 
-Nothing of the path past step 2 should start before these are answered.
+Five questions were open and the operator answered them on 23 November 2026. Each one is a decision
+now, above. One is left.
 
-**1. The Black Friday plan.** Does the half price apply to the first year only, or to every renewal?
-Section 3 recommends candidate B, an offer code, because it keeps the free month. Candidate A, a
-dated introductory offer, is one tap and costs the free month. Which one? Which dates? Is it sold on
-myemi.app too, given that the site sells the yearly plan only? Black Friday 2026 is Friday
-27 November. Nothing of the store route can be live by then. The application has no purchase code,
-no products in the console and no App Review pass. Only the site can carry a Black
-Friday price this year.
+**1. What the first line of `docs/design/payments.md` should say.** It reads "Emi has one price and
+three ways to pay it", and there are three plans in the application now. This pull request leaves
+that line alone. The proposed replacement is this sentence: "Emi has three plans in the app, sold
+through the App Store, and one yearly plan on myemi.app, sold through Stripe."
 
-**2. The free month.** Does it start every plan, or the yearly plan only? A woman gets one
-introductory offer per group for ever, so she can have it once whichever plan she picks. A free month
-on a 5 euro plan gives away 5 euros and invites a month of free use each time she resubscribes. And
-the trial length itself is still not fixed: one month is the proposal, and this design uses one
-month because contract PAY-1 says so.
-
-**3. Where the paywall sits.** Between the tour and the questions, or after them?
-`docs/design/onboarding.md` says this is an order only the operator can choose. After them means her
-answers are written before she is asked for money, and she has something to come back to. Between
-them means she is asked before she has given anything.
-
-**4. Whether she can close the paywall.** If she can, she lands in the never paid state of section 5:
-she reads her own answers, exports them, deletes everything, and writes nothing. That is a real
-screen and it needs board 2. If she cannot, the first run ends at a wall, and a woman who will not
-pay has given Emi her answers and gets nothing back.
-
-**5. Google Play.** In scope now, or later? The contracts name both stores. This design builds Apple
-only, and the fields already carry which store paid.
-
-**6. The yearly price on the site.** The first line of `docs/design/payments.md` says Emi has one
-price. There are three plans now. That document is otherwise untouched by this pull request, and the
-sentence needs the operator.
+Does Telegram Stars stay in that document? It is designed there and nothing of it is built, and the
+sentence above does not mention it.
 
 ## What this design does not answer
 
