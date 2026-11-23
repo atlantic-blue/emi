@@ -13,6 +13,9 @@ import { SITE_ORIGIN } from '@/lib/addresses';
  * An offer is a discount on that one price rather than a second price, so the halved amount lives
  * here beside it and is held to being half of it. Every figure anywhere in the words is read
  * against this file, and a third amount is refused.
+ *
+ * The free month is part of the one price and part of nothing else. A woman who buys on an offer
+ * is charged the moment she presses, so no sentence of an offer may promise her a month.
  */
 
 /** What the page asks her for, written as each language writes it, full stop and all. */
@@ -37,13 +40,16 @@ export const theOnePeriod: Readonly<Record<Language, string>> = {
 export const theOneAmount = '39';
 
 /**
- * What the page asks a woman who arrived on the Black Friday offer. The free month is the same
- * month, so the sentence is the one above with the halved amount in it.
+ * What the page asks a woman who arrived on the Black Friday offer.
+ *
+ * It names no free month. The free month belongs to the one price above and to nothing else: a
+ * woman who buys on the offer is charged half of the year the moment she presses, so a sentence
+ * here that opened with a month free would be a month she never gets.
  */
 export const theOfferPrice: Readonly<Record<Language, string>> = {
-  en: 'One month free, then 19.50 euros a year, value added tax included.',
-  ru: 'Первый месяц бесплатно, затем 19,50 евро в год, налог на добавленную стоимость включён.',
-  es: 'Un mes gratis, después 19,50 euros al año, impuesto sobre el valor añadido incluido.',
+  en: '19.50 euros a year, every year, value added tax included.',
+  ru: '19,50 евро в год, каждый год, налог на добавленную стоимость включён.',
+  es: '19,50 euros al año, cada año, impuesto sobre el valor añadido incluido.',
 };
 
 /** Half of the one price, in the one form, which is what the offer asks for. */
@@ -61,6 +67,48 @@ export const theAmountsThePageMayName = [theOneAmount, theOfferAmount] as const;
 /** Whether an amount a text names is half of the price, which is what the offer charges. */
 export function isHalfOfThePrice(amount: string): boolean {
   return Number(amount) * 2 === Number(theOneAmount);
+}
+
+/**
+ * How each language says that something costs nothing.
+ *
+ * The free month is part of the one price and part of nothing else. A woman who buys on an offer
+ * is charged the moment she presses, so a sentence of the offer that carried one of these would
+ * promise her a month she never gets, and she would meet the charge on her statement instead.
+ *
+ * Each entry is a stem rather than a word, because Russian and Spanish change the ending.
+ */
+export const theWordForFree: Readonly<Record<Language, readonly string[]>> = {
+  en: ['free'],
+  ru: ['бесплатн'],
+  es: ['gratis', 'gratuit'],
+};
+
+/**
+ * Whether a word of the catalogue is one a woman reads on an offer, by the name it is kept under.
+ *
+ * Read from the name rather than from a list, so a sentence somebody adds to the offer page or to
+ * the till is held to the rule by existing.
+ */
+export function isAWordOfTheOffer(key: string): boolean {
+  return key.startsWith('blackFriday') || key.startsWith('checkoutOffer');
+}
+
+/** What is wrong with what the offer promises, as one sentence for each claim it may not make. */
+export function problemsWithWhatTheOfferPromises(
+  language: Language,
+  said: Readonly<Record<string, string>>,
+): string[] {
+  return Object.entries(said)
+    .filter(([key]) => isAWordOfTheOffer(key))
+    .flatMap(([key, value]) =>
+      theWordForFree[language]
+        .filter((free) => value.toLocaleLowerCase().includes(free))
+        .map(
+          (free) =>
+            `${key} says "${free}", and a woman who buys on the offer is charged at once with no free month`,
+        ),
+    );
 }
 
 /** The one host the site serves, taken from the address its pages already name. */

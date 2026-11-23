@@ -212,7 +212,8 @@ one day of anybody's history, and a test reads that policy rather than trusting 
 `sk` is the string `META`.
 
 `paidUntil` is a string, an instant. It is absent until the free month or the first payment lands.
-It is the one field every reader wants.
+It is the one field every reader wants. The free month belongs to the one price of 39 euros a year,
+so a subscription bought on an offer is charged at once.
 
 `route` is a string. It is `card` or `stars`. It is what the account page says she paid with.
 

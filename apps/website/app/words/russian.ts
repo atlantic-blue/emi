@@ -315,8 +315,7 @@ export const russian: SiteWords = {
   checkoutOfferEveryYear: 'Emi, вдвое дешевле каждый год.',
   checkoutOfferRenews: 'Продлевается каждый год вдвое дешевле',
   checkoutOfferAmount: '19,50 € в год',
-  checkoutOfferPrice:
-    'Первый месяц бесплатно, затем 19,50 евро в год, налог на добавленную стоимость включён.',
+  checkoutOfferPrice: '19,50 евро в год, каждый год, налог на добавленную стоимость включён.',
   checkoutOfferPay: 'Заплатить 19,50 €',
 
   // The subscription card of the account, from boards/Profile.dc.html.
@@ -378,8 +377,7 @@ export const russian: SiteWords = {
   // Страница Black Friday, которая рисует макет главной страницы с предложением в начале.
   blackFridayEyebrow: 'BLACK FRIDAY · ПОЛОВИНА ЦЕНЫ КАЖДЫЙ ГОД',
   blackFridayHeading: 'Половина цены, каждый год, пока вы с нами.',
-  blackFridayPrice:
-    'Первый месяц бесплатно, затем 19,50 евро в год, каждый год, налог на добавленную стоимость включён.',
+  blackFridayPrice: '19,50 евро в год, каждый год, налог на добавленную стоимость включён.',
   blackFridayInsteadOf:
     'Emi стоит 39 евро в год. По этому предложению вы платите половину, пока остаётесь с нами.',
   blackFridayEnds:
@@ -387,5 +385,5 @@ export const russian: SiteWords = {
   blackFridayPress: 'Купить Emi за половину цены',
   blackFridayTitle: 'Emi: половина цены в Black Friday',
   blackFridayDescription:
-    'Первый месяц бесплатно, затем 19,50 евро в год, каждый год. Предложение заканчивается 1 декабря 2026 года.',
+    '19,50 евро в год, каждый год. Предложение заканчивается 1 декабря 2026 года.',
 };

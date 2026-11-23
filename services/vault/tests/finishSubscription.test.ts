@@ -21,9 +21,11 @@ import {
   customerDefaultField,
   customersAddress,
   discountCouponField,
+  expandField,
   idempotencyHeader,
   onSubscription,
   payerDigestField,
+  paymentBehaviourField,
   savesTheDefaultField,
   setupIntentsAddress,
   stripeApiVersion,
@@ -31,6 +33,8 @@ import {
   subscriptionsAddress,
   theBlackFridayCoupon,
   theBlackFridayOffer,
+  theFirstInvoiceWaits,
+  theSecretOfTheFirstInvoice,
   theYearlyPrice,
   theYearlyPriceRef,
   trialDaysField,
@@ -46,6 +50,7 @@ import {
   readOfTheCustomer,
   readOfTheSetup,
   type FakeStripe,
+  theSecretOfTheInvoiceOf,
   type WhatStripeAnswers,
 } from './fixtures/stripe';
 
@@ -554,15 +559,90 @@ describe('the call that creates the subscription she pressed for', () => {
       );
 
       expect(answered.statusCode).toBe(200);
-      expect(JSON.parse(answered.body)).toEqual({ started: true });
+      expect(JSON.parse(answered.body).started).toBe(true);
       expect(stripe.fieldsOf(theCreate(stripe)!)[discountCouponField]).toBe(theBlackFridayCoupon);
       expect(stripe.subscriptionsMade()).toHaveLength(1);
     });
 
-    it('leaves the price, the free month and the digest as they are beside the coupon', async () => {
+    it('leaves the price and the digest as they are beside the coupon, and no free month', async () => {
       const { held, stripe } = await aFinish(sheHasPressedBuyEmi, {}, whileTheOfferIsOpen);
 
       await finishSubscriptionFor(aRequest('PUT', tokenOf(), theSetupSheConfirmedOnTheOffer), held);
+
+      expect(stripe.fieldsOf(theCreate(stripe)!)).toEqual({
+        customer: aCustomerRef,
+        [subscriptionPriceField]: theYearlyPriceRef,
+        [paymentBehaviourField]: theFirstInvoiceWaits,
+        [expandField]: theSecretOfTheFirstInvoice,
+        [savesTheDefaultField]: onSubscription,
+        [payerDigestField]: payerDigest,
+        [discountCouponField]: theBlackFridayCoupon,
+      });
+    });
+
+    it('answers the secret her browser confirms the one charge on', async () => {
+      const { held, stripe } = await aFinish(sheHasPressedBuyEmi, {}, whileTheOfferIsOpen);
+
+      const answered = await finishSubscriptionFor(
+        aRequest('PUT', tokenOf(), theSetupSheConfirmedOnTheOffer),
+        held,
+      );
+      const [subscriptionRef = ''] = stripe.subscriptionsMade();
+
+      expect(JSON.parse(answered.body)).toEqual({
+        started: true,
+        paymentSecret: theSecretOfTheInvoiceOf(subscriptionRef),
+      });
+    });
+
+    it('answers no secret on the one price, because a free month charges nothing', async () => {
+      const { held } = await aFinish(sheHasPressedBuyEmi, {}, whileTheOfferIsOpen);
+
+      const answered = await finishSubscriptionFor(
+        aRequest('PUT', tokenOf(), theSetupSheConfirmed),
+        held,
+      );
+
+      expect(JSON.parse(answered.body)).toEqual({ started: true });
+    });
+
+    it('answers no secret to a woman who is already paying, because nothing was created', async () => {
+      const { held, stripe } = await aFinish(
+        { payerRef: aCustomerRef, subscriptionRef: 'sub_000000000777', state: 'active' },
+        {},
+        whileTheOfferIsOpen,
+      );
+
+      const answered = await finishSubscriptionFor(
+        aRequest('PUT', tokenOf(), theSetupSheConfirmedOnTheOffer),
+        held,
+      );
+
+      expect(JSON.parse(answered.body)).toEqual({ started: true });
+      expect(stripe.calls()).toEqual([]);
+    });
+
+    it('tells her nothing was created when the invoice of the offer names no secret', async () => {
+      const { held, stripe } = await aFinish(
+        sheHasPressedBuyEmi,
+        { theInvoiceCarriesNoSecret: true },
+        whileTheOfferIsOpen,
+      );
+
+      const answered = await finishSubscriptionFor(
+        aRequest('PUT', tokenOf(), theSetupSheConfirmedOnTheOffer),
+        held,
+      );
+
+      expect(answered.statusCode).toBe(502);
+      expect(JSON.parse(answered.body)).toEqual({ error: nothingWasCreated });
+      expect(answered.body).not.toContain(stripe.subscriptionsMade()[0] ?? 'sub_');
+    });
+
+    it('keeps the free month on the create of the one price', async () => {
+      const { held, stripe } = await aFinish(sheHasPressedBuyEmi, {}, whileTheOfferIsOpen);
+
+      await finishSubscriptionFor(aRequest('PUT', tokenOf(), theSetupSheConfirmed), held);
 
       expect(stripe.fieldsOf(theCreate(stripe)!)).toEqual({
         customer: aCustomerRef,
@@ -571,7 +651,6 @@ describe('the call that creates the subscription she pressed for', () => {
         [savesTheDefaultField]: onSubscription,
         [whenNoCardIsLeftField]: cancelTheSubscription,
         [payerDigestField]: payerDigest,
-        [discountCouponField]: theBlackFridayCoupon,
       });
     });
 

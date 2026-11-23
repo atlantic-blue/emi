@@ -58,6 +58,12 @@ export interface WhatTheConfirmationSaid {
 export interface TheStripeOnThePage {
   elements(options: Record<string, unknown>): TheElementsOfTheForm;
   confirmSetup(options: Record<string, unknown>): Promise<WhatTheConfirmationSaid>;
+  /**
+   * The one charge of a subscription with no free month. It takes the secret of the invoice and no
+   * elements: the card is already on the customer by then, so there is nothing left to collect and
+   * the only thing that may still happen is her bank asking her a question.
+   */
+  confirmPayment(options: Record<string, unknown>): Promise<WhatTheConfirmationSaid>;
 }
 
 /** How the form gets hold of Stripe. A test hands it one that answers without a network. */

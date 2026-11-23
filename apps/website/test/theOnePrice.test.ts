@@ -11,9 +11,12 @@ import {
   hostsIn,
   isHalfOfThePrice,
   problemsWithTheAddress,
+  isAWordOfTheOffer,
   problemsWithThePeriod,
   problemsWithWhatItCosts,
+  problemsWithWhatTheOfferPromises,
   theAmountOf,
+  theWordForFree,
   theAmountsThePageMayName,
   theOfferAmount,
   theOfferPrice,
@@ -137,8 +140,12 @@ describe('the site asks for one price', () => {
   );
 
   it('refuses the offer amount in words that do not carry the offer price', () => {
-    const halved = theWordsBut('english.ts', theOfferPrice.en, 'Half off, every year.');
+    // Every copy goes. The offer sentence is written twice, once for the page that carries the
+    // offer and once for the till, so taking one away leaves the other to satisfy the rule.
+    const text = readFileSync(join(theWords, 'english.ts'), 'utf8');
+    const halved = { file: 'english.ts', text: text.replaceAll(theOfferPrice.en, 'Half off.') };
 
+    expect(text.split(theOfferPrice.en)).toHaveLength(3);
     expect(problemsWithWhatItCosts(halved)).toEqual([
       `english.ts names the offer amount outside the offer price, which reads "${theOfferPrice.en}"`,
     ]);
@@ -225,18 +232,54 @@ describe('the offer asks for half of the price', () => {
     expect(amountsOfMoneyIn(theOfferPrice[language]).map(theAmountOf)).toEqual([theOfferAmount]);
   });
 
-  it.each(languages)('offers the first month free with the offer too, in %s', (language) => {
+  /**
+   * The free month belongs to the one price. A woman who buys on the offer is charged half of the
+   * year the moment she presses, so the clause the one price opens with may not appear here.
+   */
+  it.each(languages)('offers no free month with the offer, in %s', (language) => {
     const [free = ''] = theOnePrice[language].split(',');
 
     expect(free.length).toBeGreaterThan(0);
-    expect(theOfferPrice[language].startsWith(free)).toBe(true);
+    expect(theOnePrice[language].startsWith(free)).toBe(true);
+    expect(theOfferPrice[language]).not.toContain(free);
   });
 
   it.each(languages)('covers a year, as the price it halves does, in %s', (language) => {
     const said = theOfferPrice[language];
+    const [amount = ''] = amountsOfMoneyIn(said);
+    const period = theOnePeriod[language].replace('.', '');
 
-    expect(said).toContain(theOnePeriod[language].replace('.', ''));
-    expect(problemsWithThePeriod(language, said.replace(/,[^,]*$/, '.'))).toEqual([]);
+    // The period sits against the amount rather than anywhere in the sentence, so a figure that
+    // covered a month could not read as one that covers a year.
+    expect(said).toContain(`${amount} ${period}`);
+    expect(problemsWithThePeriod(language, `${amount} ${period}.`)).toEqual([]);
+  });
+
+  it.each(languages)('says nothing of the offer is free, in %s', (language) => {
+    expect(problemsWithWhatTheOfferPromises(language, wordsIn(language))).toEqual([]);
+    expect(theWordForFree[language].length).toBeGreaterThan(0);
+  });
+
+  it.each(languages)(
+    'refuses a sentence of the offer that promises a month free, in %s',
+    (language) => {
+      const promising = { ...wordsIn(language), blackFridayPrice: theOnePrice[language] };
+      const [free = ''] = theWordForFree[language];
+
+      expect(problemsWithWhatTheOfferPromises(language, promising)).toEqual([
+        `blackFridayPrice says "${free}", and a woman who buys on the offer is charged at once with no free month`,
+      ]);
+    },
+  );
+
+  it('leaves the free month of the one price alone, because that price keeps it', () => {
+    const keeping = { price: theOnePrice.en, checkoutPrice: wordsIn('en').checkoutPrice };
+
+    expect(problemsWithWhatTheOfferPromises('en', keeping)).toEqual([]);
+    expect(isAWordOfTheOffer('price')).toBe(false);
+    expect(isAWordOfTheOffer('checkoutPrice')).toBe(false);
+    expect(isAWordOfTheOffer('checkoutOfferPrice')).toBe(true);
+    expect(isAWordOfTheOffer('blackFridayPrice')).toBe(true);
   });
 
   it.each(languages)('says the offer on the page that carries it, in %s', (language) => {
