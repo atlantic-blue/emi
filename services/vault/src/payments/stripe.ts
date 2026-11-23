@@ -101,6 +101,37 @@ export const theYearlyPrice: YearlyPrice = {
  */
 export const theYearlyPriceRef = 'price_1UcRXkHdug2e0off0cVv6OOE';
 
+/** The one offer a call may name. A caller naming anything else is refused before Stripe is read. */
+export const theBlackFridayOffer = 'black-friday';
+
+/**
+ * The coupon of that offer, which takes half off the yearly price for as long as she stays.
+ *
+ * The operator makes it in the Stripe account by hand, at 50 percent off and forever. Nothing here
+ * creates it and nothing here reads it back, so an account that holds no coupon under this
+ * identifier refuses the create, and the woman reads that nothing was created.
+ */
+export const theBlackFridayCoupon = 'emi-black-friday-2026';
+
+/**
+ * The instant the offer closes, which is the first moment of December in central Europe. A create
+ * made at or after it carries no coupon, so a page left open over the end sells the full price.
+ */
+export const theBlackFridayOfferEnds = new Date('2026-11-30T23:00:00.000Z');
+
+/** The field a coupon travels in, which is how this api takes one discount of a subscription. */
+export const discountCouponField = 'discounts[0][coupon]';
+
+/**
+ * The coupon one create carries, or nothing at all. The offer and the instant are read together,
+ * because an offer that ran out is not a refusal: she is sold the subscription at the full price.
+ */
+export function theCouponFor(offer: string | undefined, now: Date): string | null {
+  return offer === theBlackFridayOffer && now.getTime() < theBlackFridayOfferEnds.getTime()
+    ? theBlackFridayCoupon
+    : null;
+}
+
 /** Every way a call of Stripe fails, as a value, so a caller matches a reason and not words. */
 export type StripeRefusal = 'the-call-was-refused' | 'the-answer-names-no-object';
 
@@ -155,6 +186,7 @@ interface AnObjectStripeMade {
   readonly status?: unknown;
   readonly payment_method?: unknown;
   readonly invoice_settings?: { readonly default_payment_method?: unknown };
+  readonly latest_invoice?: { readonly confirmation_secret?: { readonly client_secret?: unknown } };
   readonly metadata?: Readonly<Record<string, unknown>>;
   readonly data?: unknown;
   readonly has_more?: unknown;
@@ -554,6 +586,22 @@ export const whenNoCardIsLeftField = 'trial_settings[end_behavior][missing_payme
 /** What that field is set to. */
 export const cancelTheSubscription = 'cancel';
 
+/** The field that says what Stripe does with the first invoice of a create. */
+export const paymentBehaviourField = 'payment_behavior';
+
+/**
+ * What that field is set to on a create with no free month. Stripe makes the invoice and leaves it
+ * unpaid, rather than charging the card while nobody is watching, so the one charge is confirmed in
+ * her browser and her bank asks its question in front of her.
+ */
+export const theFirstInvoiceWaits = 'default_incomplete';
+
+/** The field that asks an answer to carry a thing inside it rather than its identifier. */
+export const expandField = 'expand[0]';
+
+/** What is asked for: the invoice of the create, and the secret the payment is confirmed on. */
+export const theSecretOfTheFirstInvoice = 'latest_invoice.confirmation_secret';
+
 /** Whose subscription is made, and under which key, so two presses make one of them. */
 export interface WhichSubscription {
   readonly customerRef: string;
@@ -564,33 +612,65 @@ export interface WhichSubscription {
    * a second press are both answered with the subscription the first call made.
    */
   readonly oneOfAKind: string;
+  /**
+   * The offer the page she pressed on was showing, where it was showing one. The coupon is worked
+   * out here rather than taken as a coupon, so no caller can name a discount of its own.
+   */
+  readonly offer?: string;
+  /** The instant the create is made at, which is what says whether the offer is still open. */
+  readonly now: Date;
+}
+
+/** What one create answers: the subscription, and the first payment where one is waiting. */
+export interface TheSubscriptionMade {
+  readonly subscriptionRef: string;
+  /**
+   * The secret her browser confirms the first charge on, or nothing at all where there is nothing
+   * to charge. A create that carries the free month makes an invoice of zero, so no payment waits.
+   */
+  readonly paymentSecret: string | null;
 }
 
 /**
- * The yearly subscription, made on a customer that already holds her payment method, with the
- * free month in front of it.
+ * The yearly subscription, made on a customer that already holds her payment method.
  *
  * The payment method is set on the customer before this call, so the subscription takes it as its
  * own and the renewal a year later is charged to the card she gave at the press.
+ *
+ * The free month belongs to the one price and to nothing else. A create that carries a coupon is
+ * charged at once, so it leaves the first invoice unpaid and answers the secret her browser
+ * confirms it on. Her bank asks its question there, in front of her, rather than against a charge
+ * Emi makes while she is gone.
  */
 export async function yearlySubscriptionFor(
   held: WhatACallHolds,
   which: WhichSubscription,
-): Promise<string> {
+): Promise<TheSubscriptionMade> {
+  const coupon = theCouponFor(which.offer, which.now);
+  const theFreeMonthApplies = coupon === null;
   const answered = await held.reaches(subscriptionsAddress, {
     method: 'POST',
     headers: headersFor(held.secretKey, which.oneOfAKind),
     body: formBodyOf([
       ['customer', which.customerRef],
       [subscriptionPriceField, theYearlyPriceRef],
-      [trialDaysField, String(theYearlyPrice.freeMonthDays)],
+      ...(theFreeMonthApplies
+        ? ([
+            [trialDaysField, String(theYearlyPrice.freeMonthDays)],
+            [whenNoCardIsLeftField, cancelTheSubscription],
+          ] as const)
+        : ([
+            [paymentBehaviourField, theFirstInvoiceWaits],
+            [expandField, theSecretOfTheFirstInvoice],
+          ] as const)),
       [savesTheDefaultField, onSubscription],
-      [whenNoCardIsLeftField, cancelTheSubscription],
       [payerDigestField, which.payerDigest],
+      ...(coupon === null ? [] : [[discountCouponField, coupon] as const]),
     ]),
   });
 
-  const subscriptionRef = textIn(objectIn(answered, 'subscription').id);
+  const made = objectIn(answered, 'subscription');
+  const subscriptionRef = textIn(made.id);
 
   if (subscriptionRef === null) {
     throw new StripeError(
@@ -599,5 +679,14 @@ export async function yearlySubscriptionFor(
     );
   }
 
-  return subscriptionRef;
+  const paymentSecret = textIn(made.latest_invoice?.confirmation_secret?.client_secret);
+
+  if (!theFreeMonthApplies && paymentSecret === null) {
+    throw new StripeError(
+      'the-answer-names-no-object',
+      'the subscription call named no first payment to confirm',
+    );
+  }
+
+  return { subscriptionRef, paymentSecret: theFreeMonthApplies ? null : paymentSecret };
 }

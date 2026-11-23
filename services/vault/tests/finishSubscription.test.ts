@@ -8,6 +8,7 @@ import {
   nothingOfHersWasStarted,
   nothingWasCreated,
   oneSubscriptionPer,
+  offerField,
   thatSetupStartsNothing,
   thatTokenFinishesNothing,
   theBodyASubscriptionTakes,
@@ -19,14 +20,21 @@ import {
   cancelTheSubscription,
   customerDefaultField,
   customersAddress,
+  discountCouponField,
+  expandField,
   idempotencyHeader,
   onSubscription,
   payerDigestField,
+  paymentBehaviourField,
   savesTheDefaultField,
   setupIntentsAddress,
   stripeApiVersion,
   subscriptionPriceField,
   subscriptionsAddress,
+  theBlackFridayCoupon,
+  theBlackFridayOffer,
+  theFirstInvoiceWaits,
+  theSecretOfTheFirstInvoice,
   theYearlyPrice,
   theYearlyPriceRef,
   trialDaysField,
@@ -42,6 +50,7 @@ import {
   readOfTheCustomer,
   readOfTheSetup,
   type FakeStripe,
+  theSecretOfTheInvoiceOf,
   type WhatStripeAnswers,
 } from './fixtures/stripe';
 
@@ -118,6 +127,7 @@ interface AFinish {
 async function aFinish(
   pressed: WhatSheHasPressed | null = sheHasPressedBuyEmi,
   answers: WhatStripeAnswers = {},
+  now: Date = theInstant,
 ): Promise<AFinish> {
   const table = fakeTable();
   const entitlements = dynamoEntitlementStore(table, tableName);
@@ -144,12 +154,23 @@ async function aFinish(
       reaches: stripe.reaches,
       secretKey: () => Promise.resolve(theKey),
       poolId: userPoolId,
+      clock: () => now,
     },
   };
 }
 
 /** What her browser sends once Stripe has taken the card or the wallet. */
 const theSetupSheConfirmed = JSON.stringify({ setupRef: aSetupRef });
+
+/** The same, from a woman who opened the page the Black Friday address sent her to. */
+const theSetupSheConfirmedOnTheOffer = JSON.stringify({
+  setupRef: aSetupRef,
+  offer: theBlackFridayOffer,
+});
+
+/** A minute before the offer closes, and the first minute after it. */
+const whileTheOfferIsOpen = new Date('2026-11-30T22:59:00.000Z');
+const onceTheOfferHasClosed = new Date('2026-11-30T23:00:00.000Z');
 
 /** Each call as it left, so a test reads the order and not only the set. */
 const whatWasCalled = (stripe: FakeStripe): string[] =>
@@ -470,6 +491,18 @@ describe('the call that creates the subscription she pressed for', () => {
       ['a body that is not json at all', aSetupRef],
       ['a body that is a list', JSON.stringify([{ setupRef: aSetupRef }])],
       ['a price of her own', JSON.stringify({ setupRef: aSetupRef, price: 'price_1' })],
+      ['a coupon of her own', JSON.stringify({ setupRef: aSetupRef, coupon: 'half-off' })],
+      [
+        'an offer this call does not sell',
+        JSON.stringify({ setupRef: aSetupRef, offer: 'two-thirds-off' }),
+      ],
+      [
+        'an offer of last year, which reads almost like the one it sells',
+        JSON.stringify({ setupRef: aSetupRef, offer: `${theBlackFridayOffer}-2025` }),
+      ],
+      ['an offer that is not text', JSON.stringify({ setupRef: aSetupRef, offer: true })],
+      ['an offer that is empty text', JSON.stringify({ setupRef: aSetupRef, offer: '' })],
+      ['an offer and no setup at all', JSON.stringify({ offer: theBlackFridayOffer })],
     ];
 
     it.each(refusedBodies)('refuses %s, and reaches Stripe for none of them', async (_, body) => {
@@ -513,6 +546,154 @@ describe('the call that creates the subscription she pressed for', () => {
       );
 
       expect(new Set(answers.map((answered) => answered.body)).size).toBe(1);
+    });
+  });
+
+  describe('the offer she arrived with', () => {
+    it('sends the coupon on the create for a press made before the offer closes', async () => {
+      const { held, stripe } = await aFinish(sheHasPressedBuyEmi, {}, whileTheOfferIsOpen);
+
+      const answered = await finishSubscriptionFor(
+        aRequest('PUT', tokenOf(), theSetupSheConfirmedOnTheOffer),
+        held,
+      );
+
+      expect(answered.statusCode).toBe(200);
+      expect(JSON.parse(answered.body).started).toBe(true);
+      expect(stripe.fieldsOf(theCreate(stripe)!)[discountCouponField]).toBe(theBlackFridayCoupon);
+      expect(stripe.subscriptionsMade()).toHaveLength(1);
+    });
+
+    it('leaves the price and the digest as they are beside the coupon, and no free month', async () => {
+      const { held, stripe } = await aFinish(sheHasPressedBuyEmi, {}, whileTheOfferIsOpen);
+
+      await finishSubscriptionFor(aRequest('PUT', tokenOf(), theSetupSheConfirmedOnTheOffer), held);
+
+      expect(stripe.fieldsOf(theCreate(stripe)!)).toEqual({
+        customer: aCustomerRef,
+        [subscriptionPriceField]: theYearlyPriceRef,
+        [paymentBehaviourField]: theFirstInvoiceWaits,
+        [expandField]: theSecretOfTheFirstInvoice,
+        [savesTheDefaultField]: onSubscription,
+        [payerDigestField]: payerDigest,
+        [discountCouponField]: theBlackFridayCoupon,
+      });
+    });
+
+    it('answers the secret her browser confirms the one charge on', async () => {
+      const { held, stripe } = await aFinish(sheHasPressedBuyEmi, {}, whileTheOfferIsOpen);
+
+      const answered = await finishSubscriptionFor(
+        aRequest('PUT', tokenOf(), theSetupSheConfirmedOnTheOffer),
+        held,
+      );
+      const [subscriptionRef = ''] = stripe.subscriptionsMade();
+
+      expect(JSON.parse(answered.body)).toEqual({
+        started: true,
+        paymentSecret: theSecretOfTheInvoiceOf(subscriptionRef),
+      });
+    });
+
+    it('answers no secret on the one price, because a free month charges nothing', async () => {
+      const { held } = await aFinish(sheHasPressedBuyEmi, {}, whileTheOfferIsOpen);
+
+      const answered = await finishSubscriptionFor(
+        aRequest('PUT', tokenOf(), theSetupSheConfirmed),
+        held,
+      );
+
+      expect(JSON.parse(answered.body)).toEqual({ started: true });
+    });
+
+    it('answers no secret to a woman who is already paying, because nothing was created', async () => {
+      const { held, stripe } = await aFinish(
+        { payerRef: aCustomerRef, subscriptionRef: 'sub_000000000777', state: 'active' },
+        {},
+        whileTheOfferIsOpen,
+      );
+
+      const answered = await finishSubscriptionFor(
+        aRequest('PUT', tokenOf(), theSetupSheConfirmedOnTheOffer),
+        held,
+      );
+
+      expect(JSON.parse(answered.body)).toEqual({ started: true });
+      expect(stripe.calls()).toEqual([]);
+    });
+
+    it('tells her nothing was created when the invoice of the offer names no secret', async () => {
+      const { held, stripe } = await aFinish(
+        sheHasPressedBuyEmi,
+        { theInvoiceCarriesNoSecret: true },
+        whileTheOfferIsOpen,
+      );
+
+      const answered = await finishSubscriptionFor(
+        aRequest('PUT', tokenOf(), theSetupSheConfirmedOnTheOffer),
+        held,
+      );
+
+      expect(answered.statusCode).toBe(502);
+      expect(JSON.parse(answered.body)).toEqual({ error: nothingWasCreated });
+      expect(answered.body).not.toContain(stripe.subscriptionsMade()[0] ?? 'sub_');
+    });
+
+    it('keeps the free month on the create of the one price', async () => {
+      const { held, stripe } = await aFinish(sheHasPressedBuyEmi, {}, whileTheOfferIsOpen);
+
+      await finishSubscriptionFor(aRequest('PUT', tokenOf(), theSetupSheConfirmed), held);
+
+      expect(stripe.fieldsOf(theCreate(stripe)!)).toEqual({
+        customer: aCustomerRef,
+        [subscriptionPriceField]: theYearlyPriceRef,
+        [trialDaysField]: String(theYearlyPrice.freeMonthDays),
+        [savesTheDefaultField]: onSubscription,
+        [whenNoCardIsLeftField]: cancelTheSubscription,
+        [payerDigestField]: payerDigest,
+      });
+    });
+
+    it('sends no coupon for a press made at the instant the offer closes', async () => {
+      const { held, stripe } = await aFinish(sheHasPressedBuyEmi, {}, onceTheOfferHasClosed);
+
+      const answered = await finishSubscriptionFor(
+        aRequest('PUT', tokenOf(), theSetupSheConfirmedOnTheOffer),
+        held,
+      );
+
+      expect(answered.statusCode).toBe(200);
+      expect(stripe.fieldsOf(theCreate(stripe)!)[discountCouponField]).toBeUndefined();
+      expect(stripe.fieldsOf(theCreate(stripe)!)[subscriptionPriceField]).toBe(theYearlyPriceRef);
+      expect(stripe.subscriptionsMade()).toHaveLength(1);
+    });
+
+    it('sends no coupon when the body names no offer, while the offer is open', async () => {
+      const { held, stripe } = await aFinish(sheHasPressedBuyEmi, {}, whileTheOfferIsOpen);
+
+      await finishSubscriptionFor(aRequest('PUT', tokenOf(), theSetupSheConfirmed), held);
+
+      expect(Object.keys(stripe.fieldsOf(theCreate(stripe)!))).not.toContain(discountCouponField);
+    });
+
+    it('names the setup she confirmed as the key, which the offer does not move', async () => {
+      const { held, stripe } = await aFinish(sheHasPressedBuyEmi, {}, whileTheOfferIsOpen);
+
+      await finishSubscriptionFor(aRequest('PUT', tokenOf(), theSetupSheConfirmedOnTheOffer), held);
+      await finishSubscriptionFor(aRequest('PUT', tokenOf(), theSetupSheConfirmedOnTheOffer), held);
+
+      const keys = stripe
+        .calls()
+        .filter((call) => call.address === subscriptionsAddress)
+        .map((call) => call.asked.headers[idempotencyHeader]);
+
+      expect(keys).toEqual([oneSubscriptionPer(aSetupRef), oneSubscriptionPer(aSetupRef)]);
+      expect(stripe.subscriptionsMade()).toHaveLength(1);
+    });
+
+    it('names the field the page sends the offer in, so the two cannot drift apart', () => {
+      expect(offerField).toBe('offer');
+      expect(JSON.parse(theSetupSheConfirmedOnTheOffer)[offerField]).toBe(theBlackFridayOffer);
     });
   });
 

@@ -18,6 +18,10 @@ import {
  * complete, and confirm a setup the service answered with. The two differ in the route they ask
  * for that setup and in where they leave her, so those stay with each form and the rest is here.
  *
+ * The page she buys Emi on also confirms a charge, where the plan she bought has no free month.
+ * That one carries the secret of the invoice and no elements, because the card is already on the
+ * customer: nothing is collected, and only her bank may still have a question.
+ *
  * Stripe is given the element the moment a browser attaches it, rather than on a pass of its own,
  * because the form is drawn inside a row she opens and that row is not there to be mounted into
  * until she opens it.
@@ -69,6 +73,12 @@ export interface TheCardFormOnThePage {
     elements: TheElementsOfTheForm,
     clientSecret: string,
   ) => Promise<WhatTheConfirmationSaid>;
+  /**
+   * The first charge of a subscription with no free month, confirmed against the invoice the
+   * service answered with. It takes no elements: her card is on the customer by then, so the only
+   * thing left is the question her bank may ask, and Stripe asks it here in front of her.
+   */
+  readonly confirmsThePayment: (clientSecret: string) => Promise<WhatTheConfirmationSaid>;
 }
 
 export function useTheCardFormSheFillsIn({
@@ -142,10 +152,25 @@ export function useTheCardFormSheFillsIn({
     [arrives, comesBackTo, publishableKey],
   );
 
+  const confirmsThePayment = useCallback(
+    async (clientSecret: string): Promise<WhatTheConfirmationSaid> => {
+      const stripe = await arrives(publishableKey);
+
+      return (
+        (await stripe?.confirmPayment({
+          clientSecret,
+          confirmParams: { return_url: comesBackTo },
+          redirect: 'if_required',
+        })) ?? { error: {} }
+      );
+    },
+    [arrives, comesBackTo, publishableKey],
+  );
+
   const theElements = useCallback(
     (): TheElementsOfTheForm | null => held.current?.elements ?? null,
     [],
   );
 
-  return { drawsTheCardForm, theElements, isComplete, confirms };
+  return { drawsTheCardForm, theElements, isComplete, confirms, confirmsThePayment };
 }

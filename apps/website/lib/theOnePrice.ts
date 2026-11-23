@@ -9,6 +9,13 @@ import { SITE_ORIGIN } from '@/lib/addresses';
  * price on the page, decides on it, and meets the store's own figure one press later. The gap
  * between the two is the moment she stops believing the rest of the page. The address is the same
  * kind of promise: a host nobody serves is a dead link at best, and somebody else's site at worst.
+ *
+ * An offer is a discount on that one price rather than a second price, so the halved amount lives
+ * here beside it and is held to being half of it. Every figure anywhere in the words is read
+ * against this file, and a third amount is refused.
+ *
+ * The free month is part of the one price and part of nothing else. A woman who buys on an offer
+ * is charged the moment she presses, so no sentence of an offer may promise her a month.
  */
 
 /** What the page asks her for, written as each language writes it, full stop and all. */
@@ -31,6 +38,78 @@ export const theOnePeriod: Readonly<Record<Language, string>> = {
  * are compared.
  */
 export const theOneAmount = '39';
+
+/**
+ * What the page asks a woman who arrived on the Black Friday offer.
+ *
+ * It names no free month. The free month belongs to the one price above and to nothing else: a
+ * woman who buys on the offer is charged half of the year the moment she presses, so a sentence
+ * here that opened with a month free would be a month she never gets.
+ */
+export const theOfferPrice: Readonly<Record<Language, string>> = {
+  en: '19.50 euros a year, every year, value added tax included.',
+  ru: '19,50 евро в год, каждый год, налог на добавленную стоимость включён.',
+  es: '19,50 euros al año, cada año, impuesto sobre el valor añadido incluido.',
+};
+
+/** Half of the one price, in the one form, which is what the offer asks for. */
+export const theOfferAmount = '19.50';
+
+/**
+ * The two amounts the site may ask for, and no third.
+ *
+ * One price is what a reader is owed, and an offer is a discount on that price rather than a
+ * second product, so the second entry is held to being half of the first by the case that reads
+ * this list. A third entry here is a price somebody added without deciding it.
+ */
+export const theAmountsThePageMayName = [theOneAmount, theOfferAmount] as const;
+
+/** Whether an amount a text names is half of the price, which is what the offer charges. */
+export function isHalfOfThePrice(amount: string): boolean {
+  return Number(amount) * 2 === Number(theOneAmount);
+}
+
+/**
+ * How each language says that something costs nothing.
+ *
+ * The free month is part of the one price and part of nothing else. A woman who buys on an offer
+ * is charged the moment she presses, so a sentence of the offer that carried one of these would
+ * promise her a month she never gets, and she would meet the charge on her statement instead.
+ *
+ * Each entry is a stem rather than a word, because Russian and Spanish change the ending.
+ */
+export const theWordForFree: Readonly<Record<Language, readonly string[]>> = {
+  en: ['free'],
+  ru: ['бесплатн'],
+  es: ['gratis', 'gratuit'],
+};
+
+/**
+ * Whether a word of the catalogue is one a woman reads on an offer, by the name it is kept under.
+ *
+ * Read from the name rather than from a list, so a sentence somebody adds to the offer page or to
+ * the till is held to the rule by existing.
+ */
+export function isAWordOfTheOffer(key: string): boolean {
+  return key.startsWith('blackFriday') || key.startsWith('checkoutOffer');
+}
+
+/** What is wrong with what the offer promises, as one sentence for each claim it may not make. */
+export function problemsWithWhatTheOfferPromises(
+  language: Language,
+  said: Readonly<Record<string, string>>,
+): string[] {
+  return Object.entries(said)
+    .filter(([key]) => isAWordOfTheOffer(key))
+    .flatMap(([key, value]) =>
+      theWordForFree[language]
+        .filter((free) => value.toLocaleLowerCase().includes(free))
+        .map(
+          (free) =>
+            `${key} says "${free}", and a woman who buys on the offer is charged at once with no free month`,
+        ),
+    );
+}
 
 /** The one host the site serves, taken from the address its pages already name. */
 export const theOneHost = new URL(SITE_ORIGIN).host;
@@ -104,16 +183,44 @@ export function hostsIn(text: string): string[] {
 export const theWordsThatNameMoney = [
   'accountPaidUntil',
   'accountRenewsOn',
+  'blackFridayDescription',
+  'blackFridayInsteadOf',
+  'blackFridayPrice',
+  'checkoutOfferAmount',
+  'checkoutOfferPay',
+  'checkoutOfferPrice',
   'checkoutPay',
   'checkoutPlanAmount',
   'checkoutPrice',
   'price',
 ] as const;
 
+/**
+ * The words that may name half of the price, which are the words a woman reads on the offer: the
+ * page that carries it, and the till she lands on from there. Every other sentence of the site
+ * says what Emi costs, so half of it anywhere else is a figure she meets with nothing to tell her
+ * why it is lower than the one she read a moment ago.
+ */
+export const theWordsThatNameTheOffer = [
+  'blackFridayDescription',
+  'blackFridayPrice',
+  'checkoutOfferAmount',
+  'checkoutOfferPay',
+  'checkoutOfferPrice',
+] as const;
+
 /** The words of one catalogue that name an amount, by the key a reader finds them under. */
 export function wordsNamingMoneyIn(said: Readonly<Record<string, string>>): string[] {
   return Object.entries(said)
     .filter(([, value]) => amountsOfMoneyIn(value).length > 0)
+    .map(([key]) => key)
+    .sort();
+}
+
+/** The words of one catalogue that name half of the price, under the same kind of name. */
+export function wordsNamingTheOfferIn(said: Readonly<Record<string, string>>): string[] {
+  return Object.entries(said)
+    .filter(([, value]) => amountsOfMoneyIn(value).map(theAmountOf).includes(theOfferAmount))
     .map(([key]) => key)
     .sort();
 }
@@ -131,7 +238,7 @@ export function problemsWithWhatItCosts(said: WhatOneFileSays): string[] {
   const whose = whoseWordsAreIn(said.file);
 
   for (const amount of amounts) {
-    if (theAmountOf(amount) !== theOneAmount) {
+    if (!(theAmountsThePageMayName as readonly string[]).includes(theAmountOf(amount))) {
       problems.push(`${said.file} asks for ${amount}, and the one price is ${theOneAmount} a year`);
     }
   }
@@ -149,6 +256,14 @@ export function problemsWithWhatItCosts(said: WhatOneFileSays): string[] {
   if (!said.text.includes(theOnePrice[whose])) {
     problems.push(
       `${said.file} names money outside the one price, which reads "${theOnePrice[whose]}"`,
+    );
+  }
+
+  const namesTheOffer = amounts.some((amount) => theAmountOf(amount) === theOfferAmount);
+
+  if (namesTheOffer && !said.text.includes(theOfferPrice[whose])) {
+    problems.push(
+      `${said.file} names the offer amount outside the offer price, which reads "${theOfferPrice[whose]}"`,
     );
   }
 

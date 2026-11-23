@@ -386,6 +386,15 @@ export const english = {
   checkoutCouldNotStart: 'Emi could not start that payment. Try again in a moment.',
   checkoutNoPaymentFormYet: 'Paying on this site is not open yet. Emi is in the App Store today.',
 
+  // The same plan for a woman who arrived on the Black Friday offer. Each one stands in for the
+  // word above that says the full price. The free month belongs to that price alone: the offer is
+  // charged the moment she presses.
+  checkoutOfferEveryYear: 'Emi, half price every year.',
+  checkoutOfferRenews: 'Renews every year at half price',
+  checkoutOfferAmount: '€19.50 a year',
+  checkoutOfferPrice: '19.50 euros a year, every year, value added tax included.',
+  checkoutOfferPay: 'Pay €19.50',
+
   // The subscription card of the account, from boards/Profile.dc.html.
   accountSubscriptionHeading: 'SUBSCRIPTION',
   accountPlanName: 'Emi, yearly',
@@ -443,4 +452,15 @@ export const english = {
   footerCopyright: 'Copyright 2026 Atlantic Blue Solutions Limited.',
   footerPrivacyPolicy: 'Privacy policy',
   footerTerms: 'Terms',
+
+  // The Black Friday page, which draws the Home board with the offer in its hero.
+  blackFridayEyebrow: 'BLACK FRIDAY · HALF PRICE EVERY YEAR',
+  blackFridayHeading: 'Half price, every year you stay.',
+  blackFridayPrice: '19.50 euros a year, every year, value added tax included.',
+  blackFridayInsteadOf:
+    'Emi is 39 euros a year. This offer is half of that, for as long as you stay.',
+  blackFridayEnds: 'The offer ends at midnight on 1 December 2026, Central European Time.',
+  blackFridayPress: 'Buy Emi at half price',
+  blackFridayTitle: 'Emi: half price for Black Friday',
+  blackFridayDescription: '19.50 euros a year, every year. The offer ends on 1 December 2026.',
 };

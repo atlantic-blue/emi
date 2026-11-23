@@ -2,7 +2,17 @@
 
 Each version lists what changed for the person who uses Emi. The version is `expo.version` in `apps/mobile/app.json`. The store build number goes up by itself on each build, and a released version names the build it shipped as.
 
+## 0.3.3 (22 November 2026)
+
+The first build made for iOS 27 to reach TestFlight. Nothing in the app changes.
+
+### Changed
+
+- The app is built for iOS 27, so it keeps working on the next iPhone software. Nothing she sees changes. https://github.com/atlantic-blue/emi/pull/613 https://github.com/atlantic-blue/emi/pull/615 https://github.com/atlantic-blue/emi/pull/619
+
 ## 0.3.2 (22 November 2026)
+
+Version 0.3.2 never reached TestFlight. Its build failed.
 
 The first build made for iOS 27. Nothing in the app changes.
 

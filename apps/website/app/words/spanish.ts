@@ -309,6 +309,12 @@ export const spanish: SiteWords = {
   checkoutNoPaymentFormYet:
     'Pagar en este sitio aún no está abierto. Hoy Emi está en la App Store.',
 
+  checkoutOfferEveryYear: 'Emi, a mitad de precio cada año.',
+  checkoutOfferRenews: 'Se renueva cada año a mitad de precio',
+  checkoutOfferAmount: '19,50 € al año',
+  checkoutOfferPrice: '19,50 euros al año, cada año, impuesto sobre el valor añadido incluido.',
+  checkoutOfferPay: 'Pagar 19,50 €',
+
   // The subscription card of the account, from boards/Profile.dc.html.
   accountSubscriptionHeading: 'SUSCRIPCIÓN',
   accountPlanName: 'Emi, anual',
@@ -364,4 +370,17 @@ export const spanish: SiteWords = {
   footerCopyright: 'Derechos de autor 2026 Atlantic Blue Solutions Limited.',
   footerPrivacyPolicy: 'Política de privacidad',
   footerTerms: 'Términos',
+
+  // La página de Black Friday, que dibuja el tablero de la página principal con la oferta.
+  blackFridayEyebrow: 'BLACK FRIDAY · MITAD DE PRECIO CADA AÑO',
+  blackFridayHeading: 'Mitad de precio, cada año que te quedes.',
+  blackFridayPrice: '19,50 euros al año, cada año, impuesto sobre el valor añadido incluido.',
+  blackFridayInsteadOf:
+    'Emi cuesta 39 euros al año. Con esta oferta pagas la mitad, mientras te quedes.',
+  blackFridayEnds:
+    'La oferta termina a medianoche del 1 de diciembre de 2026, hora central europea.',
+  blackFridayPress: 'Compra Emi a mitad de precio',
+  blackFridayTitle: 'Emi: mitad de precio en Black Friday',
+  blackFridayDescription:
+    '19,50 euros al año, cada año. La oferta termina el 1 de diciembre de 2026.',
 };

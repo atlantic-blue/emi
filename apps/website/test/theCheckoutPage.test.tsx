@@ -14,11 +14,17 @@ import type {
   TheElementsOfTheForm,
   TheStripeOnThePage,
 } from '../lib/theStripeOnThePage';
+import { THE_BLACK_FRIDAY_OFFER } from '../lib/theBlackFridayOffer';
+import { THE_OFFER_IN_AN_ADDRESS } from '../lib/theOfferSheArrivedWith';
 import {
+  THE_FIELD_AN_OFFER_TRAVELS_IN,
   THE_FIELD_A_SETUP_TRAVELS_IN,
   WHERE_A_SUBSCRIPTION_STARTS,
 } from '../lib/theSubscriptionSheStarts';
-import { WHERE_SHE_WAS_GOING_ENTRY } from '../lib/whereASignInComesBackTo';
+import {
+  WHERE_SHE_WAS_GOING_ENTRY,
+  WHICH_OFFER_SHE_ARRIVED_WITH_ENTRY,
+} from '../lib/whereASignInComesBackTo';
 
 /**
  * The page she buys Emi on and the form that takes her money, driven in a browser.
@@ -41,9 +47,16 @@ const thePressThatPays = words.checkoutPay;
 
 const A_KEY = 'pk_test_not_a_real_key';
 
+/** A minute before the Black Friday offer closes, and the instant it closes at. */
+const WHILE_THE_OFFER_IS_OPEN = new Date('2026-11-30T22:59:00.000Z');
+const ONCE_THE_OFFER_HAS_CLOSED = new Date('2026-11-30T23:00:00.000Z');
+
 /** Where her browser was told to go, which is the end of this page in a browser. */
 const whereSheWentNext: string[] = [];
 const A_SETUP = 'seti_000000000001';
+
+/** The secret of the invoice a plan with no free month leaves to be paid. Not a real one. */
+const THE_SECRET_OF_THE_FIRST_INVOICE = 'in_000000000001_secret_the-double-wrote-this';
 const A_CLIENT_SECRET = `${A_SETUP}_secret_000000000001`;
 
 /**
@@ -77,6 +90,8 @@ interface WhatStripeDid {
   readonly went: WhereAnElementWent[];
   readonly destroyed: string[];
   readonly confirmed: Record<string, unknown>[];
+  /** Each charge it was asked to confirm, which is what a plan with no free month needs. */
+  readonly paid: Record<string, unknown>[];
   submitted: number;
   /** The listeners each element was given, so a test can answer an event the way Stripe does. */
   readonly listeners: Map<string, (said: Record<string, unknown>) => void>;
@@ -94,6 +109,8 @@ function fakeStripe(
     readonly submitRefuses?: string;
     /** Stripe takes the card and answers no setup, which names nothing to create against. */
     readonly confirmsNoSetup?: boolean;
+    /** Her bank refuses the one charge of a plan with no free month, or it never arrives. */
+    readonly refusesTheCharge?: string;
   } = {},
 ): AFakeStripe {
   const did: WhatStripeDid = {
@@ -101,6 +118,7 @@ function fakeStripe(
     went: [],
     destroyed: [],
     confirmed: [],
+    paid: [],
     submitted: 0,
     listeners: new Map(),
   };
@@ -146,6 +164,15 @@ function fakeStripe(
           options.confirmsNoSetup === true ? {} : { setupIntent: { id: A_SETUP } },
         );
       },
+      confirmPayment: (asked) => {
+        did.paid.push(asked);
+
+        return Promise.resolve(
+          options.refusesTheCharge === undefined
+            ? {}
+            : { error: { message: options.refusesTheCharge } },
+        );
+      },
     },
   };
 }
@@ -166,6 +193,8 @@ interface HowTheApiBehaves {
   readonly refusesToCreate?: boolean;
   /** The second call is taken and the route answers that nothing was created. */
   readonly createsNothing?: boolean;
+  /** The route creates one on the offer and names no charge to confirm, which buys her nothing. */
+  readonly answersNoPaymentSecret?: boolean;
 }
 
 /** The api, answering the press with the secret of a setup and the put with the subscription. */
@@ -188,10 +217,20 @@ function anApi(behaves: HowTheApiBehaves): {
     });
 
     if (method === 'PUT') {
+      // The route answers the secret of the first invoice for a plan with no free month, which is
+      // every plan bought on an offer, and nothing of the kind for the one price.
+      const onAnOffer = (body ?? '').includes(THE_FIELD_AN_OFFER_TRAVELS_IN);
+
       return Promise.resolve({
         ok: behaves.refusesToCreate !== true,
         status: behaves.refusesToCreate === true ? 502 : 200,
-        json: () => Promise.resolve({ started: behaves.createsNothing !== true }),
+        json: () =>
+          Promise.resolve({
+            started: behaves.createsNothing !== true,
+            ...(onAnOffer && behaves.answersNoPaymentSecret !== true
+              ? { paymentSecret: THE_SECRET_OF_THE_FIRST_INVOICE }
+              : {}),
+          }),
       } as Response);
     }
 
@@ -245,9 +284,14 @@ async function aFormOnThePage(
      * network, so it lands after the press that asked for it, and she may have moved on by then.
      */
     readonly stripeArrivesLate?: boolean;
+    /** The address she opened the page on, which is what carries an offer. */
+    readonly search?: string;
+    /** When she is reading it, which is what says whether an offer she arrived with is open. */
+    readonly now?: Date;
   } = {},
 ): Promise<ADrivenForm> {
   const language = options.language ?? 'en';
+  const search = options.search ?? '';
   const stripe = options.stripe ?? fakeStripe();
   const api = anApi(options.api ?? {});
   const holder = document.createElement('div');
@@ -266,7 +310,8 @@ async function aFormOnThePage(
   Object.defineProperty(window, 'location', {
     configurable: true,
     value: {
-      href: 'https://myemi.app/en/checkout/',
+      href: `https://myemi.app/en/checkout/${search}`,
+      search,
       assign: (address: string) => whereSheWentNext.push(address),
       replace: (address: string) => whereSheWentNext.push(address),
     },
@@ -290,6 +335,7 @@ async function aFormOnThePage(
       <ThePaymentForm
         asks={api.asks}
         language={language}
+        now={options.now}
         publishableKey={options.publishableKey ?? A_KEY}
         stripeArrives={() => theArrival.then(() => stripe.stripe)}
         words={wordsIn(language)}
@@ -339,6 +385,9 @@ async function aFormOnThePage(
 beforeEach(() => {
   // React draws nothing outside an act environment, and the runner sets no such flag of its own.
   (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+  // A case that moved the clock leaves it moved for every case after it, and the offer those
+  // cases read is decided by the clock.
+  jest.useRealTimers();
 });
 
 describe('the line under the title', () => {
@@ -620,6 +669,8 @@ let theLastPage: ReturnType<typeof createRoot> | null = null;
 async function theCheckoutPageWhileSheHolds(
   idToken: string | null,
   stripe: AFakeStripe = fakeStripe(),
+  /** The address she opened, and the instant she opened it at, which decide the price she reads. */
+  reading: { readonly search?: string; readonly now?: Date } = {},
 ): Promise<HTMLElement> {
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY = A_KEY;
 
@@ -634,10 +685,23 @@ async function theCheckoutPageWhileSheHolds(
   window.sessionStorage.clear();
   whereSheWentNext.length = 0;
 
+  const search = reading.search ?? '';
+
+  // The page reads the clock for itself, the way it does in her browser, so the instant is moved
+  // rather than handed in. Nothing else of the runner is faked: React flushes on microtasks and a
+  // faked one leaves every render of this file waiting for a tick nobody advances.
+  if (reading.now !== undefined) {
+    jest.useFakeTimers({
+      doNotFake: ['nextTick', 'queueMicrotask', 'setImmediate', 'performance'],
+      now: reading.now,
+    });
+  }
+
   Object.defineProperty(window, 'location', {
     configurable: true,
     value: {
-      href: 'https://myemi.app/en/checkout/',
+      href: `https://myemi.app/en/checkout/${search}`,
+      search,
       assign: (address: string) => whereSheWentNext.push(address),
       replace: (address: string) => whereSheWentNext.push(address),
     },
@@ -721,6 +785,283 @@ describe('the page she buys Emi on', () => {
       // nowhere at all.
       expect(whereSheWentNext).toEqual([]);
       expect(window.sessionStorage.getItem(WHERE_SHE_WAS_GOING_ENTRY)).toBeNull();
+    });
+  });
+
+  /**
+   * The Black Friday offer, from the address the landing page sends her to through to the body
+   * the press puts on the wire.
+   *
+   * The clock is moved rather than handed in, because the page reads it for itself in her
+   * browser, and a case that read the real clock would start failing on the first of December.
+   */
+  describe('a woman who arrived on the Black Friday offer', () => {
+    const herToken = (): string => anIdToken(`${THE_APPLE_NAME}_000482910`);
+    const onTheOffer = `?${THE_OFFER_IN_AN_ADDRESS}=${THE_BLACK_FRIDAY_OFFER}`;
+
+    it('reads the halved amount, that it is half price every year, and the free month', async () => {
+      const page = await theCheckoutPageWhileSheHolds(herToken(), fakeStripe(), {
+        search: onTheOffer,
+        now: WHILE_THE_OFFER_IS_OPEN,
+      });
+      const said = page.textContent ?? '';
+
+      expect(said).toContain(words.checkoutOfferAmount);
+      expect(said).toContain(words.checkoutOfferEveryYear);
+      expect(said).toContain(words.checkoutOfferRenews);
+      expect(said).toContain(words.checkoutOfferPrice);
+      expect(said).toContain(words.checkoutOfferPay);
+      // The one price is nowhere on the page she is reading, or she reads two amounts at once.
+      expect(said).not.toContain(words.checkoutPlanAmount);
+      expect(said).not.toContain(words.checkoutPay);
+    });
+
+    /**
+     * The free month belongs to the one price. A woman who arrives on the offer is charged half of
+     * the year the moment she presses, so the halved sentence promises her no month.
+     */
+    it('reads no free month in the halved sentence, because she pays at once', async () => {
+      const page = await theCheckoutPageWhileSheHolds(herToken(), fakeStripe(), {
+        search: onTheOffer,
+        now: WHILE_THE_OFFER_IS_OPEN,
+      });
+      const said = page.textContent ?? '';
+
+      expect(words.checkoutOfferPrice).not.toContain('One month free');
+      expect(said).toContain(words.checkoutOfferPrice);
+      expect(said).not.toContain('One month free');
+      expect(said).not.toContain(words.checkoutPrice);
+    });
+
+    it('still reads the free month at the one price, which keeps it', async () => {
+      const page = await theCheckoutPageWhileSheHolds(herToken(), fakeStripe(), {
+        now: WHILE_THE_OFFER_IS_OPEN,
+      });
+
+      expect(words.checkoutPrice).toContain('One month free');
+      expect(page.textContent ?? '').toContain('One month free');
+    });
+
+    it('reads the one price once the offer has closed, however the address reads', async () => {
+      const page = await theCheckoutPageWhileSheHolds(herToken(), fakeStripe(), {
+        search: onTheOffer,
+        now: ONCE_THE_OFFER_HAS_CLOSED,
+      });
+      const said = page.textContent ?? '';
+
+      expect(said).toContain(words.checkoutPlanAmount);
+      expect(said).toContain(words.checkoutPrice);
+      expect(said).toContain(words.checkoutPay);
+      expect(said).not.toContain(words.checkoutOfferAmount);
+      expect(said).not.toContain(words.checkoutOfferPay);
+    });
+
+    /**
+     * An address is a thing anybody may type, so every value but the one the operator approved
+     * leaves the page asking the one price.
+     */
+    it.each([
+      '',
+      '?offer=',
+      '?offer=half-off-for-ever',
+      '?offer=BLACK-FRIDAY',
+      '?offer=black-friday-2025',
+      '?offers=black-friday',
+    ])('reads the one price on %s, while the offer is open', async (search) => {
+      const page = await theCheckoutPageWhileSheHolds(herToken(), fakeStripe(), {
+        search,
+        now: WHILE_THE_OFFER_IS_OPEN,
+      });
+      const said = page.textContent ?? '';
+
+      expect(said).toContain(words.checkoutPlanAmount);
+      expect(said).toContain(words.checkoutPay);
+      expect(said).not.toContain(words.checkoutOfferAmount);
+    });
+
+    it.each(languages)('reads the halved amount of her own language, in %s', async (language) => {
+      const said = wordsIn(language);
+      const form = await aFormOnThePage({
+        language,
+        now: WHILE_THE_OFFER_IS_OPEN,
+        search: onTheOffer,
+      });
+
+      expect(form.text()).toContain(said.checkoutOfferPay);
+      expect(form.text()).not.toContain(said.checkoutPay);
+    });
+
+    describe('the press that pays on the offer', () => {
+      /** The body the second call put on the wire, read as the fields the route reads. */
+      const theBodyOfTheCreate = (form: ADrivenForm): Record<string, unknown> =>
+        JSON.parse(form.calls.find((call) => call.method === 'PUT')?.body ?? '{}');
+
+      it('names the offer beside the setup, and nothing else at all', async () => {
+        const form = await aFormOnThePage({ now: WHILE_THE_OFFER_IS_OPEN, search: onTheOffer });
+
+        await form.press(wordsIn('en').checkoutOfferPay);
+
+        expect(theBodyOfTheCreate(form)).toEqual({
+          [THE_FIELD_A_SETUP_TRAVELS_IN]: A_SETUP,
+          [THE_FIELD_AN_OFFER_TRAVELS_IN]: THE_BLACK_FRIDAY_OFFER,
+        });
+      });
+
+      it('names no offer once the offer has closed, so she is charged the one price', async () => {
+        const form = await aFormOnThePage({ now: ONCE_THE_OFFER_HAS_CLOSED, search: onTheOffer });
+
+        await form.press(thePressThatPays);
+
+        expect(theBodyOfTheCreate(form)).toEqual({ [THE_FIELD_A_SETUP_TRAVELS_IN]: A_SETUP });
+      });
+
+      it('names no offer for a woman who arrived with none', async () => {
+        const form = await aFormOnThePage({ now: WHILE_THE_OFFER_IS_OPEN });
+
+        await form.press(thePressThatPays);
+
+        expect(theBodyOfTheCreate(form)).toEqual({ [THE_FIELD_A_SETUP_TRAVELS_IN]: A_SETUP });
+      });
+
+      it('names no offer for a value nobody approved', async () => {
+        const form = await aFormOnThePage({
+          now: WHILE_THE_OFFER_IS_OPEN,
+          search: '?offer=half-off-for-ever',
+        });
+
+        await form.press(thePressThatPays);
+
+        expect(theBodyOfTheCreate(form)).toEqual({ [THE_FIELD_A_SETUP_TRAVELS_IN]: A_SETUP });
+      });
+
+      it('leaves her on her account, the way a press at the one price does', async () => {
+        const form = await aFormOnThePage({ now: WHILE_THE_OFFER_IS_OPEN, search: onTheOffer });
+
+        await form.press(wordsIn('en').checkoutOfferPay);
+
+        expect(whereSheWentNext).toEqual(['/en/account/']);
+      });
+
+      /**
+       * The one charge of the offer. Her card is on the customer by the time the create is made,
+       * so the only thing left is the charge itself and the question her bank may ask about it,
+       * which Stripe asks in front of her rather than against a payment made while she is gone.
+       */
+      it('confirms the charge the route answered with, and then leaves her on her account', async () => {
+        const form = await aFormOnThePage({ now: WHILE_THE_OFFER_IS_OPEN, search: onTheOffer });
+
+        await form.press(wordsIn('en').checkoutOfferPay);
+
+        expect(form.did.paid).toHaveLength(1);
+        expect(form.did.paid[0]?.clientSecret).toBe(THE_SECRET_OF_THE_FIRST_INVOICE);
+        expect(whereSheWentNext).toEqual(['/en/account/']);
+      });
+
+      it('confirms a charge and not a second setup, because the card is already hers', async () => {
+        const form = await aFormOnThePage({ now: WHILE_THE_OFFER_IS_OPEN, search: onTheOffer });
+
+        await form.press(wordsIn('en').checkoutOfferPay);
+
+        // One setup, which collected the card, and one charge, which took the money.
+        expect(form.did.confirmed).toHaveLength(1);
+        expect(form.did.confirmed[0]?.clientSecret).toBe(A_CLIENT_SECRET);
+        expect(form.did.paid[0]?.elements).toBeUndefined();
+      });
+
+      it('confirms no charge at the one price, because a free month charges nothing', async () => {
+        const form = await aFormOnThePage({ now: WHILE_THE_OFFER_IS_OPEN });
+
+        await form.press(thePressThatPays);
+
+        expect(form.did.confirmed).toHaveLength(1);
+        expect(form.did.paid).toEqual([]);
+        expect(whereSheWentNext).toEqual(['/en/account/']);
+      });
+
+      it('confirms no charge once the offer has closed, because the free month is back', async () => {
+        const form = await aFormOnThePage({ now: ONCE_THE_OFFER_HAS_CLOSED, search: onTheOffer });
+
+        await form.press(thePressThatPays);
+
+        expect(form.did.paid).toEqual([]);
+        expect(whereSheWentNext).toEqual(['/en/account/']);
+      });
+
+      it('leaves her on the form, told what her bank said, when the charge is refused', async () => {
+        const refused = 'Your bank refused that payment.';
+        const form = await aFormOnThePage({
+          now: WHILE_THE_OFFER_IS_OPEN,
+          search: onTheOffer,
+          stripe: fakeStripe({ refusesTheCharge: refused }),
+        });
+
+        await form.press(wordsIn('en').checkoutOfferPay);
+
+        expect(form.text()).toContain(refused);
+        expect(whereSheWentNext).toEqual([]);
+      });
+
+      it('leaves her on the form when the route names no charge to confirm', async () => {
+        const form = await aFormOnThePage({
+          api: { answersNoPaymentSecret: true },
+          now: WHILE_THE_OFFER_IS_OPEN,
+          search: onTheOffer,
+        });
+
+        await form.press(wordsIn('en').checkoutOfferPay);
+
+        // Nothing was confirmed, so the subscription Stripe holds is unpaid and she is told so
+        // rather than being sent to an account page that says she is paying.
+        expect(form.did.paid).toEqual([]);
+        expect(whereSheWentNext).toEqual([]);
+      });
+    });
+
+    describe('a reader with no session who arrived on the offer', () => {
+      it('is brought back to the page with the offer still in the address', async () => {
+        await theCheckoutPageWhileSheHolds(null, fakeStripe(), {
+          search: onTheOffer,
+          now: WHILE_THE_OFFER_IS_OPEN,
+        });
+
+        expect(whereSheWentNext).toEqual(['/en/sign-in/']);
+        expect(window.sessionStorage.getItem(WHERE_SHE_WAS_GOING_ENTRY)).toBe('checkout/');
+        expect(window.sessionStorage.getItem(WHICH_OFFER_SHE_ARRIVED_WITH_ENTRY)).toBe(
+          THE_BLACK_FRIDAY_OFFER,
+        );
+      });
+
+      it('keeps no offer for a reader who arrived with a value nobody approved', async () => {
+        await theCheckoutPageWhileSheHolds(null, fakeStripe(), {
+          search: '?offer=half-off-for-ever',
+          now: WHILE_THE_OFFER_IS_OPEN,
+        });
+
+        expect(window.sessionStorage.getItem(WHERE_SHE_WAS_GOING_ENTRY)).toBe('checkout/');
+        expect(window.sessionStorage.getItem(WHICH_OFFER_SHE_ARRIVED_WITH_ENTRY)).toBeNull();
+      });
+
+      /**
+       * The address is kept as she opened it, and the page decides whether it shows an offer when
+       * she lands, so a sign in that ran over the end leaves her reading the one price.
+       */
+      it('keeps the offer of an address opened after the end, and the page then asks for 39', async () => {
+        await theCheckoutPageWhileSheHolds(null, fakeStripe(), {
+          search: onTheOffer,
+          now: ONCE_THE_OFFER_HAS_CLOSED,
+        });
+
+        expect(window.sessionStorage.getItem(WHICH_OFFER_SHE_ARRIVED_WITH_ENTRY)).toBe(
+          THE_BLACK_FRIDAY_OFFER,
+        );
+
+        const page = await theCheckoutPageWhileSheHolds(herToken(), fakeStripe(), {
+          search: onTheOffer,
+          now: ONCE_THE_OFFER_HAS_CLOSED,
+        });
+
+        expect(page.textContent ?? '').toContain(words.checkoutPlanAmount);
+      });
     });
   });
 

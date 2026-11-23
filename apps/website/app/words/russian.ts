@@ -317,6 +317,12 @@ export const russian: SiteWords = {
   checkoutCouldNotStart: 'Emi не смогла начать оплату. Попробуйте ещё раз через минуту.',
   checkoutNoPaymentFormYet: 'Оплата на сайте пока не открыта. Сегодня Emi есть в App Store.',
 
+  checkoutOfferEveryYear: 'Emi, вдвое дешевле каждый год.',
+  checkoutOfferRenews: 'Продлевается каждый год вдвое дешевле',
+  checkoutOfferAmount: '19,50 € в год',
+  checkoutOfferPrice: '19,50 евро в год, каждый год, налог на добавленную стоимость включён.',
+  checkoutOfferPay: 'Заплатить 19,50 €',
+
   // The subscription card of the account, from boards/Profile.dc.html.
   accountSubscriptionHeading: 'ПОДПИСКА',
   accountPlanName: 'Emi, на год',
@@ -372,4 +378,17 @@ export const russian: SiteWords = {
   footerCopyright: 'Авторское право 2026 Atlantic Blue Solutions Limited.',
   footerPrivacyPolicy: 'Политика приватности',
   footerTerms: 'Условия',
+
+  // Страница Black Friday, которая рисует макет главной страницы с предложением в начале.
+  blackFridayEyebrow: 'BLACK FRIDAY · ПОЛОВИНА ЦЕНЫ КАЖДЫЙ ГОД',
+  blackFridayHeading: 'Половина цены, каждый год, пока вы с нами.',
+  blackFridayPrice: '19,50 евро в год, каждый год, налог на добавленную стоимость включён.',
+  blackFridayInsteadOf:
+    'Emi стоит 39 евро в год. По этому предложению вы платите половину, пока остаётесь с нами.',
+  blackFridayEnds:
+    'Предложение заканчивается в полночь 1 декабря 2026 года по центральноевропейскому времени.',
+  blackFridayPress: 'Купить Emi за половину цены',
+  blackFridayTitle: 'Emi: половина цены в Black Friday',
+  blackFridayDescription:
+    '19,50 евро в год, каждый год. Предложение заканчивается 1 декабря 2026 года.',
 };

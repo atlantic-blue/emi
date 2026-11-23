@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import type { Language, SiteWords } from '@/app/words';
 import { SITE_ORIGIN } from '@/lib/addresses';
+import { type AnOffer, theOfferOnThePage } from '@/lib/theOfferSheArrivedWith';
 import { theSessionHeld } from '@/lib/theSessionSheHolds';
 import {
   type HowStripeArrives,
@@ -34,6 +35,10 @@ import { goTo } from '@/lib/whereSheGoesNext';
  * Nothing is asked of Emi until she presses. The elements are made in the setup mode, so the
  * customer and the setup are made by the press and a reader who opens the page and leaves has
  * bought nothing and is held nowhere.
+ *
+ * One press can confirm twice. The card is always collected against a setup, and a plan with no
+ * free month is then charged at once, which is a second confirmation on the invoice the service
+ * answers with. The one price has a free month in front of it, so there it confirms once.
  */
 
 /** Where a finished setup leaves her, which is the account page in the language she is reading. */
@@ -50,6 +55,8 @@ export interface WhatThePaymentFormNeeds {
   readonly publishableKey: string;
   readonly stripeArrives?: HowStripeArrives;
   readonly asks?: HowItAsks;
+  /** Taken as an argument so a case can press on either side of the end of the offer. */
+  readonly now?: Date;
 }
 
 const theRoute =
@@ -61,7 +68,11 @@ export function ThePaymentForm({
   publishableKey,
   stripeArrives: arrives = stripeArrives,
   asks,
+  now,
 }: WhatThePaymentFormNeeds) {
+  // Read once, when the form draws, which is the same read the plan above it makes. The press and
+  // the words on it then agree with the amount she was shown, whatever the clock does afterwards.
+  const [offer] = useState<AnOffer | null>(() => theOfferOnThePage(now));
   const [hasAWallet, setHasAWallet] = useState(false);
   const [paying, setPaying] = useState(false);
   const [whatWentWrong, setWhatWentWrong] = useState<string | null>(null);
@@ -88,12 +99,13 @@ export function ThePaymentForm({
     return [wallet];
   }, []);
 
-  const { drawsTheCardForm, theElements, isComplete, confirms } = useTheCardFormSheFillsIn({
-    publishableKey,
-    stripeArrives: arrives,
-    comesBackTo: `${SITE_ORIGIN}/${language}/${WHERE_A_PAYMENT_LANDS}`,
-    alsoDraws: drawsTheWallets,
-  });
+  const { drawsTheCardForm, theElements, isComplete, confirms, confirmsThePayment } =
+    useTheCardFormSheFillsIn({
+      publishableKey,
+      stripeArrives: arrives,
+      comesBackTo: `${SITE_ORIGIN}/${language}/${WHERE_A_PAYMENT_LANDS}`,
+      alsoDraws: drawsTheWallets,
+    });
 
   const pay = useCallback(
     async (elements: TheElementsOfTheForm): Promise<void> => {
@@ -134,19 +146,45 @@ export function ThePaymentForm({
       // by the call below, so a press that stopped here would leave her paying nothing and reading
       // an account page that says so.
       const setupRef = said.setupIntent?.id;
-      const created =
-        setupRef === undefined ? false : await finishASubscription(session.idToken, setupRef, asks);
+      const made =
+        setupRef === undefined
+          ? null
+          : await finishASubscription(session.idToken, setupRef, asks, offer);
 
-      if (!created) {
+      // A press on an offer leaves a charge waiting, so a route that named none has made a
+      // subscription nobody has paid for, and an account page saying she pays would be wrong.
+      if (made === null || (offer !== null && made.paymentSecret === null)) {
         setPaying(false);
         setWhatWentWrong(words.checkoutCouldNotStart);
 
         return;
       }
 
+      // A plan with no free month is charged at once, and the charge waits for her browser, so her
+      // bank asks its question here rather than against a payment made while she is gone.
+      if (made.paymentSecret !== null) {
+        const paid = await confirmsThePayment(made.paymentSecret);
+
+        if (paid.error !== undefined) {
+          setPaying(false);
+          setWhatWentWrong(paid.error.message ?? words.checkoutCouldNotStart);
+
+          return;
+        }
+      }
+
       goTo(`/${language}/${WHERE_A_PAYMENT_LANDS}`);
     },
-    [asks, confirms, isComplete, language, paying, words.checkoutCouldNotStart],
+    [
+      asks,
+      confirms,
+      confirmsThePayment,
+      isComplete,
+      language,
+      offer,
+      paying,
+      words.checkoutCouldNotStart,
+    ],
   );
 
   useEffect(() => {
@@ -211,7 +249,7 @@ export function ThePaymentForm({
           }}
           type="button"
         >
-          {words.checkoutPay}
+          {offer === null ? words.checkoutPay : words.checkoutOfferPay}
         </button>
       </div>
     </>

@@ -21,8 +21,11 @@ import {
   SITEMAP_ADDRESS,
   SITEMAP_FILE,
   SITEMAP_NAMESPACE,
+  everyPageTheSiteServes,
+  problemsWithThePagesServed,
   theEntriesOfTheSitemap,
   thePagesOfTheSite,
+  thePagesTheSitemapLeavesOut,
   theRobotsFile,
   theSitemapFile,
 } from '../tools/theFilesACrawlerReads';
@@ -177,7 +180,45 @@ describe('the files a crawler reads before it reads a page', () => {
     });
 
     it('names no address the site answers 404 for, and misses no page it serves', () => {
-      expect(thePagesOfTheSite.map((page) => page.path).sort()).toEqual(thePagesTheRouterServes());
+      expect(problemsWithThePagesServed(thePagesTheRouterServes())).toEqual([]);
+      expect(
+        everyPageTheSiteServes()
+          .map((page) => page.path)
+          .sort(),
+      ).toEqual(thePagesTheRouterServes());
+    });
+
+    it('leaves the offer out, because a crawler keeps an address after the offer closes', () => {
+      const held = thePagesTheSitemapLeavesOut.map((page) => page.path);
+
+      expect(held).toContain('black-friday/');
+      expect(thePagesOfTheSite.map((page) => page.path)).not.toContain('black-friday/');
+      expect(committed(SITEMAP_FILE)).not.toContain('black-friday');
+      expect(theSitemapFile()).not.toContain('black-friday');
+
+      for (const language of languages) {
+        expect(entriesIn(parsed()).map(addressIn)).not.toContain(
+          `${SITE_ORIGIN}/${language}/black-friday/`,
+        );
+      }
+    });
+
+    it('refuses a page the site serves and neither list names', () => {
+      const served = [...everyPageTheSiteServes().map((page) => page.path), 'pulse/'].sort();
+
+      expect(problemsWithThePagesServed(served)).toEqual([
+        'the site serves pulse/, and neither list names it, so nobody said whether a crawler may have it',
+      ]);
+    });
+
+    it('refuses a page a list names and the site does not serve', () => {
+      const served = everyPageTheSiteServes()
+        .map((page) => page.path)
+        .filter((path) => path !== 'black-friday/');
+
+      expect(problemsWithThePagesServed(served)).toEqual([
+        'a list names black-friday/, and the site serves no such page',
+      ]);
     });
 
     it('names the same page in each language on every entry, and the English page for a reader of none', () => {

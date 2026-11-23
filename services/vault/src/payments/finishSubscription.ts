@@ -1,13 +1,14 @@
 import { payerDigestFor } from '@emi/crypto';
 
 import { answer, bodyTextOf, type HttpRequestEvent, type HttpResponse, refusal } from '../api';
-import { setupField, setupRefIn } from './changeCard';
+import { setupField } from './changeCard';
 import type { EntitlementState, EntitlementStore, StoredEntitlement } from './entitlements';
 import { payerNameIn } from './poolToken';
 import {
   chargeTheCustomerTo,
   setupAsItStands,
   type ReachesStripe,
+  theBlackFridayOffer,
   type WhatACallHolds,
   whatASetupCollected,
   yearlySubscriptionFor,
@@ -26,6 +27,14 @@ import {
  *
  * It writes no date. The deliveries of Stripe are the only thing that writes `paidUntil`, so a
  * woman who closes the page here is paid until nothing until the first event arrives.
+ *
+ * The offer the page was showing rides in the body, and it buys a coupon rather than an amount.
+ * The discount is worked out from the one offer this service sells and the instant the create is
+ * made at, so a caller can ask for the offer and never for a price.
+ *
+ * The free month belongs to the one price. A subscription bought on the offer is charged at once,
+ * so this call answers the secret her browser confirms that charge on, and she is paid until
+ * nothing until the payment lands.
  */
 
 /** What a caller is told when no payer is read. It reads as the press on the same path does. */
@@ -37,8 +46,13 @@ export const thatTokenFinishesNothing = 'that token starts no subscription';
  */
 export const nothingOfHersWasStarted = 'nothing of yours has started a payment yet';
 
-/** What a caller is told when the body is not the one field. It names the field and nothing else. */
-export const theBodyASubscriptionTakes = `a subscription carries ${setupField}, as text, and nothing else`;
+/** The field the offer travels in. The page sends it only when it drew the offer to her. */
+export const offerField = 'offer';
+
+/** What a caller is told when the body is not those fields. It names them and nothing else. */
+export const theBodyASubscriptionTakes =
+  `a subscription carries ${setupField}, as text, and may carry ` +
+  `${offerField}, which is "${theBlackFridayOffer}"`;
 
 /**
  * What a caller is told about a setup that buys her nothing. A setup made for another customer and
@@ -53,9 +67,14 @@ export const nothingWasCreated =
 /** What the page reads once she is on the free month of a subscription. */
 export interface WhatTheSubscriptionConfirms {
   readonly started: boolean;
+  /**
+   * The secret her browser confirms the first charge on, where one is waiting. It is absent on the
+   * one price, which pays nothing for a month, and on a press that bought her nothing new.
+   */
+  readonly paymentSecret?: string;
 }
 
-/** What the call is bound to: the payment partition, Stripe, the key and the pool. */
+/** What the call is bound to: the payment partition, Stripe, the key, the pool and the clock. */
 export interface WhatFinishingNeeds {
   readonly entitlements: Pick<EntitlementStore, 'readEntitlement'>;
   readonly reaches: ReachesStripe;
@@ -63,6 +82,55 @@ export interface WhatFinishingNeeds {
   readonly secretKey: () => Promise<string>;
   /** The pool her token is minted by, which is half of what the payer digest is cut from. */
   readonly poolId: string;
+  /** Read once a press arrives, because it is what says whether an offer is still open. */
+  readonly clock: () => Date;
+}
+
+/** What one call carries: the setup her browser finished, and the offer she arrived with. */
+export interface WhatASubscriptionCarries {
+  readonly setupRef: string;
+  readonly offer?: string;
+}
+
+/**
+ * The two fields this call takes, read off the body, or nothing at all where the body is
+ * something else.
+ *
+ * The offer is held to the one value rather than handed on, so a caller naming a discount of its
+ * own is refused here and Stripe is never reached. A card change reads its own body with its own
+ * function, which takes no offer, so neither call can be made looser by the other.
+ */
+export function whatASubscriptionCarries(body: string): WhatASubscriptionCarries | null {
+  let read: unknown;
+
+  try {
+    read = JSON.parse(body);
+  } catch {
+    return null;
+  }
+
+  if (typeof read !== 'object' || read === null || Array.isArray(read)) {
+    return null;
+  }
+
+  const fields = read as Readonly<Record<string, unknown>>;
+
+  if (Object.keys(fields).some((name) => name !== setupField && name !== offerField)) {
+    return null;
+  }
+
+  const setupRef = fields[setupField];
+  const offer = fields[offerField];
+
+  if (typeof setupRef !== 'string' || setupRef.length === 0) {
+    return null;
+  }
+
+  if (offer === undefined) {
+    return { setupRef };
+  }
+
+  return offer === theBlackFridayOffer ? { setupRef, offer } : null;
 }
 
 /**
@@ -112,11 +180,13 @@ export async function finishSubscriptionFor(
     return refusal(404, nothingOfHersWasStarted);
   }
 
-  const setupRef = setupRefIn(bodyTextOf(event));
+  const carried = whatASubscriptionCarries(bodyTextOf(event));
 
-  if (setupRef === null) {
+  if (carried === null) {
     return refusal(400, theBodyASubscriptionTakes);
   }
+
+  const { setupRef } = carried;
 
   if (alreadyPaying(paying)) {
     return answer(200, { started: true } satisfies WhatTheSubscriptionConfirms);
@@ -131,13 +201,19 @@ export async function finishSubscriptionFor(
     }
 
     await chargeTheCustomerTo(calling, payerRef, collected.paymentMethodRef);
-    await yearlySubscriptionFor(calling, {
+
+    const made = await yearlySubscriptionFor(calling, {
       customerRef: payerRef,
       payerDigest,
       oneOfAKind: oneSubscriptionPer(setupRef),
+      ...(carried.offer === undefined ? {} : { offer: carried.offer }),
+      now: held.clock(),
     });
 
-    return answer(200, { started: true } satisfies WhatTheSubscriptionConfirms);
+    return answer(200, {
+      started: true,
+      ...(made.paymentSecret === null ? {} : { paymentSecret: made.paymentSecret }),
+    } satisfies WhatTheSubscriptionConfirms);
   } catch {
     // Every way this stops reads the same to her, from a key the parameter store does not hold
     // yet to a card network that is down, so no caller learns which of them it was.
