@@ -1,12 +1,15 @@
 import type { AnsweredByStripe, AskedOfStripe, ReachesStripe } from '../../src/payments/stripe';
+import { nothingHasBeenPaidYet } from '../../src/payments/stripeEvents';
 import {
   cancelAtPeriodEndField,
   customerAddressFor,
   customersAddress,
   detachAddressFor,
+  expandField,
   idempotencyHeader,
   invoicesAddress,
   payerDigestKey,
+  paymentBehaviourField,
   paymentMethodsAddress,
   setupIntentAddressFor,
   setupIntentsAddress,
@@ -14,6 +17,8 @@ import {
   subscriptionAddressFor,
   subscriptionsAddress,
   stripeApi,
+  theFirstInvoiceWaits,
+  theSecretOfTheFirstInvoice,
 } from '../../src/payments/stripe';
 
 /**
@@ -70,6 +75,8 @@ export interface WhatStripeAnswers {
   readonly refusesTheCreate?: AnsweredByStripe;
   /** The status a created subscription answers with, which is trialing on a free month. */
   readonly theSubscriptionReached?: string;
+  /** The invoice of the create carries no secret, which leaves the first charge unconfirmable. */
+  readonly theInvoiceCarriesNoSecret?: boolean;
   /** The same for taking the old payment method off the customer. */
   readonly refusesTheDetach?: AnsweredByStripe;
 }
@@ -113,6 +120,14 @@ export const trialing = 'trialing';
 export const subscriptionMadeAt = (made: number): string =>
   `sub_${String(made + 1).padStart(12, '0')}`;
 
+/** The invoice a create with no free month leaves to be paid, named after its subscription. */
+export const theFirstInvoiceOf = (subscriptionRef: string): string =>
+  `in_${subscriptionRef.slice('sub_'.length)}`;
+
+/** The secret her browser confirms that invoice on. It is a value and not the shape of a real one. */
+export const theSecretOfTheInvoiceOf = (subscriptionRef: string): string =>
+  `${theFirstInvoiceOf(subscriptionRef)}_secret_the-double-wrote-this`;
+
 export function fakeStripe(answers: WhatStripeAnswers = {}): FakeStripe {
   const calls: OneCall[] = [];
   const subscriptions: string[] = [];
@@ -131,6 +146,12 @@ export function fakeStripe(answers: WhatStripeAnswers = {}): FakeStripe {
     }
 
     const subscriptionRef = subscriptionMadeAt(subscriptions.length);
+    const asksFor = new URLSearchParams(asked.body);
+    // The invoice is answered only where the create asked for it, the way this api answers any
+    // expansion, so a function that forgot to ask reads nothing here rather than reading a secret
+    // Stripe would not have sent it.
+    const expanded = asksFor.get(expandField) === theSecretOfTheFirstInvoice;
+    const waiting = asksFor.get(paymentBehaviourField) === theFirstInvoiceWaits;
 
     subscriptions.push(subscriptionRef);
 
@@ -139,8 +160,19 @@ export function fakeStripe(answers: WhatStripeAnswers = {}): FakeStripe {
       body: JSON.stringify({
         id: subscriptionRef,
         object: 'subscription',
-        customer: new URLSearchParams(asked.body).get('customer'),
-        status: answers.theSubscriptionReached ?? trialing,
+        customer: asksFor.get('customer'),
+        status: answers.theSubscriptionReached ?? (waiting ? nothingHasBeenPaidYet : trialing),
+        ...(expanded
+          ? {
+              latest_invoice: {
+                id: theFirstInvoiceOf(subscriptionRef),
+                confirmation_secret:
+                  answers.theInvoiceCarriesNoSecret === true
+                    ? {}
+                    : { client_secret: theSecretOfTheInvoiceOf(subscriptionRef), type: 'payment' },
+              },
+            }
+          : {}),
       }),
     };
 

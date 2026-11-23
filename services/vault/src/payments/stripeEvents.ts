@@ -43,6 +43,8 @@ export interface MoneyEvent {
   readonly paidUntil?: string;
   /** Whether she has stopped the renewal, read from the subscription itself. */
   readonly stoppedTheRenewal?: boolean;
+  /** The state Stripe holds the subscription in, on the three subscription events. */
+  readonly subscriptionState?: string;
 }
 
 /** An event to write, an event to drop, or a body that cannot be read. */
@@ -164,9 +166,20 @@ export function moneyEventIn(body: string): EventReading {
           subscriptionRef: textIn(object.id) ?? undefined,
           paidUntil: instantOfSeconds(end),
           stoppedTheRenewal: object.cancel_at_period_end === true,
+          subscriptionState: textIn(object.status) ?? undefined,
         },
       };
 }
+
+/**
+ * The state of a subscription whose first invoice is made and not paid, which is what a create
+ * with no free month leaves behind until her browser confirms the charge.
+ *
+ * It carries a period that has already started, so an event about it names a date she is not paid
+ * until. The write below leaves her where she was, and `invoice.paid` grants her the year the
+ * moment the money lands.
+ */
+export const nothingHasBeenPaidYet = 'incomplete';
 
 /** The fields one event writes onto the payment item, beside the digest and the instant. */
 export interface WhatOneEventWrites {
@@ -197,6 +210,13 @@ export function whatTheEventWrites(
   now: Date,
 ): WhatOneEventWrites {
   const { type, eventAt, paidUntil, subscriptionRef } = read;
+
+  // A subscription waiting for its first payment carries a period that has already started, so a
+  // write from it would hand her the year before the charge lands, and a woman who closed the page
+  // on the card form would keep it.
+  if (read.subscriptionState === nothingHasBeenPaidYet) {
+    return { eventAt };
+  }
 
   if (type === 'customer.subscription.created') {
     return { eventAt, paidUntil, route: 'card', state: 'active', subscriptionRef };
