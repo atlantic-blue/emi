@@ -379,4 +379,18 @@ export const russian: SiteWords = {
   footerCopyright: 'Авторское право 2026 Atlantic Blue Solutions Limited.',
   footerPrivacyPolicy: 'Политика приватности',
   footerTerms: 'Условия',
+
+  // Страница Black Friday, которая рисует макет главной страницы с предложением в начале.
+  blackFridayEyebrow: 'BLACK FRIDAY · ПОЛОВИНА ЦЕНЫ КАЖДЫЙ ГОД',
+  blackFridayHeading: 'Половина цены, каждый год, пока вы с нами.',
+  blackFridayPrice:
+    'Первый месяц бесплатно, затем 19,50 евро в год, каждый год, налог на добавленную стоимость включён.',
+  blackFridayInsteadOf:
+    'Emi стоит 39 евро в год. По этому предложению вы платите половину, пока остаётесь с нами.',
+  blackFridayEnds:
+    'Предложение заканчивается в полночь 1 декабря 2026 года по центральноевропейскому времени.',
+  blackFridayPress: 'Купить Emi за половину цены',
+  blackFridayTitle: 'Emi: половина цены в Black Friday',
+  blackFridayDescription:
+    'Первый месяц бесплатно, затем 19,50 евро в год, каждый год. Предложение заканчивается 1 декабря 2026 года.',
 };

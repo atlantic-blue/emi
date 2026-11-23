@@ -14,6 +14,9 @@ import ReturningPage from '../../apps/website/app/[lang]/sign-in/returning/page'
 import TelegramReturnPage from '../../apps/website/app/[lang]/sign-in/telegram/page';
 import SupportPage from '../../apps/website/app/[lang]/support/page';
 import AccountPage from '../../apps/website/app/[lang]/account/page';
+import BlackFridayPage, {
+  THE_BLACK_FRIDAY_PAGE,
+} from '../../apps/website/app/[lang]/black-friday/page';
 import CheckoutPage from '../../apps/website/app/[lang]/checkout/page';
 import { type Language, languages, wordsIn } from '../../apps/website/app/words';
 import { LANGUAGES_ANCHOR } from '../../apps/website/components/siteHeader';
@@ -26,7 +29,10 @@ import {
   THE_PRIVACY_INBOX,
   THE_SUPPORT_INBOX,
 } from '../../apps/website/lib/addresses';
-import { thePagesOfTheSite } from '../../apps/website/tools/theFilesACrawlerReads';
+import {
+  everyPageTheSiteServes,
+  thePagesOfTheSite,
+} from '../../apps/website/tools/theFilesACrawlerReads';
 
 const feature = loadFeature(join(__dirname, '26.26-no-link-on-the-site-points-nowhere.feature'));
 
@@ -52,9 +58,19 @@ const whatTheBrowserReads = join(
  * sitemap is written from, so an address in it is an address a crawler is promised and a reader
  * gets a page for, and a page that ships is added there once.
  */
+/**
+ * The page a press leads to, without what it hands that page. A press to the till carries the
+ * offer she pressed in, and the page it leads to is the till either way.
+ */
+function thePageAPressLeadsTo(address: string): string {
+  const [path = ''] = address.split('?');
+
+  return path;
+}
+
 function everyAddressTheSiteServes(): string[] {
   return languages.flatMap((language) =>
-    thePagesOfTheSite.map((page) => `/${language}/${page.path}`),
+    everyPageTheSiteServes().map((page) => `/${language}/${page.path}`),
   );
 }
 
@@ -110,6 +126,7 @@ const whatDrawsThePageAt: Readonly<
   'checkout/': CheckoutPage,
   'sign-in/returning/': ReturningPage,
   'sign-in/telegram/': TelegramReturnPage,
+  'black-friday/': BlackFridayPage,
 };
 
 /**
@@ -183,7 +200,7 @@ defineFeature(feature, (test) => {
 
     given('a woman opens every page of the site in each of the three languages', async () => {
       for (const language of languages) {
-        for (const page of thePagesOfTheSite) {
+        for (const page of everyPageTheSiteServes()) {
           const document = await theDocumentAt(page.path, language);
 
           opened.push({
@@ -200,10 +217,10 @@ defineFeature(feature, (test) => {
       }
 
       // A read that found nothing to read reports the same as a page where every press is right,
-      // so the count of what was read is part of the scenario. Nine pages, and the band at the
-      // top and the band at the foot of each of them.
-      expect(opened).toHaveLength(languages.length * thePagesOfTheSite.length);
-      expect(thePagesOfTheSite.length).toBeGreaterThan(2);
+      // so the count of what was read is part of the scenario. Every page the site serves, the
+      // ones the sitemap names and the one it leaves out, with both bands of each of them.
+      expect(opened).toHaveLength(languages.length * everyPageTheSiteServes().length);
+      expect(everyPageTheSiteServes().length).toBeGreaterThan(2);
 
       for (const page of opened) {
         expect({ address: page.address, enough: page.presses.length > 8 }).toEqual({
@@ -228,7 +245,7 @@ defineFeature(feature, (test) => {
       // The support page was the sixth of these and it is built now, so it is read below as a
       // page of the site rather than here as a page nobody can open.
       for (const path of ['buy/', 'calculator/', 'pulse/', 'terms/']) {
-        expect(thePagesOfTheSite.map((page) => page.path)).not.toContain(path);
+        expect(everyPageTheSiteServes().map((page) => page.path)).not.toContain(path);
 
         for (const page of opened) {
           expect({
@@ -270,12 +287,19 @@ defineFeature(feature, (test) => {
           (press) => press.address === `/${page.language}/${THE_SUPPORT_PAGE}`,
         );
 
+        // Two of the three are in the bands every page shares. The third is a card of the band
+        // of two offers, and two pages draw that band: the page she meets Emi on, and the page
+        // of the Black Friday offer, which draws the same board below its own hero.
+        const drawsTheBandOfOffers = ['', THE_BLACK_FRIDAY_PAGE].map(
+          (path) => `/${page.language}/${path}`,
+        );
+
         expect({
           onThePage: page.address,
           presses: carryingHer.length,
         }).toEqual({
           onThePage: page.address,
-          presses: page.address === `/${page.language}/` ? 3 : 2,
+          presses: drawsTheBandOfOffers.includes(page.address) ? 3 : 2,
         });
       }
 
@@ -310,7 +334,7 @@ defineFeature(feature, (test) => {
               called: press.called,
               address: press.address,
               leadsSomewhere:
-                served.includes(press.address) ||
+                served.includes(thePageAPressLeadsTo(press.address)) ||
                 theAddressesOffTheSite.includes(press.address) ||
                 press.address === `#${LANGUAGES_ANCHOR}`,
             }).toEqual({

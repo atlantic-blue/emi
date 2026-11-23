@@ -23,16 +23,18 @@ import {
 } from '../../apps/website/e2e/theReadingRules';
 import {
   amountsOfMoneyIn,
+  isHalfOfThePrice,
   problemsWithTheAddress,
   problemsWithWhatItCosts,
   theAmountOf,
   theAmountsThePageMayName,
   theOfferAmount,
-  theOneAmount,
   theOneHost,
   theOnePrice,
   theWordsThatNameMoney,
+  theWordsThatNameTheOffer,
   wordsNamingMoneyIn,
+  wordsNamingTheOfferIn,
 } from '../../apps/website/lib/theOnePrice';
 import { declarationsOf, stylesheetFor } from '../../apps/website/test/stylesheet';
 
@@ -315,36 +317,48 @@ defineFeature(feature, (test) => {
       },
     );
 
-    and('the pages ask her for one price, 39 euros a year, in each of the three languages', () => {
-      expect(languages.map((language) => theOnePrice[language])).toEqual([
-        'One month free, then 39 euros a year.',
-        'Первый месяц бесплатно, затем 39 евро в год.',
-        'Un mes gratis, después 39 euros al año.',
-      ]);
+    and(
+      'the pages ask her for one price, 39 euros a year, and half of it where the offer says so, in each of the three languages',
+      () => {
+        expect(languages.map((language) => theOnePrice[language])).toEqual([
+          'One month free, then 39 euros a year.',
+          'Первый месяц бесплатно, затем 39 евро в год.',
+          'Un mes gratis, después 39 euros al año.',
+        ]);
 
-      for (const language of languages) {
-        expect(wordsIn(language).price).toBe(theOnePrice[language]);
-        expect(theOnePrice[language]).toBe(theApplication[language]['onboarding.tour.price.line']);
-      }
+        for (const language of languages) {
+          expect(wordsIn(language).price).toBe(theOnePrice[language]);
+          expect(theOnePrice[language]).toBe(
+            theApplication[language]['onboarding.tour.price.line'],
+          );
+        }
 
-      const amounts = everyFileOfTheWords().flatMap(({ text }) => amountsOfMoneyIn(text));
+        const amounts = everyFileOfTheWords().flatMap(({ text }) => amountsOfMoneyIn(text));
+        const figures = amounts.map((amount) => theAmountOf(amount));
 
-      expect(amounts).toHaveLength(languages.length * theWordsThatNameMoney.length);
-      // The Black Friday offer is half of that one price rather than a second price, so the words
-      // name those two amounts and no third one.
-      expect([...new Set(amounts.map((amount) => theAmountOf(amount)))].sort()).toEqual(
-        [...theAmountsThePageMayName].sort(),
-      );
-      expect(Number(theOfferAmount) * 2).toBe(Number(theOneAmount));
+        expect(amounts).toHaveLength(languages.length * theWordsThatNameMoney.length);
 
-      for (const language of languages) {
-        expect(wordsNamingMoneyIn(wordsIn(language))).toEqual([...theWordsThatNameMoney].sort());
-      }
+        // The Black Friday offer is half of that one price rather than a second price, so the
+        // words name those two amounts and no third one, and the page that carries the offer and
+        // the till she presses through to are the only places half of it is written.
+        expect([...new Set(figures)].sort()).toEqual([...theAmountsThePageMayName].sort());
+        expect(isHalfOfThePrice(theOfferAmount)).toBe(true);
+        expect(figures.filter((figure) => figure === theOfferAmount)).toHaveLength(
+          languages.length * theWordsThatNameTheOffer.length,
+        );
 
-      expect(everyFileOfTheWords().flatMap(problemsWithWhatItCosts)).toEqual([]);
-      expect(everyFileOfTheWords().flatMap(problemsWithTheAddress)).toEqual([]);
-      expect(theOneHost).toBe('myemi.app');
-    });
+        for (const language of languages) {
+          expect(wordsNamingMoneyIn(wordsIn(language))).toEqual([...theWordsThatNameMoney].sort());
+          expect(wordsNamingTheOfferIn(wordsIn(language))).toEqual(
+            [...theWordsThatNameTheOffer].sort(),
+          );
+        }
+
+        expect(everyFileOfTheWords().flatMap(problemsWithWhatItCosts)).toEqual([]);
+        expect(everyFileOfTheWords().flatMap(problemsWithTheAddress)).toEqual([]);
+        expect(theOneHost).toBe('myemi.app');
+      },
+    );
 
     and('words that named another amount, another period or another address are refused', () => {
       const english = read(join(theWords, 'english.ts'));

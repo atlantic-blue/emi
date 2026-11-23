@@ -58,6 +58,11 @@ export const theOfferAmount = '19.50';
  */
 export const theAmountsThePageMayName = [theOneAmount, theOfferAmount] as const;
 
+/** Whether an amount a text names is half of the price, which is what the offer charges. */
+export function isHalfOfThePrice(amount: string): boolean {
+  return Number(amount) * 2 === Number(theOneAmount);
+}
+
 /** The one host the site serves, taken from the address its pages already name. */
 export const theOneHost = new URL(SITE_ORIGIN).host;
 
@@ -130,6 +135,9 @@ export function hostsIn(text: string): string[] {
 export const theWordsThatNameMoney = [
   'accountPaidUntil',
   'accountRenewsOn',
+  'blackFridayDescription',
+  'blackFridayInsteadOf',
+  'blackFridayPrice',
   'checkoutOfferAmount',
   'checkoutOfferPay',
   'checkoutOfferPrice',
@@ -139,10 +147,32 @@ export const theWordsThatNameMoney = [
   'price',
 ] as const;
 
+/**
+ * The words that may name half of the price, which are the words a woman reads on the offer: the
+ * page that carries it, and the till she lands on from there. Every other sentence of the site
+ * says what Emi costs, so half of it anywhere else is a figure she meets with nothing to tell her
+ * why it is lower than the one she read a moment ago.
+ */
+export const theWordsThatNameTheOffer = [
+  'blackFridayDescription',
+  'blackFridayPrice',
+  'checkoutOfferAmount',
+  'checkoutOfferPay',
+  'checkoutOfferPrice',
+] as const;
+
 /** The words of one catalogue that name an amount, by the key a reader finds them under. */
 export function wordsNamingMoneyIn(said: Readonly<Record<string, string>>): string[] {
   return Object.entries(said)
     .filter(([, value]) => amountsOfMoneyIn(value).length > 0)
+    .map(([key]) => key)
+    .sort();
+}
+
+/** The words of one catalogue that name half of the price, under the same kind of name. */
+export function wordsNamingTheOfferIn(said: Readonly<Record<string, string>>): string[] {
+  return Object.entries(said)
+    .filter(([, value]) => amountsOfMoneyIn(value).map(theAmountOf).includes(theOfferAmount))
     .map(([key]) => key)
     .sort();
 }

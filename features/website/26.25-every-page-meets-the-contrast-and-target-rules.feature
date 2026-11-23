@@ -21,13 +21,13 @@ Feature: What she can read, what she can press, and what she is asked to pay
   So a browser reads every page of the site, in all three languages and on the address nobody has,
   the way her own software reads it. It measures each word against its ground, asks every button and
   every link what it is called, and measures every press. Separately, the words of the three
-  languages are read for money and for hosts, and anything that is not the one price or the one
-  address is named and refused.
+  languages are read for money and for hosts, and anything that is not the one price, half of it on
+  the page of the offer, or the one address is named and refused.
 
   Scenario: every page meets the contrast and target rules
     Given the pages myemi.app serves, in the three languages and on the address nobody has
     Then she can read every word, because a browser holds each one to the contrast her eyes need
     And she can tell what every button and every link does, because each one says what it is
     And every press in the two bands every page carries is big enough for her thumb on a phone
-    And the pages ask her for one price, 39 euros a year, in each of the three languages
+    And the pages ask her for one price, 39 euros a year, and half of it where the offer says so, in each of the three languages
     And words that named another amount, another period or another address are refused

@@ -17,7 +17,9 @@ import {
   ROBOTS_FILE,
   SITEMAP_FILE,
   SITEMAP_NAMESPACE,
+  problemsWithThePagesServed,
   thePagesOfTheSite,
+  thePagesTheSitemapLeavesOut,
 } from '../../apps/website/tools/theFilesACrawlerReads';
 
 const feature = loadFeature(
@@ -133,7 +135,7 @@ defineFeature(feature, (test) => {
     });
 
     and(
-      'the list is markup, and it names every page the site serves in each of the three languages',
+      'the list is markup, and it names every page the site offers in each of the three languages',
       () => {
         list = new DOMParser().parseFromString(committed(SITEMAP_FILE), 'application/xml');
 
@@ -159,7 +161,14 @@ defineFeature(feature, (test) => {
       // The pages the router draws, against the pages the list names. A page the site serves and
       // the list misses is nobody finding that page, and a page the list names and the site does
       // not serve is a crawler promised a 404.
-      expect(thePagesOfTheSite.map((page) => page.path).sort()).toEqual(thePagesTheRouterServes());
+      expect(problemsWithThePagesServed(thePagesTheRouterServes())).toEqual([]);
+
+      // A page the site serves and the list leaves out is a decision rather than an omission, so
+      // it is named in the second list and its own head asks a crawler not to keep it.
+      for (const page of thePagesTheSitemapLeavesOut) {
+        expect(thePagesTheRouterServes()).toContain(page.path);
+        expect(thePagesOfTheSite.map((listed) => listed.path)).not.toContain(page.path);
+      }
       expect(existsSync(join(websiteWorkspace, 'app', '[lang]', '[...rest]'))).toBe(true);
     });
 

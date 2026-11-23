@@ -25,9 +25,10 @@ export interface PageOfTheSite {
 }
 
 /**
- * Every page the site answers 200 for. A page the site answers 404 for is not here: an address in
- * a sitemap is a promise, and a crawler handed a 404 for a promised address reads the rest of the
- * list as unreliable too. A step that ships a page adds it here.
+ * Every page the sitemap names, which a crawler then keeps and offers a reader. A page the site
+ * answers 404 for is not here: an address in a sitemap is a promise, and a crawler handed a 404
+ * for a promised address reads the rest of the list as unreliable too. A step that ships a page
+ * adds it here, or to the list below where the page is served and not offered.
  */
 export const thePagesOfTheSite: readonly PageOfTheSite[] = [
   { path: '', serves: 'the home page, which each language serves under its own language' },
@@ -52,6 +53,49 @@ export const thePagesOfTheSite: readonly PageOfTheSite[] = [
     serves: 'where Telegram sends her back to, which finishes the sign in',
   },
 ];
+
+/**
+ * Every page the site serves and the sitemap leaves out. A crawler keeps an address it is given
+ * and offers it to a reader months later, and the Black Friday offer closes on a day of its own,
+ * so the page behind it is for a woman who was handed the address and for nobody else. The page
+ * says the same thing itself, in the robots tag of its own head, because a crawler that met the
+ * address somewhere else never reads this list.
+ */
+export const thePagesTheSitemapLeavesOut: readonly PageOfTheSite[] = [
+  {
+    path: 'black-friday/',
+    serves: 'the Black Friday offer, which sends a reader to the home page once it closes',
+  },
+];
+
+/** Every page the site answers 200 for, whether the sitemap names it or not. */
+export function everyPageTheSiteServes(): readonly PageOfTheSite[] {
+  return [...thePagesOfTheSite, ...thePagesTheSitemapLeavesOut];
+}
+
+/**
+ * What is wrong with the two lists, read against the pages the router really serves, as one
+ * sentence for each thing that is wrong.
+ *
+ * A page that is served and in neither list is the failure this exists to catch: it is a page
+ * nobody decided to offer or to hold back, so it reaches a reader with no sitemap entry and no
+ * tag saying it was meant that way.
+ */
+export function problemsWithThePagesServed(served: readonly string[]): string[] {
+  const listedOrHeldBack = everyPageTheSiteServes().map((page) => page.path);
+
+  return [
+    ...served
+      .filter((path) => !listedOrHeldBack.includes(path))
+      .map(
+        (path) =>
+          `the site serves ${path || 'the home page'}, and neither list names it, so nobody said whether a crawler may have it`,
+      ),
+    ...listedOrHeldBack
+      .filter((path) => !served.includes(path))
+      .map((path) => `a list names ${path || 'the home page'}, and the site serves no such page`),
+  ];
+}
 
 /** Where the two files sit. Next.js copies this folder into the assets of the build. */
 export const CRAWLER_FOLDER = 'apps/website/public';
