@@ -192,7 +192,7 @@ The contracts it builds:
 
 Three plans in the App Store, with the value added tax inside every price. The yearly plan is
 39 euros a year and it opens with one free month. The monthly plan is 5 euros a month and it
-carries no free month. The half price yearly plan is 19.50 euros a year, every year, and it carries
+carries no free month. The half price yearly plan is 19.99 euros a year, every year, and it carries
 no free month either. Read and export stay open forever if she stops paying.
 `docs/design/app-store-payments.md` holds the path of the store route, and
 `docs/design/payments.md` holds the path of the route on myemi.app.
