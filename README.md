@@ -1,6 +1,10 @@
 # emi
 
-Emi is a period and cycle tracker. Emi stands for Every Month Insights. She pays 39 euros a year.
+Emi is a period and cycle tracker. Emi stands for Every Month Insights. She pays 39 euros a year,
+and the first month of that year is free. She can pay 5 euros a month instead, and that plan carries
+no free month. The Black Friday plan is 19.99 euros a year, every year, and it carries no free month
+either. There is no free tier, because a free tier is paid for with her data.
+
 Nobody sells her data, because nobody can read it. The predictions are arithmetic on her own phone.
 The cloud holds ciphertext and no key.
 
@@ -32,7 +36,7 @@ waits on something outside the code.
     integrations            the watches, the health platforms, Garmin and Fitbit
     notifications           the period, the fertile window, bleeding and medication
     content                 guides for each condition, and reports a specialist reads
-    money                   39 euros a year, and no free tier paid for with her data
+    money                   39 euros a year, 5 euros a month, and no free tier
 
 ## How to run it
 

@@ -500,9 +500,13 @@ Verified by a test.
 Output: one subscription group in the App Store, named `Emi`, which holds three auto renewing
 products. `blue.atlantic.emi.yearly` runs for one year at 39 euros. It carries one introductory
 offer of one free month. `blue.atlantic.emi.monthly` runs for one month at 5 euros, and it carries
-no offer. `blue.atlantic.emi.yearly.halfprice` runs for one year at 19.50 euros, every year, and it
+no offer. `blue.atlantic.emi.yearly.halfprice` runs for one year at 19.99 euros, every year, and it
 carries no offer. The value added tax sits inside each price, because Apple shows a price with the
 tax inside it outside the United States and Canada.
+
+The half price product asks 19.99 euros and not half of 39 euros, because 19.50 euros is not an App
+Store price point and the operator picked 19.99 from the two nearest ones. `PAY-6` keeps 19.50
+euros on myemi.app, where Stripe takes any amount.
 
 The free month belongs to the yearly product alone. A subscription group gives one introductory
 offer to one woman, so a second free month cannot exist.
@@ -515,7 +519,7 @@ The yearly product is the plan `PAY-6` sells on myemi.app. The two prices need n
 
 Errors: a configuration test finds a different price, a different period, a different identifier,
 or no product at all. A free month on the monthly product or on the half price product. A half
-price that is not half of the yearly price. A product at a level of its own, which makes the move
+price product at any amount but 19.99 euros. A product at a level of its own, which makes the move
 an upgrade and takes the new price at once. A price written anywhere but the one module that holds
 the products. A product taken off sale while a woman holds it, because Apple then refuses her
 renewal and reports `PRODUCT_NOT_FOR_SALE`.
