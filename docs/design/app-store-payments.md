@@ -148,8 +148,9 @@ on myemi.app through Stripe.
 offer, so no free month, by decision 7. Sold in the application only.
 
 **The Black Friday product.** Identifier `blue.atlantic.emi.yearly.halfprice`. Period one year.
-Price 19.50 euros, which is half of 39 euros. No offer, so no free month. Sold in the application
-from the next Black Friday, and sold on myemi.app today. Section 3 is the whole of it.
+Price 19.99 euros, which is the price point nearest to half of 39 euros. No offer, so no free month.
+Sold in the application from the next Black Friday, and sold on myemi.app today. Section 3 is the
+whole of it.
 
 ## 2. How she moves between the yearly plan and the monthly plan
 
@@ -209,16 +210,21 @@ from your own server.
 (https://developer.apple.com/documentation/storekit/generating-jws-to-sign-app-store-requests)
 
 **The product.** Identifier `blue.atlantic.emi.yearly.halfprice`. Period one year. Price
-19.50 euros, with the value added tax inside it. No introductory offer and no other offer. Level 1,
+19.99 euros, with the value added tax inside it. No introductory offer and no other offer. Level 1,
 beside the yearly plan and the monthly plan, so a move between them is the crossgrade of section 2.
+
+**The amount is a price point and not half of 39 euros.** Half of 39 euros is 19.50 euros, the euro
+price list does not hold it, and the operator picked 19.99 euros from the two nearest points of
+section 4. So the application states the amount on its own, and no rule in it divides the yearly
+price. myemi.app keeps 19.50 euros, because Stripe takes any amount.
 
 **The free month is not on it, and that is a rule as well as a decision.** App Store Connect says
 "New and returning customers are only eligible to use one introductory offer per subscription
 group."
 (https://developer.apple.com/help/app-store-connect/manage-subscriptions/set-up-introductory-offers-for-auto-renewable-subscriptions/)
 The yearly plan carries the free month as its introductory offer, and this product carries none. So
-a woman who buys at half price is charged 19.50 euros the moment she presses, exactly as she is on
-myemi.app. The same quoted rule says she gets no free month later either, because a woman already
+a woman who buys at half price is charged 19.99 euros the moment she presses, with no month in front
+of it. The same quoted rule says she gets no free month later either, because a woman already
 subscribed in the group is neither a new nor a returning customer. I read that and did not test it.
 
 **The product stays on sale for ever, and the window lives in the application.** This is the trap of
@@ -232,16 +238,18 @@ operator never removes this product once a woman holds it. The window is what th
 and the paywall reads an instant the application holds, the way the site holds the end of this
 year's offer.
 
-**The application cannot sell it before 1 December 2026.** This year's offer closes at
-00:00 Central European Time on that day. The application has no purchase code, no products in App
-Store Connect and no App Review pass, and it has not shipped. So this product is for the next Black
-Friday, and the dates of that one are the operator's to set.
+**The application cannot sell it before 1 December 2026.** The application holds one instant, the
+end of 1 December 2026 in London, and step 2 writes it. The application has no purchase code and no
+App Review pass, and it has not shipped. So this product is for the next Black Friday, and the dates
+of that one are the operator's to set.
 
 **On myemi.app it is built and merged.** The site sells 19.50 euros a year, every year, with the tax
-inside the amount and no free month, and it closes the offer at the same instant. The two pull
-requests are https://github.com/atlantic-blue/emi/pull/617 and
+inside the amount and no free month. The site closes its own offer at 00:00 Central European Time on
+1 December 2026, which is 25 hours before the instant the application holds. The two windows are
+separate, and the operator sets the dates of the next Black Friday for both. The two pull requests
+are https://github.com/atlantic-blue/emi/pull/617 and
 https://github.com/atlantic-blue/emi/pull/623. The site holds two amounts and refuses a third, so
-the App Store product is held to being half of 39 euros by the same rule, in step 15 of the path.
+the App Store product is held to 19.99 euros by the same kind of rule, in step 15 of the path.
 
 ## 4. Whether the prices are valid App Store price points
 
@@ -264,17 +272,19 @@ conventions. You can opt to use .99 endings, like 9.99, or to incorporate differ
 like whole numbers or endings in .90 or .95 that could be useful for annual plans or discounts, for
 example."
 
-So whole numbers are a convention Apple supports, and a 50 cent ending below 50 euros sits on a
-supported step. On that rule 39.00 euros, 5.00 euros and 19.50 euros are each expected to be
-available. I have not seen the euro list, so expected is the strongest word this section may use.
+So whole numbers are a convention Apple supports, and a .99 ending is one as well. On that rule
+39.00 euros, 5.00 euros and 19.99 euros are each expected to be available. I have not seen the euro
+list, so expected is the strongest word this section may use.
 
 All three are product prices now, because decision 6 made the half price a product. So each one is
 read from the same list, and none of them is an offer amount that a different list could govern.
 
-If one of them is absent, the nearest values on the published steps are these. For 39.00 euros:
-38.50 or 39.50, or 38.99 or 39.99 on the .99 convention. For 5.00 euros: 4.90 or 5.10, or 4.99. For
-19.50 euros: 19.00 or 20.00, or 19.49 or 19.99. The operator picks, and no code holds a price, so a
-change costs one line in the console and one line in the configuration test.
+One of them was absent. 19.50 euros is not a price point in the German storefront, the nearest two
+are 19.49 and 19.99, and the operator chose 19.99 euros on 24 November 2026. The other two stand. If
+either is refused in the console, the nearest values on the published steps are these. For
+39.00 euros: 38.50 or 39.50, or 38.99 or 39.99 on the .99 convention. For 5.00 euros: 4.90 or 5.10,
+or 4.99. The operator picks, and one module holds every price, so a change costs one line in the
+console and one line in that module.
 
 One fact changes what she reads. The same talk says "Prices advertised to customers in all countries
 except the U.S. and Canada include taxes". So 39 euros in a euro storefront is 39 euros with the tax
@@ -687,7 +697,7 @@ cannot be reached, and a purchase already filed against another account. One tit
 action each.
 
 **7. The Black Friday row on the paywall.** One extra row for the product of section 3, at
-19.50 euros a year, every year, with no free month. It shows only while the window is open.
+19.99 euros a year, every year, with no free month. It shows only while the window is open.
 
 One board that the first draft of this design asked for is no longer needed now. A screen for a
 woman who has never paid waits for
@@ -718,10 +728,10 @@ Changes: one module names the group, the three product identifiers, the periods,
 free month on the yearly plan alone, and the instant the Black Friday window closes. Nothing else in
 the application may write a price.
 Proves it: a test asserts every value. A wrong price, a wrong period or a missing product fails it.
-A test asserts that the Black Friday price is half of the yearly price, the rule the site already
-holds. A test asserts that the monthly product and the Black Friday product carry no offer. A
-mutation of each value is watched going red.
-Waits for: step 1. The products exist in App Store Connect first, and the operator makes them.
+A test asserts 19.99 euros on the Black Friday product as a value of its own, because that amount is
+a price point rather than half of the yearly price. A test asserts that the monthly product and the
+Black Friday product carry no offer. A mutation of each value is watched going red.
+Waits for: step 1. The operator made the three products in App Store Connect on 24 November 2026.
 
 **3. The purchase library, and a binary that starts.**
 Changes: the library is added and the application is built with it.
@@ -820,10 +830,10 @@ Waits for: step 5, and board 4.
 
 **15. The wording gate gains the new words.**
 Changes: the gate refuses the host of the website, the word Stars, and any amount of money that is
-not one of the three product prices. The Black Friday amount is held to being half of the yearly
-amount, which is the rule the site already holds.
+not one of the three product prices. The Black Friday amount is held to 19.99 euros, the way the
+site holds its own two amounts.
 Proves it: a screen carrying each refused word fails the gate, one case each. A fourth amount fails
-it. An amount that is not half of the yearly price fails it.
+it. An amount that is not one of the three fails it.
 Waits for: step 2.
 
 **16. The tour line, and every other price in the product.**
@@ -855,8 +865,8 @@ The whole design: 85 per cent. The answers of 23 November 2026 closed every open
 draft carried.
 
 The products, the group and the move between plans: 90 per cent. Every rule is quoted from App Store
-Connect. What lowers it is that nobody has made the group, and a console refuses things a page does
-not mention.
+Connect, and the operator made the group and the three products on 24 November 2026. What lowers it
+is that no purchase has gone through them.
 
 The Black Friday product: 85 per cent. A separate product is the only thing Apple has that holds a
 price for ever, and the reason each offer mechanism cannot is quoted. The expiry reason that makes
@@ -865,11 +875,11 @@ and did not test. Whether a woman already subscribed in the group is refused the
 later move, and whether App Store Connect lets a product sit on sale with no offer at all for as
 long as this design needs.
 
-The prices: 60 per cent, and this is still the weakest section. I did not read the euro price list,
-because that needs App Store Connect. The spacing rule I quote is for the United States storefront.
-The operator confirms three numbers before anybody creates a product. The site already charges
-19.50 euros through Stripe, which proves nothing about the App Store, because the two take their
-prices from different lists.
+The prices: 80 per cent. I did not read the euro price list, because that needs App Store Connect,
+and the spacing rule I quote is for the United States storefront. What raises it is that the operator
+set all three prices in the console on 24 November 2026. 19.50 euros is not a price point there, and
+19.99 euros is the one the operator chose in its place. The site charges 19.50 euros through Stripe,
+and that proves nothing about the App Store, because the two take their prices from different lists.
 
 The states and what free means: 85 per cent. The states come from Apple's own status values and
 notification types. What lowers it is the decision to treat a billing retry as paid, which is a
