@@ -30,7 +30,7 @@ and a local index `byUpdated` that sorts records by their write time. None of th
 ```mermaid
 flowchart TD
   subgraph Table["One table: emi-vault"]
-    ACC["ACC#accountId / META: publicKey, wrappedVaultKey, vaultKeyWrappedAt, createdAt, recordCount, deviceCount, identityCount, email, emailProvider, emailIsRelay, emailStatus, emailUpdatedAt, marketingConsentAt, marketingConsentWording, marketingStoppedAt, subscribedUntil, subscriptionStore, subscriptionTransaction, subscriptionCheckedAt"]
+    ACC["ACC#accountId / META: publicKey, wrappedVaultKey, vaultKeyWrappedAt, createdAt, recordCount, deviceCount, identityCount, email, emailProvider, emailIsRelay, emailStatus, emailUpdatedAt, marketingConsentAt, marketingConsentWording, marketingStoppedAt, subscribedUntil, subscriptionStore, subscriptionTransaction, subscriptionCheckedAt, subscriptionState, subscriptionEventAt, subscriptionPlan"]
     REC["ACC#accountId / REC#recordId: payload, revision, updatedAt"]
     SIG["ACC#accountId / SIG#signature: ttl"]
     ADEV["ACC#accountId / DEV#deviceId: addedBy, addedAt"]
@@ -142,6 +142,11 @@ The transaction digest is 26 characters, cut from the first 16 bytes of the SHA-
 name, a newline and the original transaction identifier. The receipt is never stored and the
 transaction identifier never travels past the digest.
 
+`docs/design/app-store-payments.md` designs this same lock, and it names the item `STORE#` and the
+digest with one attribute, `accountId`. Contract `PAY-9` carries that shape. Neither item is built,
+so the operator decides which prefix survives before anybody writes one. Two items for one rule
+would let one purchase pay for two vaults.
+
 ### The one time answer item
 
 Status: designed
@@ -236,6 +241,20 @@ she agreed and then stopped, and every sender reads stopped over agreed.
 
 `subscribedUntil`, `subscriptionStore`, `subscriptionTransaction` and `subscriptionCheckedAt` carry
 the money, and feature 7 writes them.
+
+`subscriptionState` is a string. It is `active`, `cancelling`, `lapsed` or `refunded`, which are the
+four words the payment item above already uses. Without it the account page cannot tell a woman who
+stopped the renewal from a woman who is paying, because both hold a date in the future.
+
+`subscriptionEventAt` is a number, the seconds of the store event that last wrote these fields.
+Every write is conditional on a newer value. Apple retries a notification five times over three
+days, so a retried expiry can arrive after the renewal that followed it. Without the condition that
+retry locks a paying woman out of her own diary.
+
+`subscriptionPlan` is a string, the product identifier she bought. The plan row in Settings reads
+it, and a test holds it to the identifiers of `PAY-1`.
+
+`docs/design/app-store-payments.md` designs all seven fields, and contract `PAY-5` carries them.
 
 ### What the user pool holds
 

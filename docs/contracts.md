@@ -496,10 +496,28 @@ message and the same timing as a bad signature.
 
 Verified by a test.
 
-Output: one yearly auto renewing product at 39 euros, with a one month introductory free
-period, in both stores.
+Output: one subscription group in the App Store, named `Emi`, which holds three auto renewing
+products. `blue.atlantic.emi.yearly` runs for one year at 39 euros. It carries one introductory
+offer of one free month. `blue.atlantic.emi.monthly` runs for one month at 5 euros, and it carries
+no offer. `blue.atlantic.emi.yearly.halfprice` runs for one year at 19.50 euros, every year, and it
+carries no offer. The value added tax sits inside each price, because Apple shows a price with the
+tax inside it outside the United States and Canada.
 
-Errors: a configuration test finds a different price, a different period, or no product at all.
+The free month belongs to the yearly product alone. A subscription group gives one introductory
+offer to one woman, so a second free month cannot exist.
+
+Every product sits at level 1. Equal levels make a move between two products a crossgrade. The App
+Store makes that move on her next renewal date. So she keeps the period she paid for, and the new
+price starts when the old period ends. Emi refunds nothing.
+
+The yearly product is the plan `PAY-6` sells on myemi.app. The two prices need not match.
+
+Errors: a configuration test finds a different price, a different period, a different identifier,
+or no product at all. A free month on the monthly product or on the half price product. A half
+price that is not half of the yearly price. A product at a level of its own, which makes the move
+an upgrade and takes the new price at once. A price written anywhere but the one module that holds
+the products. A product taken off sale while a woman holds it, because Apple then refuses her
+renewal and reports `PRODUCT_NOT_FOR_SALE`.
 
 ### PAY-2, the entitlement
 
@@ -554,11 +572,48 @@ A delete of her account leaves this item exactly as it was, because it is the re
 it holds nothing of hers. The delete removes the link instead, so the payment stays and no account
 points at it.
 
+The store route writes its own half, on the account item of `TABLE-4`. That item is `ACC#` and the
+account identifier, with the sort key `META`, and her device key makes it when the phone registers
+under `WIRE-1`. Seven attributes carry the subscription, and `PAY-3` is the call that fills them.
+
+`subscribedUntil` is a string, an instant. It is the expiry instant Apple returned. It is the one
+field every reader wants.
+
+`subscriptionStore` is a string. It is `apple`. The field exists so a second store can write its
+own name later without a second shape.
+
+`subscriptionTransaction` is a string. It is the original transaction identifier of her
+subscription, which is the one identifier that survives every renewal. The server needs it to ask
+Apple anything later.
+
+`subscriptionCheckedAt` is a string, an instant. It is when the server last asked Apple.
+
+`subscriptionState` is a string. It is `active`, `cancelling`, `lapsed` or `refunded`, which are the
+four words the item above already uses. Without it a reader cannot tell a woman who stopped the
+renewal from a woman who is paying, because both hold a date in the future.
+
+`subscriptionEventAt` is a number, the seconds of the store event that last wrote these fields.
+Every write is conditional on a newer value, because Apple retries a notification five times over
+three days. So a retried expiry can arrive after the renewal that followed it. Without the
+condition, that retry locks a paying woman out of her own diary.
+
+`subscriptionPlan` is a string. It is one of the three product identifiers of `PAY-1`, and the plan
+row in Settings reads it.
+
+The server writes all seven from the answer Apple gave it. It writes none of them from the body the
+phone sent.
+
 Errors: an item carrying an account identifier, a record identifier, a name, an address, a card
 number, a country or a Telegram user identifier. A write from an older event that moves the date
 back. A query of an account partition that reaches this item. A role that can read a partition
 whose key does not open with `PAY#`, or that can scan the table, which a test reads from the policy
 document itself. An item removed by a delete.
+
+Errors in the store half: a date, a state or a plan written from the body the phone sent. A write
+whose `subscriptionEventAt` is not newer than the one on the item, which moves a date back. A state
+outside the four words. A plan that `PAY-1` does not name. A store name that is not the store the
+transaction came from. An account item carrying a price, a card number, a country or her Apple
+Account.
 
 ### PAY-6, the Stripe route
 
@@ -624,10 +679,63 @@ keeps the furthest `paidUntil` of them. It keeps the account item's own `subscri
 so a payment in a store and a payment on the site answer through one route. The number of reads is
 capped, because the number of ways in is capped.
 
+The account item's own date is the store half of this read, and the furthest date wins. A woman who
+paid in the App Store reads her date. A woman who paid on myemi.app reads hers. A woman who paid in
+both places reads the later of the two, and Emi refunds neither payment.
+
+A read whose `subscriptionCheckedAt` is older than six hours asks Apple for the subscription status
+first. It writes the answer back before it replies. Six hours is a guess. The measurement that
+replaces it is the number of reads for each account each day, once the product has users. Apple
+limits the rate of each endpoint and answers 429 with a `Retry-After` header, so the window exists
+to stay well under that limit.
+
+The reply names one instant. It names no route, no store, no plan and no price, so a caller cannot
+tell which of the two routes paid.
+
 Errors: a reply carrying a route, a price, a payment method, a Stripe identifier or anything else
 about the payment, because the caller asked one question. A payment made against a way in this
 account has not linked, answered as paid. A read refused because the date passed, which `PAY-4`
 and `WIRE-5` keep open.
+
+Errors in the store half: a reply that names the store, the plan or the product she bought. A read
+that keeps the site date while the store date is further, or the store date while the site date is
+further. A read older than the window answered without asking Apple. A read that asks Apple on
+every call, which spends the rate limit and tells the caller nothing new.
+
+### PAY-9, the pointer that gives one purchase to one vault
+
+Verified by a test.
+
+Input: the original transaction identifier of a purchase in the App Store.
+
+Output: one item in the vault table of `TABLE-4`, in a partition of its own. The partition key is
+`STORE#` and the digest of that identifier. The sort key is `META`. It holds one attribute,
+`accountId`. The server writes it once, with the condition that the partition key does not exist
+already, so the first account to file a purchase keeps it.
+
+The item earns its place twice.
+
+A notification from Apple arrives with no application running. It names a transaction and it never
+names an account, so this item is the only way the server finds the vault to write.
+
+The condition is the rule one purchase pays for one vault. A second account filing the same
+original transaction meets the condition and is refused. `docs/design/accounts.md` states that rule
+as "One receipt pays for one vault", and this item is what makes it a conditional write rather than
+a search.
+
+The cost is named rather than hidden. This is the one record in the payment path that holds an
+account identifier. So it sits in a partition of its own, and the role that writes it reaches that
+prefix and nothing else. It holds no date, no price, no plan and no record identifier. A delete of
+her account removes it with everything else. A reader who holds that partition learns that some
+account bought something, and reads no day of anybody's history.
+
+Errors: a second account that files the same original transaction and is allowed to. A refusal the
+application shows as a fault, where the screen must say that the subscription belongs to another
+Emi account. A write that reads the item first and then puts it, because two calls leave a
+gap two phones can pass through. An item carrying a date, a price, a plan, a store transaction, a
+record identifier or anything of hers. A query of an account partition that reaches this item. A
+role that can read a partition whose key does not open with `STORE#`, or that can scan the table,
+which a test reads from the policy document itself. An item left behind by a delete.
 
 ## KEEP, the promises about her data
 

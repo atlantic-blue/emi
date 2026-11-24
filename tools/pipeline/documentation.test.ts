@@ -445,9 +445,9 @@ describe('a contract in one document and missing from the other fails the run', 
   const declared = contractsDeclaredIn(contracts);
   const mapped = contractsMappedIn(features);
 
-  it('declares fifty seven contracts across thirteen groups', () => {
-    expect(declared).toHaveLength(57);
-    expect(new Set(declared).size).toBe(57);
+  it('declares fifty eight contracts across thirteen groups', () => {
+    expect(declared).toHaveLength(58);
+    expect(new Set(declared).size).toBe(58);
     expect(new Set(declared.map((contract) => contract.split('-')[0])).size).toBe(13);
   });
 
@@ -474,7 +474,7 @@ describe('a contract in one document and missing from the other fails the run', 
   it('counts the mapped contracts in the run this repository makes', () => {
     const run = check();
 
-    expect(run.output).toContain(`57 contract(s) mapped to a feature in ${featureDocument}`);
+    expect(run.output).toContain(`58 contract(s) mapped to a feature in ${featureDocument}`);
     expect(run.status).toBe(0);
   }, 180_000);
 

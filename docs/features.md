@@ -190,9 +190,12 @@ The contracts it builds:
 
 ## Feature 7: She pays every year, and the price is the promise
 
-One month free, then 39 euros a year in the stores, with the value added tax inside that amount.
-Read and export stay open forever if she stops paying. Six steps build the store route, and
-`docs/design/payments.md` holds the path of the two routes away from it.
+Three plans in the App Store, with the value added tax inside every price. The yearly plan is
+39 euros a year and it opens with one free month. The monthly plan is 5 euros a month and it
+carries no free month. The half price yearly plan is 19.50 euros a year, every year, and it carries
+no free month either. Read and export stay open forever if she stops paying.
+`docs/design/app-store-payments.md` holds the path of the store route, and
+`docs/design/payments.md` holds the path of the route on myemi.app.
 
 The price is the product. There is no free tier, because a free tier is paid for with her data.
 
@@ -206,8 +209,8 @@ subscription at the end of the year she paid for.
 
 The contracts it builds:
 
-- `PAY-1` one yearly auto renewing product at 39 euros, with a one month introductory free
-  period, in both stores.
+- `PAY-1` one subscription group in the App Store, holding three auto renewing products at equal
+  levels, with the free month on the yearly product alone.
 - `PAY-2` the entitlement, read on launch, kept when the store cannot be reached.
 - `PAY-3` the receipt checked on the server, against the store that issued it.
 - `PAY-4` a lapse that stops new writes and nothing else.
@@ -217,6 +220,7 @@ The contracts it builds:
   month.
 - `PAY-7` the Telegram Stars route, an invoice in Stars that writes the same record.
 - `PAY-8` the entitlement read, one instant, which says nothing about how she paid.
+- `PAY-9` the pointer that gives one purchase to one vault, which a conditional write holds.
 - `WIRE-5` a pull and a delete that work whatever the subscription says.
 
 ## Feature 8: Anybody can read how it works
