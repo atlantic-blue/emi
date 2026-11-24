@@ -373,7 +373,10 @@ its condition.
 
 ### Money
 
-- 39 euros a year. State: in version 1, `PAY-1`.
+- 39 euros a year, which opens with one free month. State: in version 1, `PAY-1`.
+- 5 euros a month, which carries no free month. State: in version 1, `PAY-1`.
+- 19.99 euros a year on the Black Friday plan, which carries no free month. State: in version 1,
+  `PAY-1`.
 - No free tier paid for with her data. State: in version 1, `KEEP-4`.
 - The price is the trust signal. State: in version 1, `PAY-1`.
 

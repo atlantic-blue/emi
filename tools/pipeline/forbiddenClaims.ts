@@ -109,6 +109,9 @@ export const interfaceOnlyWording: readonly string[] = [
   'zero knowledge',
   'zero cloud',
   'hardware key',
+  // Telegram Stars was dropped as a way to pay before anybody built it, so a screen that names it
+  // offers her a route that does not exist.
+  'stars',
   // Spanish. Each ending is named, because these are matched as whole words rather than as a
   // substring, so that an ordinary name built around one survives.
   'segura',
