@@ -77,3 +77,55 @@ export interface AccountDeleteStore {
    */
   deleteEverything(accountId: string): Promise<AccountDeletion>;
 }
+
+/**
+ * The subscription an App Store purchase writes, which is the store half of contract PAY-5. Every
+ * field of it comes from the answer Apple gave, and none of them from the body the phone sent.
+ */
+export interface StoredSubscription {
+  readonly accountId: string;
+  /** The instant she is paid until, or the instant of the refund where there was one. */
+  readonly subscribedUntil: string;
+  /** Which store took the money, so a second store can write its own name without a second shape. */
+  readonly subscriptionStore: string;
+  /** The original transaction identifier, which is what survives every renewal. */
+  readonly subscriptionTransaction: string;
+  /** When the server last asked the store, which is the instant of this write. */
+  readonly subscriptionCheckedAt: string;
+  /** Where the subscription stands, in the four words contract PAY-5 names. */
+  readonly subscriptionState: string;
+  /** The seconds of the store event that wrote these fields, which is the order of two writes. */
+  readonly subscriptionEventAt: number;
+  /** The product identifier she holds, which is one of the three contract PAY-1 names. */
+  readonly subscriptionPlan: string;
+}
+
+/** What a subscription write answers. An older event is an outcome here rather than a failure. */
+export type SubscriptionOutcome = 'written' | 'older-event';
+
+/**
+ * What claiming one purchase answers, which is contract PAY-9. The second account to file a
+ * transaction reads `another-account`, and the account that already holds it reads `held-already`,
+ * so a woman who files her own purchase twice is not refused.
+ */
+export type ClaimOutcome = 'claimed' | 'held-already' | 'another-account';
+
+/**
+ * The two things a filing asks of storage. It is a port of its own rather than two more methods on
+ * `AccountStore`, so the authorizer, which is handed an `AccountStore` on every single request,
+ * cannot reach a call that writes a date.
+ */
+export interface SubscriptionStore {
+  /**
+   * Writes the pointer item of contract PAY-9 unless its partition exists already, and says which
+   * of the three happened. One purchase pays for one vault, so the condition is the rule: the
+   * first account to file a transaction keeps it.
+   */
+  claimTransaction(transactionDigest: string, accountId: string): Promise<ClaimOutcome>;
+  /**
+   * Writes the subscription onto the account item unless the item already carries an event that is
+   * newer, and says which happened. Apple retries a notification over three days, so a retried
+   * expiry can arrive after the renewal that followed it.
+   */
+  writeSubscription(subscription: StoredSubscription): Promise<SubscriptionOutcome>;
+}

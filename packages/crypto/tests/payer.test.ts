@@ -1,6 +1,12 @@
 import { createHash } from 'node:crypto';
 
-import { PayerError, payerDigestFor, payerDigestSeparator, type PayerRefusal } from '../src/payer';
+import {
+  PayerError,
+  payerDigestFor,
+  payerDigestSeparator,
+  type PayerRefusal,
+  transactionDigestFor,
+} from '../src/payer';
 import { accountIdLength, crockfordAlphabet, crockfordBase32, digestOf } from '../src/signature';
 
 const thePool = 'eu-central-1_NOTAPOOL';
@@ -12,6 +18,14 @@ const anotherName = 'Google_000123abc0001';
 // moves this value, so it goes red here rather than orphaning a payment somebody already made.
 // Cross checked against the SHA-256 in node:crypto on 2026-11-16.
 const theDigest = 'J62830S5GNJTGBTYKZZ4BB5DZG';
+
+const theStore = 'apple';
+const theTransaction = '2000000845620000';
+
+// Checked in, and cross checked against the SHA-256 in node:crypto below. A change to the parts, to
+// their order or to the separator moves this value, so it goes red here rather than orphaning a
+// purchase somebody already filed.
+const theTransactionDigest = 'E9CNGDCTQ7PECWNKPF7M1BH664';
 
 const refusalOf = (poolId: string, userName: string): PayerRefusal => {
   try {
@@ -66,6 +80,57 @@ describe('a payment is held under a digest of the way she signs in', () => {
 
     it('is not the digest of the same two parts the other way round', () => {
       expect(payerDigestFor(theName, thePool)).not.toBe(theDigest);
+    });
+  });
+
+  describe('the digest a purchase in a store is held under', () => {
+    it('is twenty six characters of Crockford base 32', () => {
+      const digest = transactionDigestFor(theStore, theTransaction);
+
+      expect(digest).toHaveLength(accountIdLength);
+      expect([...digest].every((character) => crockfordAlphabet.includes(character))).toBe(true);
+    });
+
+    it('is the checked in digest for the checked in store and transaction', () => {
+      expect(transactionDigestFor(theStore, theTransaction)).toBe(theTransactionDigest);
+    });
+
+    it('is the digest of the store, a newline and the transaction, cut to sixteen bytes', () => {
+      const digest = createHash('sha256')
+        .update(Buffer.from(`${theStore}\n${theTransaction}`, 'utf8'))
+        .digest();
+
+      expect(transactionDigestFor(theStore, theTransaction)).toBe(
+        crockfordBase32(digest.subarray(0, 16)),
+      );
+    });
+
+    it('moves when the store moves, so one transaction in two stores is two purchases', () => {
+      expect(transactionDigestFor('google', theTransaction)).not.toBe(theTransactionDigest);
+    });
+
+    it('moves when the transaction moves, so two purchases are two items', () => {
+      expect(transactionDigestFor(theStore, '2000000845620001')).not.toBe(theTransactionDigest);
+    });
+
+    it('is the same shape as a payer digest, and the partition is what keeps the two apart', () => {
+      expect(transactionDigestFor(theStore, theTransaction)).toBe(
+        payerDigestFor(theStore, theTransaction),
+      );
+      expect(transactionDigestFor(theStore, theTransaction)).not.toBe(theDigest);
+    });
+
+    it('carries no part of the transaction identifier, which travels no further than this', () => {
+      expect(transactionDigestFor(theStore, theTransaction)).not.toContain(theTransaction);
+      expect(transactionDigestFor(theStore, theTransaction)).not.toContain(theStore);
+    });
+
+    it('refuses a store with no name, and a transaction with no identifier', () => {
+      expect(() => transactionDigestFor('', theTransaction)).toThrow(PayerError);
+      expect(() => transactionDigestFor(theStore, '')).toThrow(PayerError);
+      expect(() => transactionDigestFor(theStore, '')).toThrow(
+        'a transaction digest needs the original transaction identifier',
+      );
     });
   });
 

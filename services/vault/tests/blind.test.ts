@@ -225,6 +225,9 @@ const allowedFromCrypto: readonly string[] = [
   // The platform's own generator, which the sign in draws a salt and a one time answer from. It
   // raises on a runtime that has none rather than falling back to something weaker.
   'systemRandom',
+  // The digest a purchase in a store is held under, which is the shape of the account identifier
+  // over the store name and a transaction. It names no person and opens nothing.
+  'transactionDigestFor',
   'wrappedVaultKeyLength',
 ];
 
@@ -302,6 +305,19 @@ const allowedKeyWords: readonly string[] = [
   // The key of the metadata map the payer digest travels under, in Stripe. It is the name of a
   // field and never a value, and the digest under it names no person.
   'payerDigestKey',
+  // The App Store credential, which signs a token that asks Apple about one transaction. It is
+  // read from the parameter store at run time, it is never an environment variable, and no file of
+  // this service holds its value. It opens no record: a record is opened by a key that never
+  // leaves her phone.
+  'apiKey',
+  'appStoreApiKeyOnce',
+  'appStoreApiKeyParameter',
+  'createPrivateKey',
+  'keyIdentifier',
+  'privateKey',
+  // The key of the pointer item a claimed purchase sits under, which is a key to a table.
+  'purchaseKeyOf',
+  'purchaseSortKey',
 ];
 
 describe('a marker word in a record never appears in the stored item', () => {

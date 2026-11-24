@@ -37,7 +37,7 @@ flowchart TD
     AIDY["ACC#accountId / IDY#identityDigest: provider, linkedAt"]
     DEV["DEV#deviceId / META: publicKey, accountId, addedBy, addedAt"]
     IDY["IDY#identityDigest / META: accountId, provider, linkedAt"]
-    TXN["TXN#transactionDigest / META: accountId, store, firstSeenAt"]
+    TXN["STORE#transactionDigest / META: accountId"]
     ANS["ANS#answerDigest / META: userName, issuedAt, ttl"]
     PAY["PAY#payerDigest / META: paidUntil, route, state, payerRef, subscriptionRef, chargeRef, eventAt, firstSeenAt, updatedAt"]
   end
@@ -133,19 +133,18 @@ is written once so the two copies cannot disagree.
 
 ### The receipt lock item
 
-Status: designed
+Status: built
 
-`pk` is `TXN#` and the transaction digest. `sk` is `META`. It holds `accountId`, `store` and
-`firstSeenAt`.
+`pk` is `STORE#` and the transaction digest. `sk` is `META`. It holds `accountId`, and nothing
+else: no date, no price, no plan and no store transaction.
 
 The transaction digest is 26 characters, cut from the first 16 bytes of the SHA-256 of the store
 name, a newline and the original transaction identifier. The receipt is never stored and the
 transaction identifier never travels past the digest.
 
-`docs/design/app-store-payments.md` designs this same lock, and it names the item `STORE#` and the
-digest with one attribute, `accountId`. Contract `PAY-9` carries that shape. Neither item is built,
-so the operator decides which prefix survives before anybody writes one. Two items for one rule
-would let one purchase pay for two vaults.
+One prefix, not two. This section named `TXN#` with three attributes while contract `PAY-9` named
+`STORE#` with one, and two items for one rule would let one purchase pay for two vaults. The
+contract is the source, so the filing route writes `STORE#` and this section follows it.
 
 ### The one time answer item
 
@@ -240,7 +239,8 @@ stand for a new promise.
 she agreed and then stopped, and every sender reads stopped over agreed.
 
 `subscribedUntil`, `subscriptionStore`, `subscriptionTransaction` and `subscriptionCheckedAt` carry
-the money, and feature 7 writes them.
+the money. `POST /v1/payments/store` writes all seven of the subscription fields, from the answer
+Apple gave it, and it writes none of them from the body the phone sent.
 
 `subscriptionState` is a string. It is `active`, `cancelling`, `lapsed` or `refunded`, which are the
 four words the payment item above already uses. Without it the account page cannot tell a woman who
@@ -255,6 +255,7 @@ retry locks a paying woman out of her own diary.
 it, and a test holds it to the identifiers of `PAY-1`.
 
 `docs/design/app-store-payments.md` designs all seven fields, and contract `PAY-5` carries them.
+Those seven are built. Every other attribute of this section is still designed.
 
 ### What the user pool holds
 
@@ -705,8 +706,9 @@ The sign in and the devices:
 - List the devices of an account. `Query` with `pk = ACC#<accountId> AND begins_with(sk, 'DEV#')`.
 - List the identities of an account. The same query with `IDY#`.
 - Cap the devices. `UpdateItem` with the condition `deviceCount < :cap`.
-- Claim a receipt. `PutItem` on `TXN#<transactionDigest>` and `META` with
-  `attribute_not_exists(pk)`.
+- Claim a receipt. `PutItem` on `STORE#<transactionDigest>` and `META` with
+  `attribute_not_exists(pk)`. The read that says which account holds it happens only after that
+  write is refused.
 - Write a one time answer. `PutItem` of the whole item on `ANS#<answerDigest>` and `META`. The
   answer is 32 random bytes, so two sign ins never name one item.
 - Spend a one time answer. `DeleteItem` by whole key, with the condition `attribute_exists(pk)` and

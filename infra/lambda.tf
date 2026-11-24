@@ -96,6 +96,16 @@ data "aws_iam_policy_document" "vault" {
     resources = ["arn:aws:ssm:${var.region}:${var.account_id}:parameter/${var.project_name}/payments/stripe/secret-key"]
   }
 
+  # The other parameter, named in full. A filing of a purchase in the App Store signs a token with
+  # this credential and asks Apple about one transaction. It is a second statement rather than a
+  # second resource on the one above, so a reader sees which route reads which value.
+  statement {
+    sid       = "ReadTheAppStoreApiKey"
+    effect    = "Allow"
+    actions   = ["ssm:GetParameter"]
+    resources = ["arn:aws:ssm:${var.region}:${var.account_id}:parameter/${var.project_name}/payments/apple/api-key"]
+  }
+
   # The key is a secure string under alias/aws/ssm, whose identifier the service generates. The
   # condition is what narrows this grant: the role may decrypt only through a parameter store call,
   # so it opens nothing the statement above does not already open.

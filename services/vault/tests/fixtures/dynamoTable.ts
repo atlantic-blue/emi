@@ -124,16 +124,59 @@ function named(name: string, names: Readonly<Record<string, string>> | undefined
 }
 
 /**
+ * The parts of one expression, split on a word the brackets do not hold. A clause inside brackets
+ * is one part, so a condition of an and over an or is read the way the table reads it.
+ */
+function partsOn(expression: string, word: string): string[] {
+  const parts: string[] = [];
+  let depth = 0;
+  let from = 0;
+
+  for (let at = 0; at < expression.length; at += 1) {
+    if (expression[at] === '(') {
+      depth += 1;
+    }
+
+    if (expression[at] === ')') {
+      depth -= 1;
+    }
+
+    if (depth === 0 && expression.startsWith(word, at)) {
+      parts.push(expression.slice(from, at));
+      from = at + word.length;
+      at += word.length - 1;
+    }
+  }
+
+  parts.push(expression.slice(from));
+
+  return parts.map((part) => part.trim()).filter((part) => part.length > 0);
+}
+
+/** One part with its brackets taken off, where the brackets hold the whole of it. */
+function unwrapped(part: string): string {
+  return part.startsWith('(') && part.endsWith(')') ? part.slice(1, -1).trim() : part;
+}
+
+/**
  * The condition forms this table understands, and no others. Each one is a form the vault writes,
  * so a new condition arrives with a line here and a reader sees every rule the table enforces in
  * one place.
+ *
+ * Every part of an and must hold, and one clause of an or is enough, which is what DynamoDB does.
  */
 function conditionHolds(
   expression: string,
   held: Item | undefined,
   input: PutItemInput | UpdateItemInput | DeleteItemInput,
 ): boolean {
-  return expression.split(' OR ').some((clause) => {
+  const parts = partsOn(expression, ' AND ');
+
+  if (parts.length > 1) {
+    return parts.every((part) => conditionHolds(unwrapped(part), held, input));
+  }
+
+  return partsOn(unwrapped(expression), ' OR ').some((clause) => {
     const exists = /^attribute_exists\(([^)]+)\)$/.exec(clause.trim());
 
     if (exists?.[1] !== undefined) {
