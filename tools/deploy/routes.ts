@@ -36,13 +36,15 @@ export const apiConfiguration = 'infra/api.tf';
  * new phone holds no device key for it. The article read carries none because a request says which
  * phase is read and never who is reading it. The deliveries of Stripe carry none because Stripe
  * holds no token of this account: it signs each delivery, and the function verifies that signature
- * before it reads one field of the body.
+ * before it reads one field of the body. The notifications of the App Store carry none for the same
+ * reason, and Apple signs the whole body rather than a header of it.
  */
 export const routesWithNoAuthorizer: readonly string[] = [
   'register',
   'sign_in_telegram',
   'read_articles',
   'stripe_events',
+  'store_notifications',
 ];
 
 /** The registration route, which the live read asks for a status that is not the placeholder's. */

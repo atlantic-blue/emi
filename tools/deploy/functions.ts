@@ -20,9 +20,10 @@ export interface DeployedFunction {
 export const projectName = 'emi';
 
 /**
- * The nine functions of the account. Three answer the vault, four carry the sign in with Telegram,
- * which is the function that answers a code and the three triggers the pool calls, and two carry
- * the money: one answers the press on Buy Emi and one answers the deliveries of Stripe.
+ * The ten functions of the account. Three answer the vault, four carry the sign in with Telegram,
+ * which is the function that answers a code and the three triggers the pool calls, and three carry
+ * the money: one answers the press on Buy Emi, one answers the deliveries of Stripe, and one
+ * answers the notifications of the App Store.
  */
 export const deployedFunctions: readonly DeployedFunction[] = [
   {
@@ -70,6 +71,11 @@ export const deployedFunctions: readonly DeployedFunction[] = [
     entryPoint: 'services/vault/src/functions/webhook.ts',
     resource: 'aws_lambda_function.payments_webhook',
   },
+  {
+    name: `${projectName}-store-notifications`,
+    entryPoint: 'services/vault/src/functions/storeNotifications.ts',
+    resource: 'aws_lambda_function.store_notifications',
+  },
 ];
 
 /**
@@ -115,5 +121,6 @@ export const uploadOrder: readonly string[] = [
   `${projectName}-sign-in-telegram`,
   `${projectName}-payments-subscription`,
   `${projectName}-payments-webhook`,
+  `${projectName}-store-notifications`,
   `${projectName}-vault`,
 ];

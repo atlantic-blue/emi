@@ -43,6 +43,8 @@ import {
 } from '../../services/vault/src/payments/stripeSecrets.ts';
 import { appStoreApiKeyParameter } from '../../services/vault/src/payments/appStoreSecrets.ts';
 import { storeSubscriptionPath } from '../../services/vault/src/payments/fileTransaction.ts';
+import { storeNotificationsPath } from '../../services/vault/src/payments/storeNotifications.ts';
+import { purchasePartitionPrefix, partitionFor } from '../../services/vault/src/store/dynamo.ts';
 import { SITE_ORIGIN } from '../../apps/website/lib/addresses.ts';
 import { languages } from '../../apps/website/app/words/language.ts';
 
@@ -500,7 +502,7 @@ describe('the infrastructure is applied only by the pipeline', () => {
         (match) => (match[1] ? [match[1]] : []),
       );
 
-      expect(groups).toHaveLength(10);
+      expect(groups).toHaveLength(11);
       expect(new Set(groups)).toEqual(new Set(['var.log_retention_days']));
       expect(bodyOf('variable "log_retention_days"')).toContain('default     = 30');
     });
@@ -717,6 +719,72 @@ describe('the infrastructure is applied only by the pipeline', () => {
 
     it('runs in the function that already answers every signed route', () => {
       expect(route).toContain('integrations/${aws_apigatewayv2_integration.vault.id}');
+    });
+  });
+
+  describe('the route the App Store sends a notification to, which is step 11 of the path', () => {
+    const route = bodyOf('resource "aws_apigatewayv2_route" "store_notifications"');
+    const policy = bodyOf('data "aws_iam_policy_document" "store_notifications"');
+    const pointer = statementTextIn(policy, 'ReadOnePurchasePointer');
+    const account = statementTextIn(policy, 'WriteTheSubscriptionOnOneAccount');
+
+    it('answers on the path the handler names, so the two cannot drift apart', () => {
+      expect(route).toContain(`route_key          = "POST ${storeNotificationsPath}"`);
+    });
+
+    it('carries no authorizer, because Apple holds no token of this account', () => {
+      expect(route).toContain('authorization_type = "NONE"');
+      expect(route).not.toContain('authorizer_id');
+      expect(routesWithNoAuthorizer).toContain('store_notifications');
+    });
+
+    it('runs in a function of its own, which the api is allowed to invoke', () => {
+      const integration = bodyOf('resource "aws_apigatewayv2_integration" "store_notifications"');
+      const permission = bodyOf('resource "aws_lambda_permission" "store_notifications"');
+
+      expect(route).toContain(
+        'integrations/${aws_apigatewayv2_integration.store_notifications.id}',
+      );
+      expect(integration).toContain('aws_lambda_function.store_notifications.invoke_arn');
+      expect(permission).toContain('aws_lambda_function.store_notifications.function_name');
+      expect(permission).toContain('principal     = "apigateway.amazonaws.com"');
+    });
+
+    it('reads the pointer of one purchase and nothing under any other prefix', () => {
+      expect(listedIn(pointer, 'values').filter((value) => value !== 'false')).toEqual([
+        `${purchasePartitionPrefix}*`,
+      ]);
+      expect(pointer).toContain('test     = "ForAllValues:StringLike"');
+      expect(pointer).toContain('test     = "Null"');
+    });
+
+    it('writes the subscription onto an account item and reads no account partition at all', () => {
+      expect(listedIn(account, 'values').filter((value) => value !== 'false')).toEqual([
+        `${partitionFor('')}*`,
+      ]);
+      expect(account).toContain('test     = "Null"');
+      expect(actionsIn(policy).sort()).toEqual([
+        'dynamodb:GetItem',
+        'dynamodb:UpdateItem',
+        'logs:CreateLogStream',
+        'logs:PutLogEvents',
+      ]);
+    });
+
+    it('reads no parameter and decrypts nothing, because Apple signs what it sends', () => {
+      expect(actionsIn(policy).filter((action) => action.startsWith('ssm:'))).toEqual([]);
+      expect(actionsIn(policy).filter((action) => action.startsWith('kms:'))).toEqual([]);
+    });
+
+    it('holds no secret in the environment of the function, and only the table', () => {
+      const environment = blockBodyOf(
+        bodyOf('resource "aws_lambda_function" "store_notifications"'),
+        'environment',
+      );
+
+      expect(environment).toContain('EMI_VAULT_TABLE');
+      expect(environment.toLowerCase()).not.toContain('key');
+      expect(environment.toLowerCase()).not.toContain('secret');
     });
   });
 
@@ -1389,6 +1457,7 @@ describe('the deployed functions carry the bundle the pipeline uploads', () => {
       'emi-sign-in-challenge-verify': 'sign_in_challenge',
       'emi-payments-subscription': 'payments',
       'emi-payments-webhook': 'payments',
+      'emi-store-notifications': 'store_notifications',
     };
 
     /** The role one function resource names, read out of the resource itself. */
@@ -1482,6 +1551,7 @@ describe('the deployed functions carry the bundle the pipeline uploads', () => {
       7: 'Seven',
       8: 'Eight',
       9: 'Nine',
+      10: 'Ten',
     };
 
     it('names the count of deployed functions, which went stale once at two', () => {
@@ -1678,12 +1748,12 @@ describe('the deployed functions carry the bundle the pipeline uploads', () => {
       }
     });
 
-    it('leaves the sign in with Telegram carrying none, and three routes carrying none in all', () => {
+    it('leaves the sign in with Telegram carrying none, and five routes carrying none in all', () => {
       const signIn = routes.find((route) => route.resource === 'sign_in_telegram');
 
       expect(signIn?.authorizationType).toBe('NONE');
       expect(signIn?.authorizerId).toBeNull();
-      expect(routesWithNoAuthorizer).toHaveLength(4);
+      expect(routesWithNoAuthorizer).toHaveLength(5);
     });
 
     it('sends that route to the function of its own, which the api is allowed to invoke', () => {
@@ -3720,13 +3790,13 @@ describe('the api answers the preflight of the site, which is issue 433', () => 
       );
     });
 
-    it('keeps the routes that carry none at the three that are named', () => {
+    it('keeps the routes that carry none at the five that are named', () => {
       const none = readTheRoutes(repositoryRoot)
         .filter((route) => !carriesTheAuthorizer(route))
         .map((route) => route.resource);
 
       expect(none.sort()).toEqual([...routesWithNoAuthorizer].sort());
-      expect(none).toHaveLength(4);
+      expect(none).toHaveLength(5);
     });
 
     it('declares no route for the preflight, because the api answers it before a route is read', () => {

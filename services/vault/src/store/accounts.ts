@@ -111,6 +111,19 @@ export type SubscriptionOutcome = 'written' | 'older-event';
 export type ClaimOutcome = 'claimed' | 'held-already' | 'another-account';
 
 /**
+ * The one thing a notification asks of storage, which is contract PAY-9 read rather than written.
+ * A notification of the App Store names a transaction and never an account, so the pointer item is
+ * the only way from one to the other.
+ *
+ * It is a port of its own rather than a third method on `SubscriptionStore`, so the route that
+ * stands behind no authorizer is handed the read and the write of a date, and nothing else.
+ */
+export interface PurchasePointerStore {
+  /** The account that filed one purchase, or nothing at all where no account filed it. */
+  accountOfPurchase(transactionDigest: string): Promise<string | undefined>;
+}
+
+/**
  * The two things a filing asks of storage. It is a port of its own rather than two more methods on
  * `AccountStore`, so the authorizer, which is handed an `AccountStore` on every single request,
  * cannot reach a call that writes a date.

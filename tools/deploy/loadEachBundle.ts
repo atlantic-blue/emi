@@ -232,6 +232,22 @@ export const loadChecks: Readonly<Record<string, readonly LoadCheck[]>> = {
       describes: 'a delivery carrying no signature of this account is refused',
     },
   ],
+  // A body carrying something that is not a signed payload is refused by its shape, before the
+  // function reaches the table at all. So a bundle with no account behind it owes this answer, and
+  // a container that cannot read the table still proves the bundle runs. The path is written out
+  // here, and a case of loadEachBundle.test.ts holds it to the one the handler names.
+  'emi-store-notifications': [
+    {
+      event: {
+        rawPath: '/v1/payments/store/notifications',
+        headers: {},
+        requestContext: { http: { method: 'POST' } },
+        body: '{"signedPayload":"this.carries.nothing"}',
+      },
+      owes: (answer) => fieldOf(answer, 'statusCode') === 400,
+      describes: 'a notification carrying no signature of the App Store is refused',
+    },
+  ],
   'emi-sign-in-challenge-define': [
     {
       event: { request: { session: [] }, response: {} },
