@@ -578,7 +578,9 @@ points at it.
 
 The store route writes its own half, on the account item of `TABLE-4`. That item is `ACC#` and the
 account identifier, with the sort key `META`, and her device key makes it when the phone registers
-under `WIRE-1`. Seven attributes carry the subscription, and `PAY-3` is the call that fills them.
+under `WIRE-1`. Seven attributes carry the subscription. `PAY-3` is the call that fills them when
+her phone files a purchase, and a notification the store signs fills them again when a renewal, a
+refund or a lapse happens with nothing of Emi running.
 
 `subscribedUntil` is a string, an instant. It is the expiry instant Apple returned. It is the one
 field every reader wants.

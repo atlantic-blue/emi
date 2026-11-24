@@ -43,6 +43,16 @@ and two minutes. The identity token stops there. No part of it reaches a caller,
 table: the user name is a keyed hash of the Telegram subject under a salt that no person ever sees,
 and the table holds the digest of the one time answer rather than the answer.
 
+The App Store is a third route with no signature of hers on it, and the body carries the proof
+instead. Apple signs each notification of a renewal, a refund or a lapse as one JSON Web Signature
+and puts the chain of certificates inside the header of it. The route verifies that chain against
+the root this repository pins before it reads one field, and a body that fails is answered with a
+refusal and written nowhere. A notification names a transaction and never an account, so the
+pointer item one purchase left behind is the only way from one to the other, and every write is
+refused unless the instant Apple signed is newer than the one on the account. That last rule is
+what stops a retried expiry, which Apple sends for three days, taking the year back off a woman
+whose renewal already went through.
+
 Nothing here can open an envelope. The service takes one function from the envelope, the one that
 reads its shape, and a test walks these files from the entry point to prove it: no decrypting
 function is imported, nothing comes from the cipher library, and no word for a key appears that is

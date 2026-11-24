@@ -69,6 +69,7 @@ const createTrigger = 'emi-sign-in-challenge-create';
 const verifyTrigger = 'emi-sign-in-challenge-verify';
 const paymentsFunction = 'emi-payments-subscription';
 const webhookFunction = 'emi-payments-webhook';
+const notificationFunction = 'emi-store-notifications';
 
 /** The three clients of the account this service binds, each in a package of its own. */
 const theTableClient = '@aws-sdk/client-dynamodb';
@@ -87,6 +88,7 @@ const functionsThatReachTheTable = [
   verifyTrigger,
   paymentsFunction,
   webhookFunction,
+  notificationFunction,
 ];
 
 describe('one bundle for each deployed function, in the shape the runtime unpacks', () => {
@@ -224,6 +226,20 @@ describe('one bundle for each deployed function, in the shape the runtime unpack
       );
       expect(modulesIn(paymentsFunction)).not.toContain('services/vault/src/payments/webhook.ts');
       expect(modulesIn(webhookFunction)).toContain('services/vault/src/payments/webhook.ts');
+    });
+
+    it('keeps the notifications of the store apart from both halves of the card route', () => {
+      const carried = modulesIn(notificationFunction);
+
+      expect(carried).toContain('services/vault/src/payments/storeNotifications.ts');
+      expect(carried).toContain('services/vault/src/payments/appleRoot.ts');
+      expect(carried).not.toContain('services/vault/src/payments/webhook.ts');
+      expect(carried).not.toContain('services/vault/src/payments/startSubscription.ts');
+      expect(carried).not.toContain('services/vault/src/router.ts');
+      expect(carried.filter((module) => module.includes('/handlers/'))).toEqual([]);
+      expect(modulesIn(webhookFunction)).not.toContain(
+        'services/vault/src/payments/storeNotifications.ts',
+      );
     });
 
     it('leaves the pool client out of every bundle but that same one', () => {

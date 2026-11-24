@@ -328,20 +328,41 @@ function stateOf(status: number, revoked: boolean): EntitlementState {
   return status === statusIsExpired ? 'lapsed' : 'active';
 }
 
-function subscriptionIn(
-  last: LastTransaction,
+/**
+ * What one transaction Apple signed carries, read out of the payload and held to the two instants
+ * it may name. The status is not here: an answer of the api carries one beside the transaction, and
+ * a notification says where she stands in its own kind instead.
+ */
+export interface TheTransactionAppleSigned {
+  /** The identifier that survives every renewal, which is what the pointer item is named by. */
+  readonly originalTransactionId: string;
+  /** Which of the three products of contract PAY-1 the transaction is for. */
+  readonly productId: string;
+  /** The environment the payload names, which is the one the caller asked about. */
+  readonly environment: StoreEnvironment;
+  /** The instant she is paid until, where the payload names one. */
+  readonly expiresAt: string | null;
+  /** The instant the App Store took the money back, where it took it back. */
+  readonly revokedAt: string | null;
+  /** The seconds Apple signed the transaction at, which orders one write against another. */
+  readonly signedAt: number;
+}
+
+/**
+ * One transaction, read out of the payload Apple signed it in, or nothing at all where the payload
+ * is about another environment, another application, or nothing this service can read.
+ *
+ * The environment and the application are read off the payload itself and held to what the caller
+ * asked about, so a transaction of the sandbox inside an answer about production is dropped rather
+ * than read, and so is a transaction of somebody else's application.
+ */
+export function transactionAppleSigned(
+  signed: unknown,
   asked: StoreEnvironment,
-): TheSubscriptionAppleHolds | null {
-  const read = transactionIn(last.signedTransactionInfo);
+): TheTransactionAppleSigned | null {
+  const read = transactionIn(signed);
 
-  if (read === null || typeof last.status !== 'number') {
-    return null;
-  }
-
-  // The payload names its own environment and its own application, beside the answer that carries
-  // it, so a transaction of one environment inside an answer of the other is dropped rather than
-  // read.
-  if (read.environment !== asked || read.bundleId !== theBundleIdentifier) {
+  if (read === null || read.environment !== asked || read.bundleId !== theBundleIdentifier) {
     return null;
   }
 
@@ -349,14 +370,9 @@ function subscriptionIn(
   const productId = textIn(read.productId);
   const signedDate = millisecondsIn(read.signedDate);
   const revocationDate = millisecondsIn(read.revocationDate);
-  const paidUntil = revocationDate ?? millisecondsIn(read.expiresDate);
+  const expiresDate = millisecondsIn(read.expiresDate);
 
-  if (
-    originalTransactionId === null ||
-    productId === null ||
-    signedDate === null ||
-    paidUntil === null
-  ) {
+  if (originalTransactionId === null || productId === null || signedDate === null) {
     return null;
   }
 
@@ -364,9 +380,37 @@ function subscriptionIn(
     originalTransactionId,
     productId,
     environment: asked,
-    paidUntil: new Date(paidUntil).toISOString(),
-    state: stateOf(last.status, revocationDate !== null),
+    expiresAt: expiresDate === null ? null : new Date(expiresDate).toISOString(),
+    revokedAt: revocationDate === null ? null : new Date(revocationDate).toISOString(),
     signedAt: Math.floor(signedDate / 1000),
+  };
+}
+
+function subscriptionIn(
+  last: LastTransaction,
+  asked: StoreEnvironment,
+): TheSubscriptionAppleHolds | null {
+  const read = transactionAppleSigned(last.signedTransactionInfo, asked);
+
+  if (read === null || typeof last.status !== 'number') {
+    return null;
+  }
+
+  // A refund carries the instant it happened, and that instant is the date, so a refunded
+  // transaction never wins over a subscription that is still running.
+  const paidUntil = read.revokedAt ?? read.expiresAt;
+
+  if (paidUntil === null) {
+    return null;
+  }
+
+  return {
+    originalTransactionId: read.originalTransactionId,
+    productId: read.productId,
+    environment: read.environment,
+    paidUntil,
+    state: stateOf(last.status, read.revokedAt !== null),
+    signedAt: read.signedAt,
   };
 }
 

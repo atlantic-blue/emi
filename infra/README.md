@@ -21,7 +21,7 @@ order.
 One DynamoDB table, `emi-vault`, in eu-central-1. It holds ciphertext, a revision and a write
 time. It holds no key, no date, no symptom, no flow and no note.
 
-One HTTP api, `emi-vault`, with fifteen routes. It answers at
+One HTTP api, `emi-vault`, with sixteen routes. It answers at
 `https://2pumohtm7l.execute-api.eu-central-1.amazonaws.com`, in eu-central-1.
 
 `https://myemi.app` is the only origin that may call this api from a browser. It is the one
@@ -34,12 +34,12 @@ before it matches a route, so no authorizer runs for a preflight and no route gi
 authorizer. The last step of the `functions` job sends that preflight and fails the deploy when the
 answer does not allow the site, the method and the header.
 
-Nine functions, on Node 22 and arm64. Three answer the vault: `emi-vault`, `emi-authorizer`
+Ten functions, on Node 22 and arm64. Three answer the vault: `emi-vault`, `emi-authorizer`
 and `emi-articles`. Four carry the sign in with Telegram: `emi-sign-in-telegram` answers a code,
 and `emi-sign-in-challenge-define`, `emi-sign-in-challenge-create` and
-`emi-sign-in-challenge-verify` are the three triggers of the custom sign in. Two carry the money:
-`emi-payments-subscription` answers the press on Buy Emi, and `emi-payments-webhook` answers the
-deliveries of Stripe.
+`emi-sign-in-challenge-verify` are the three triggers of the custom sign in. Three carry the money:
+`emi-payments-subscription` answers the press on Buy Emi, `emi-payments-webhook` answers the
+deliveries of Stripe, and `emi-store-notifications` answers the notifications of the App Store.
 
 Terraform creates each one from a placeholder it holds inline, and then leaves the code alone. The
 deployed code is the bundle: the `functions` job of `.github/workflows/deploy.yml` builds one
@@ -47,7 +47,7 @@ bundle for each function out of `services/vault/src` and uploads it on a merge i
 function carries `ignore_changes` on its file name and its code hash, so an apply never puts a
 placeholder back.
 
-The upload order is the authorizer, the articles, the three triggers, the sign in, the two
+The upload order is the authorizer, the articles, the three triggers, the sign in, the three
 functions of the money and then the vault. The triggers go before the function that issues the
 answer they spend.
 
@@ -56,17 +56,24 @@ the article placeholder answer 501. The authorizer placeholder refuses every req
 of that job reads the live api and requires a refusal on every route the authorizer stands in front
 of, so a merge that leaves a bundle unloadable fails.
 
-Nine log groups, each with a retention of 30 days.
+Ten log groups, each with a retention of 30 days.
 
 Two roles of the sign in with Telegram, `emi-sign-in-telegram` and `emi-sign-in-challenge`. The
 sign in function runs as the first one. The three triggers share the second. The section on sign in
 with Telegram below says what each one reads and what each one deliberately cannot.
 
-One role of the money, `emi-payments`. Both functions of the money run as it. It reads and writes
-one item under a partition that opens with `PAY#`, by its whole key, with no query and no scan, so
-it reaches no account partition at all. It reads `/emi/payments/stripe/secret-key` and
+One role of the money, `emi-payments`. The function that answers Buy Emi and the function that
+answers Stripe both run as it. It reads and writes one item under a partition that opens with
+`PAY#`, by its whole key, with no query and no scan, so it reaches no account partition at all. It reads `/emi/payments/stripe/secret-key` and
 `/emi/payments/stripe/webhook-secret`, each named in full, and it writes no parameter and deletes
 none.
+
+One role of the notifications of the App Store, `emi-store-notifications`. It reads one item
+under a partition that opens with `STORE#`, by its whole key, which is the pointer of contract
+PAY-9 and holds the account a purchase was filed by. It writes the subscription onto one account
+item with an update, by its whole key. It has no query and no scan, so it cannot read one day of
+her history and cannot learn which accounts exist, and it reads no parameter and decrypts nothing:
+Apple signs each notification, and the root that verifies the signature is in the bundle.
 
 One Amazon Cognito user pool, `emi-accounts`, with two app clients: `emi-iphone` and
 `emi-website`. The pool names the three triggers of the custom sign in, and both clients allow the
@@ -394,6 +401,25 @@ rm /tmp/emi-apple.json
 Nothing in this repository creates this parameter or gives it a value. Until it holds one, the
 filing route answers 502 and writes nothing at all, so a phone files again rather than losing the
 purchase.
+
+### The notification address is pasted into App Store Connect by a person
+
+The App Store sends a notification to one address of its own choosing, which is the address written
+in App Store Connect under App Information. Nothing in this repository can set it, so the operator
+pastes it in. It is:
+
+```
+https://2pumohtm7l.execute-api.eu-central-1.amazonaws.com/v1/payments/store/notifications
+```
+
+The same address is written in the production field and in the sandbox field. The environment of a
+notification is inside the body Apple signs, so one route answers both and reads which one it holds
+rather than guessing from the address it arrived on.
+
+This route needs no parameter and no credential. Apple signs the whole body, the root certificate
+that verifies the chain is in the bundle, and a body that does not verify is answered 400 and
+written nowhere. So the route works the moment the merge reaches the account, and the only thing
+waiting on a person is the address above.
 
 ### One grant is wider than the rule of this repository
 
