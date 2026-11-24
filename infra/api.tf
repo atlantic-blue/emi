@@ -131,6 +131,17 @@ resource "aws_apigatewayv2_route" "delete_account" {
   authorizer_id      = aws_apigatewayv2_authorizer.signature.id
 }
 
+# What the phone sends after she buys a plan in the App Store. It carries one transaction identifier
+# and it is signed by her device key, the same as every other route of the vault function, so the
+# server knows the account with no sign in and no token.
+resource "aws_apigatewayv2_route" "file_store_transaction" {
+  api_id             = aws_apigatewayv2_api.vault.id
+  route_key          = "POST /v1/payments/store"
+  target             = "integrations/${aws_apigatewayv2_integration.vault.id}"
+  authorization_type = "CUSTOM"
+  authorizer_id      = aws_apigatewayv2_authorizer.signature.id
+}
+
 resource "aws_apigatewayv2_integration" "articles" {
   api_id                 = aws_apigatewayv2_api.vault.id
   integration_type       = "AWS_PROXY"

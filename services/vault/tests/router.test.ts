@@ -1,8 +1,14 @@
 import { accountIdFor, base64Of, sealRecord } from '@emi/crypto';
 
 import type { StopsEveryRenewal } from '../src/payments/stopRenewals';
-import { nothingAnswersThatPath, routeKeyOf, router } from '../src/router';
+import {
+  nothingAnswersThatPath,
+  routeKeyOf,
+  router,
+  type WhatTheStoreRouteNeeds,
+} from '../src/router';
 import { dynamoStore } from '../src/store/dynamo';
+import { aTransactionId, fakeAppStore, theCredential } from './fixtures/appStore';
 import { fakeTable, tableName } from './fixtures/dynamoTable';
 import {
   anAccount,
@@ -44,8 +50,14 @@ const stopsNothing: StopsEveryRenewal = (payerDigests) => {
   return Promise.resolve(0);
 };
 
+/** The App Store the filing route asks, which answers one yearly subscription of the sandbox. */
+const theStore = (): WhatTheStoreRouteNeeds => ({
+  reaches: fakeAppStore().reaches,
+  apiKey: () => Promise.resolve(theCredential),
+});
+
 function answering(withAnAccount = true): ReturnType<typeof router> {
-  return router(answeringStore(withAnAccount), stopsNothing, () => now);
+  return router(answeringStore(withAnAccount), stopsNothing, theStore(), () => now);
 }
 
 function aSealedRecord(): string {
@@ -105,6 +117,21 @@ describe('one function answers the four signed routes and refuses every other pa
 
       expect(answer.statusCode).toBe(200);
       expect(JSON.parse(answer.body)).toMatchObject({ records: [] });
+    });
+
+    it('files a store transaction on a post to the store path', async () => {
+      const body = JSON.stringify({ transactionId: aTransactionId });
+      const { event } = signedRequest(pair, {
+        method: 'POST',
+        path: '/v1/payments/store',
+        body,
+        instant: now,
+      });
+
+      const answer = await answering()(authorizedEvent(event, accountId));
+
+      expect(answer.statusCode).toBe(200);
+      expect(JSON.parse(answer.body)).toMatchObject({ subscribedUntil: expect.any(String) });
     });
 
     it('removes everything on a delete of the account path', async () => {
@@ -169,7 +196,7 @@ describe('one function answers the four signed routes and refuses every other pa
         instant: now,
       });
 
-      await router(dynamoStore(table, tableName), stopsNothing, () => now)(event);
+      await router(dynamoStore(table, tableName), stopsNothing, theStore(), () => now)(event);
 
       expect(table.calls()).toMatchObject({ getItem: 0, putItem: 0, query: 0 });
     });

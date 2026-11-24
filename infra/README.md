@@ -21,7 +21,7 @@ order.
 One DynamoDB table, `emi-vault`, in eu-central-1. It holds ciphertext, a revision and a write
 time. It holds no key, no date, no symptom, no flow and no note.
 
-One HTTP api, `emi-vault`, with nine routes. It answers at
+One HTTP api, `emi-vault`, with fifteen routes. It answers at
 `https://2pumohtm7l.execute-api.eu-central-1.amazonaws.com`, in eu-central-1.
 
 `https://myemi.app` is the only origin that may call this api from a browser. It is the one
@@ -363,6 +363,37 @@ aws ssm put-parameter --name /emi/payments/stripe/webhook-secret --type SecureSt
 The signing secret belongs to one endpoint, so it is read off the endpoint Stripe is given, which
 is `POST /v1/payments/webhook` on the api address above. An endpoint made again carries a new
 signing secret, and every delivery is then refused until the parameter is written again.
+
+### The App Store credential is written by a person too, in one parameter
+
+The filing of a purchase in the App Store reads one secure string in eu-central-1,
+`/emi/payments/apple/api-key`. The route `POST /v1/payments/store` signs a token with it and asks
+the App Store Server api about one transaction. The role of the vault function reads that one name
+in full, and no other role reads it.
+
+App Store Connect issues three things together for an api key: the key identifier, the issuer
+identifier, and the private key the token is signed with. So the parameter holds one json object
+with the three fields `keyIdentifier`, `issuerIdentifier` and `privateKey`, and a value with a part
+missing is refused rather than signed with.
+
+The key identifier and the issuer identifier are both on the Keys tab under Users and Access in App
+Store Connect. The key itself is the `.p8` file that page downloads once, and App Store Connect
+never shows it again. Write the parameter from that file rather than by hand, so its newlines
+survive:
+
+```
+node -e 'const fs=require("node:fs");process.stdout.write(JSON.stringify({keyIdentifier:process.argv[1],issuerIdentifier:process.argv[2],privateKey:fs.readFileSync(process.argv[3],"utf8")}))' \
+  "<the key id>" "<the issuer id>" ~/Downloads/SubscriptionKey_XXXXXXXXXX.p8 > /tmp/emi-apple.json
+
+aws ssm put-parameter --name /emi/payments/apple/api-key --type SecureString --region eu-central-1 \
+  --value "file:///tmp/emi-apple.json"
+
+rm /tmp/emi-apple.json
+```
+
+Nothing in this repository creates this parameter or gives it a value. Until it holds one, the
+filing route answers 502 and writes nothing at all, so a phone files again rather than losing the
+purchase.
 
 ### One grant is wider than the rule of this repository
 

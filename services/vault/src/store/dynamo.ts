@@ -4,9 +4,13 @@ import type {
   AccountDeletion,
   AccountDeleteStore,
   AccountStore,
+  ClaimOutcome,
   CreateOutcome,
   RememberOutcome,
   StoredAccount,
+  StoredSubscription,
+  SubscriptionOutcome,
+  SubscriptionStore,
 } from './accounts';
 import {
   answerWindowSeconds,
@@ -146,6 +150,21 @@ export function answerPartitionFor(answerDigest: string): string {
 /** The sort key of a one time answer. Its partition holds this item and never a second one. */
 export const answerSortKey = 'META';
 
+/**
+ * What every partition of a claimed purchase opens with, which is contract PAY-9. It is a partition
+ * of its own because this is the one item of the payment path that holds an account identifier, so
+ * the role that writes it reaches this prefix and nothing else.
+ */
+export const purchasePartitionPrefix = 'STORE#';
+
+/** The partition one claimed purchase sits in, named by the digest of its transaction. */
+export function purchasePartitionFor(transactionDigest: string): string {
+  return `${purchasePartitionPrefix}${transactionDigest}`;
+}
+
+/** The sort key of a claimed purchase. Its partition holds this item and never a second one. */
+export const purchaseSortKey = 'META';
+
 /** The index a pull reads: one account's records, in the order they were written. */
 export const byUpdatedIndex = 'byUpdated';
 
@@ -210,7 +229,7 @@ export async function refusedByItsCondition(write: Promise<void>): Promise<boole
 export function dynamoStore(
   table: DynamoDbTable,
   tableName: string,
-): AccountStore & RecordStore & AccountDeleteStore & OneTimeAnswerStore {
+): AccountStore & RecordStore & AccountDeleteStore & OneTimeAnswerStore & SubscriptionStore {
   const keyOf = (accountId: string, sortKey: string): Item => ({
     pk: { S: partitionFor(accountId) },
     sk: { S: sortKey },
@@ -219,6 +238,11 @@ export function dynamoStore(
   const answerKeyOf = (answerDigest: string): Item => ({
     pk: { S: answerPartitionFor(answerDigest) },
     sk: { S: answerSortKey },
+  });
+
+  const purchaseKeyOf = (transactionDigest: string): Item => ({
+    pk: { S: purchasePartitionFor(transactionDigest) },
+    sk: { S: purchaseSortKey },
   });
 
   async function countOneMoreRecord(accountId: string): Promise<void> {
@@ -329,6 +353,71 @@ export function dynamoStore(
 
   return {
     payerDigestsOf: (accountId: string): Promise<readonly string[]> => payerDigestsUnder(accountId),
+
+    claimTransaction: async (
+      transactionDigest: string,
+      accountId: string,
+    ): Promise<ClaimOutcome> => {
+      // The write comes first and the read only after a refusal. A read and then a write leaves a
+      // gap two phones can pass through, and this condition is the rule that one purchase pays
+      // for one vault.
+      const refused = await refusedByItsCondition(
+        table.putItem({
+          TableName: tableName,
+          Item: { ...purchaseKeyOf(transactionDigest), accountId: { S: accountId } },
+          ConditionExpression: 'attribute_not_exists(pk)',
+        }),
+      );
+
+      if (!refused) {
+        return 'claimed';
+      }
+
+      const held = await table.getItem({
+        TableName: tableName,
+        Key: purchaseKeyOf(transactionDigest),
+        ConsistentRead: true,
+      });
+
+      return textOf(held?.accountId) === accountId ? 'held-already' : 'another-account';
+    },
+
+    writeSubscription: async (subscription: StoredSubscription): Promise<SubscriptionOutcome> => {
+      const fields: [string, AttributeValue][] = [
+        ['subscribedUntil', { S: subscription.subscribedUntil }],
+        ['subscriptionStore', { S: subscription.subscriptionStore }],
+        ['subscriptionTransaction', { S: subscription.subscriptionTransaction }],
+        ['subscriptionCheckedAt', { S: subscription.subscriptionCheckedAt }],
+        ['subscriptionState', { S: subscription.subscriptionState }],
+        ['subscriptionPlan', { S: subscription.subscriptionPlan }],
+        ['subscriptionEventAt', { N: String(subscription.subscriptionEventAt) }],
+      ];
+      const names: Record<string, string> = {};
+      const values: Record<string, AttributeValue> = {};
+
+      for (const [field, value] of fields) {
+        names[`#${field}`] = field;
+        values[`:${field}`] = value;
+      }
+
+      const refused = await refusedByItsCondition(
+        table.updateItem({
+          TableName: tableName,
+          Key: keyOf(subscription.accountId, accountSortKey),
+          UpdateExpression: `SET ${fields.map(([field]) => `#${field} = :${field}`).join(', ')}`,
+          // The account item exists, because the authorizer read it before this handler ran. The
+          // condition is here so a filing can never make a stub account item, and so a date only
+          // ever moves forward: an event with no newer instant than the one written is refused by
+          // the table rather than by a read this code made first.
+          ConditionExpression:
+            'attribute_exists(pk) AND (attribute_not_exists(#subscriptionEventAt) OR #subscriptionEventAt < :subscriptionEventAt)',
+          ExpressionAttributeNames: names,
+          ExpressionAttributeValues: values,
+        }),
+      );
+
+      return refused ? 'older-event' : 'written';
+    },
 
     readAccount: async (accountId: string): Promise<StoredAccount | undefined> => {
       const item = await table.getItem({

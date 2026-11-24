@@ -3,8 +3,10 @@ import { deleteAccount, accountPath } from './handlers/deleteAccount';
 import { pullRecords, recordsPath } from './handlers/pullRecords';
 import { putRecord, recordPathPrefix } from './handlers/putRecord';
 import { accountsPath, register } from './handlers/register';
+import type { ReachesTheAppStore } from './payments/appStore';
+import { fileTransaction, storeSubscriptionPath } from './payments/fileTransaction';
 import type { StopsEveryRenewal } from './payments/stopRenewals';
-import type { AccountDeleteStore, AccountStore } from './store/accounts';
+import type { AccountDeleteStore, AccountStore, SubscriptionStore } from './store/accounts';
 import type { RecordStore } from './store/records';
 
 /**
@@ -19,14 +21,24 @@ import type { RecordStore } from './store/records';
 /** What every route of this service is: one event in, one answer out, and no shared state. */
 export type SignedRoute = (event: HttpRequestEvent) => Promise<HttpResponse>;
 
-/** The storage the four routes need between them. */
-export type VaultStore = AccountStore & RecordStore & AccountDeleteStore;
+/** The storage the five routes need between them. */
+export type VaultStore = AccountStore & RecordStore & AccountDeleteStore & SubscriptionStore;
+
+/**
+ * What the filing of a store purchase needs beyond the storage: one way of reaching Apple, and the
+ * credential it is reached with. Both are passed in rather than defaulted, because a router built
+ * without them would answer a filing by writing a date nobody checked.
+ */
+export interface WhatTheStoreRouteNeeds {
+  readonly reaches: ReachesTheAppStore;
+  readonly apiKey: () => Promise<string>;
+}
 
 /** The one answer a path this service does not handle gets. It names no route and no method. */
 export const nothingAnswersThatPath = 'nothing answers that path';
 
 /**
- * The four routes, bound to one store. The clock is passed through rather than read inside each
+ * The five routes, bound to one store. The clock is passed through rather than read inside each
  * handler, so a test moves every route to the same instant with one argument.
  *
  * The renewal the delete stops is passed in rather than defaulted, because a router built without
@@ -35,6 +47,7 @@ export const nothingAnswersThatPath = 'nothing answers that path';
 export function routesOf(
   store: VaultStore,
   stopsRenewals: StopsEveryRenewal,
+  theStore: WhatTheStoreRouteNeeds,
   clock: () => Date = () => new Date(),
 ): Record<string, SignedRoute> {
   return {
@@ -42,6 +55,12 @@ export function routesOf(
     [`PUT ${recordPathPrefix}`]: putRecord(store, clock),
     [`GET ${recordsPath}`]: pullRecords(store),
     [`DELETE ${accountPath}`]: deleteAccount(store, stopsRenewals),
+    [`POST ${storeSubscriptionPath}`]: fileTransaction({
+      store,
+      reaches: theStore.reaches,
+      apiKey: theStore.apiKey,
+      clock,
+    }),
   };
 }
 
@@ -59,13 +78,14 @@ export function routeKeyOf(event: HttpRequestEvent): string {
   return `${method} ${path}`;
 }
 
-/** The function the api calls, with the four routes bound to one store. */
+/** The function the api calls, with the five routes bound to one store. */
 export function router(
   store: VaultStore,
   stopsRenewals: StopsEveryRenewal,
+  theStore: WhatTheStoreRouteNeeds,
   clock: () => Date = () => new Date(),
 ): SignedRoute {
-  const routes = routesOf(store, stopsRenewals, clock);
+  const routes = routesOf(store, stopsRenewals, theStore, clock);
 
   return async (event) => {
     const route = routes[routeKeyOf(event)];

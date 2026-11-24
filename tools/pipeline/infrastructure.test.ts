@@ -41,6 +41,8 @@ import {
   stripeSecretKeyParameter,
   stripeWebhookSecretParameter,
 } from '../../services/vault/src/payments/stripeSecrets.ts';
+import { appStoreApiKeyParameter } from '../../services/vault/src/payments/appStoreSecrets.ts';
+import { storeSubscriptionPath } from '../../services/vault/src/payments/fileTransaction.ts';
 import { SITE_ORIGIN } from '../../apps/website/lib/addresses.ts';
 import { languages } from '../../apps/website/app/words/language.ts';
 
@@ -640,9 +642,9 @@ describe('the infrastructure is applied only by the pipeline', () => {
     it('reads one parameter, the secret key, and no second one', () => {
       const secret = statementTextIn(vault, 'ReadTheStripeSecretKey');
 
-      expect(actionsIn(vault).filter((action) => action.startsWith('ssm:'))).toEqual([
-        'ssm:GetParameter',
-      ]);
+      expect(
+        [...new Set(actionsIn(vault).filter((action) => action.startsWith('ssm:')))].sort(),
+      ).toEqual(['ssm:GetParameter']);
       expect(listedIn(secret, 'resources')).toEqual([
         'arn:aws:ssm:${var.region}:${var.account_id}:parameter/${var.project_name}/payments/stripe/secret-key',
       ]);
@@ -666,6 +668,29 @@ describe('the infrastructure is applied only by the pipeline', () => {
       expect(decrypt).toContain('variable = "kms:ViaService"');
     });
 
+    it('reads the App Store credential as a statement of its own, named in full', () => {
+      const credential = statementTextIn(vault, 'ReadTheAppStoreApiKey');
+
+      expect(listedIn(credential, 'resources')).toEqual([
+        'arn:aws:ssm:${var.region}:${var.account_id}:parameter/${var.project_name}/payments/apple/api-key',
+      ]);
+      expect(credential).toContain(
+        appStoreApiKeyParameter.replace('/emi/', '${var.project_name}/'),
+      );
+      expect(listedIn(credential, 'actions')).toEqual(['ssm:GetParameter']);
+      expect(credential).not.toContain('*');
+    });
+
+    it('reads that credential from one role and from no other, so one route holds it', () => {
+      const everyPolicy = statementsIn(configuration);
+      const reaching = everyPolicy.filter((statement) =>
+        statement.resources.some((resource) => resource.includes('/payments/apple/api-key')),
+      );
+
+      expect(reaching).toHaveLength(1);
+      expect(statementTextIn(vault, 'ReadTheAppStoreApiKey')).toContain('/payments/apple/api-key');
+    });
+
     it('holds no Stripe value in the environment of the function that deletes', () => {
       const theFunction = bodyOf('resource "aws_lambda_function" "vault"');
       const environment = blockBodyOf(theFunction, 'variables');
@@ -674,6 +699,24 @@ describe('the infrastructure is applied only by the pipeline', () => {
       expect(environment).toContain('EMI_VAULT_TABLE');
       expect(environment.toLowerCase()).not.toContain('stripe');
       expect(environment.toLowerCase()).not.toContain('key');
+    });
+  });
+
+  describe('the route a purchase in the App Store is filed on, which is contract PAY-3', () => {
+    const route = bodyOf('resource "aws_apigatewayv2_route" "file_store_transaction"');
+
+    it('answers on the path the handler names, so the two cannot drift apart', () => {
+      expect(route).toContain(`route_key          = "POST ${storeSubscriptionPath}"`);
+    });
+
+    it('stands behind the signature authorizer, and behind no token of the pool', () => {
+      expect(route).toContain('authorization_type = "CUSTOM"');
+      expect(route).toContain('authorizer_id      = aws_apigatewayv2_authorizer.signature.id');
+      expect(route).not.toContain('aws_apigatewayv2_authorizer.pool_token');
+    });
+
+    it('runs in the function that already answers every signed route', () => {
+      expect(route).toContain('integrations/${aws_apigatewayv2_integration.vault.id}');
     });
   });
 

@@ -9,8 +9,9 @@ import { digestOf } from './signature';
  * back after a delete, so a payment made one way in is found again by that same way in.
  */
 
-/** The two ways a payer digest refuses, as values, so a caller matches a reason and not words. */
-export type PayerRefusal = 'pool-is-missing' | 'user-name-is-missing';
+/** Every way a digest refuses, as values, so a caller matches a reason and not words. */
+export type PayerRefusal =
+  'pool-is-missing' | 'user-name-is-missing' | 'store-is-missing' | 'transaction-is-missing';
 
 /** Carries the refusal beside the message, the way the envelope and the signature do. */
 export class PayerError extends Error {
@@ -48,4 +49,27 @@ export function payerDigestFor(poolId: string, userName: string): string {
   }
 
   return digestOf(new TextEncoder().encode(`${poolId}${payerDigestSeparator}${userName}`));
+}
+
+/**
+ * The digest a purchase in a store is held under: the store name, a newline, and the original
+ * transaction identifier, written in the shape the account identifier is written in. The separator
+ * is the one above, so two parts cannot run into one text.
+ *
+ * The identifier itself is written nowhere. One account claims the digest, and a reader who holds
+ * that partition cannot work the purchase back out of it.
+ */
+export function transactionDigestFor(store: string, transactionId: string): string {
+  if (store.length === 0) {
+    throw new PayerError('store-is-missing', 'a transaction digest needs the name of the store');
+  }
+
+  if (transactionId.length === 0) {
+    throw new PayerError(
+      'transaction-is-missing',
+      'a transaction digest needs the original transaction identifier',
+    );
+  }
+
+  return digestOf(new TextEncoder().encode(`${store}${payerDigestSeparator}${transactionId}`));
 }
