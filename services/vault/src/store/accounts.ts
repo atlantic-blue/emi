@@ -16,6 +16,11 @@ export interface StoredAccount {
   readonly recoverySalt: Uint8Array;
   readonly createdAt: string;
   readonly recordCount: number;
+  /**
+   * The instant a store purchase paid until, absent until she buys one. The write gate reads it
+   * beside the payment item of each way in, so one account answers for both routes.
+   */
+  readonly subscribedUntil?: string;
 }
 
 /**

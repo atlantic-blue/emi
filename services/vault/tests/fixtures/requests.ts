@@ -11,9 +11,17 @@ import {
 } from '@emi/crypto';
 
 import type { AuthorizerEvent, HttpRequestEvent } from '../../src/api';
+import type { SaysWhetherSheMayWrite } from '../../src/payments/writeGate';
 import type { StoredAccount } from '../../src/store/accounts';
 
 /** Builders for a signed request, so no test writes an event or a header by hand. */
+
+/**
+ * The state a case is in when it is about the rules of a write rather than about the money: she is
+ * paid up, and the write gate says so. The gate itself is driven over the real store and the real
+ * payment items in `tests/writeGate.test.ts`.
+ */
+export const sheIsPaidUp: SaysWhetherSheMayWrite = () => Promise.resolve(true);
 
 /** A key pair from a seed, so a failure names the same key every run. */
 export function keyPairFromSeed(seed: number): DeviceKeyPair {

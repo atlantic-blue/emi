@@ -443,8 +443,9 @@ Input: a record identifier, a revision and an envelope.
 Output: the stored revision.
 
 Errors: a revision that is not greater than the stored one, which the server refuses rather than
-merges. An envelope over 64 kilobytes. An account with no active subscription, refused with a status
-the application reads as pay and not as an error.
+merges. An envelope over 64 kilobytes. An account with no active subscription, refused with 402,
+which the application reads as pay and not as an error. A refusal that names the date, the plan or
+the route she paid by, because the caller asked to write and not about the money.
 
 ### WIRE-3, pull records
 

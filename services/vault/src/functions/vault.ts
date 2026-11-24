@@ -7,6 +7,7 @@ import { reachesStripe } from '../payments/reachesStripe';
 import { reachesTheAppStore } from '../payments/reachesTheAppStore';
 import { stopsEveryRenewal } from '../payments/stopRenewals';
 import { stripeSecretKeyOnce } from '../payments/stripeSecrets';
+import { saysWhetherSheMayWrite } from '../payments/writeGate';
 import { router } from '../router';
 import { dynamoStore } from '../store/dynamo';
 import { dynamoTable } from '../store/dynamoTable';
@@ -26,14 +27,17 @@ import { parameterStore } from '../telegram/parameterStore';
 const table = dynamoTable(new DynamoDBClient({}));
 const tableName = process.env.EMI_VAULT_TABLE ?? '';
 const parameters = parameterStore(new SSMClient({}));
+const store = dynamoStore(table, tableName);
+const entitlements = dynamoEntitlementStore(table, tableName);
 
 export const handler = router(
-  dynamoStore(table, tableName),
+  store,
   stopsEveryRenewal({
-    entitlements: dynamoEntitlementStore(table, tableName),
+    entitlements,
     reaches: reachesStripe(),
     secretKey: stripeSecretKeyOnce(parameters),
     clock: () => new Date(),
   }),
   { reaches: reachesTheAppStore(), apiKey: appStoreApiKeyOnce(parameters) },
+  saysWhetherSheMayWrite({ accounts: store, entitlements }),
 );

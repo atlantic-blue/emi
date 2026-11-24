@@ -6,7 +6,13 @@ import { accountIdFor, base64Of, canonicalBytes, sealRecord } from '@emi/crypto'
 import { putRecordFor } from '../src/handlers/putRecord';
 import { dynamoStore } from '../src/store/dynamo';
 import { fakeTable, type FakeTable, tableName } from './fixtures/dynamoTable';
-import { anAccount, authorizedEvent, keyPairFromSeed, signedRequest } from './fixtures/requests';
+import {
+  anAccount,
+  authorizedEvent,
+  keyPairFromSeed,
+  sheIsPaidUp,
+  signedRequest,
+} from './fixtures/requests';
 
 /**
  * Contracts TABLE-4 and ENVELOPE-4. This is the file the product rests on: the first half writes a
@@ -51,7 +57,12 @@ async function tableAfterSheWrote(): Promise<FakeTable> {
   const body = JSON.stringify({ revision: 1, payload: base64Of(payload) });
   const { event } = signedRequest(pair, { method: 'PUT', path, body, instant: writtenAt });
 
-  const answered = await putRecordFor(authorizedEvent(event, accountId), store, writtenAt);
+  const answered = await putRecordFor(
+    authorizedEvent(event, accountId),
+    store,
+    writtenAt,
+    sheIsPaidUp,
+  );
 
   expect(answered.statusCode).toBe(200);
 

@@ -9,7 +9,9 @@ import {
   thatPurchaseBelongsToAnotherAccount,
 } from '../../../../services/vault/src/payments/fileTransaction';
 import { theAppleStore, theYearlyProduct } from '../../../../services/vault/src/payments/appStore';
+import { dynamoEntitlementStore } from '../../../../services/vault/src/payments/dynamoEntitlements';
 import type { StopsEveryRenewal } from '../../../../services/vault/src/payments/stopRenewals';
+import { saysWhetherSheMayWrite } from '../../../../services/vault/src/payments/writeGate';
 import { router } from '../../../../services/vault/src/router';
 import { dynamoStore, type Item } from '../../../../services/vault/src/store/dynamo';
 import {
@@ -52,6 +54,10 @@ function theServer(table: FakeTable, answers: WhatTheStoreAnswers = {}, at: Date
     store,
     stopsNothing,
     { reaches: fakeAppStore(answers).reaches, apiKey: () => Promise.resolve(theCredential) },
+    saysWhetherSheMayWrite({
+      accounts: store,
+      entitlements: dynamoEntitlementStore(table, tableName),
+    }),
     () => at,
   );
 
