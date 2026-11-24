@@ -30,6 +30,21 @@ keychain through the same port.
 cycle usually runs. `src/features/home` draws the home screen. `src/features/cycle/rebuild.ts` is
 the write path: `logDay`, `editDay` and `deleteDay`.
 
+## The plans in the store
+
+`src/services/store/theProducts.ts` records the three products App Store Connect holds.
+`thePlans.ts` asks the store for those three identifiers and keeps the answer in the order of the
+record, so the figure a screen shows is the one the App Store quotes in her own currency.
+`theStoreOnThisPhone.ts` is the only file that names the purchase library, which is expo-iap.
+
+The library carries a native module, so a plan list answers in a build of the application and never
+in Expo Go.
+
+`storekit/Emi.storekit` holds the same three products for the simulator, so the plans answer with
+no sandbox account behind them. Xcode reads it once it is selected: in the scheme of the generated
+project, under Run and then Options, set StoreKit Configuration to that file. This repository does
+not track the generated project, so that selection is made again after a build generates it.
+
 ## How to run it
 
 From the root of the repository:
