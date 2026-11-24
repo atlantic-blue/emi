@@ -113,6 +113,12 @@ Given(
   async ({ page }) => {
     await aPoolThatAnswers(page);
     await page.goto('/en/checkout/');
+    // The page she buys on moves her here with a whole load of its own, and the box for her
+    // address is in the markup that load answers with, before a script of the page has run. A
+    // press on the form before then is submitted by the browser itself, which asks for the same
+    // address again and throws away what she typed, so the wait is for the load and not for the
+    // box. The scenarios that open this page directly are given the same wait by `goto`.
+    await page.waitForURL('**/en/sign-in/');
     await expect(page.locator('#sign-in-address')).toHaveCount(1);
   },
 );

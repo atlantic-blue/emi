@@ -8,6 +8,7 @@ import {
   THE_EMI_COMMUNITY,
 } from '@/lib/addresses';
 import { theStoreListingIsOpen } from '@/lib/theStoreListing';
+import { theTermsPageIsBuilt } from '@/lib/theTermsPage';
 
 /**
  * What every link in the band at the foot carries at the width of a phone: a box forty four pixels
@@ -95,9 +96,14 @@ export const footerGroups: readonly FooterGroup[] = [
 
 /**
  * The press to the terms, which the band draws beside the privacy policy at the end. It waits for
- * its page like the eight above, and it comes back by taking this one line off it.
+ * its page like the eight above, and the line over the press that pays waits for the same page, so
+ * both read the one fact and neither can be left behind when the page ships.
  */
-export const theTerms: FooterLink = { word: 'footerTerms', path: 'terms/', waitsForItsPage: true };
+export const theTerms: FooterLink = {
+  word: 'footerTerms',
+  path: 'terms/',
+  waitsForItsPage: !theTermsPageIsBuilt,
+};
 
 /**
  * Where one press of the band takes her: an address off this site, or a path under the language she
