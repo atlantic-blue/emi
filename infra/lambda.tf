@@ -743,3 +743,117 @@ resource "aws_lambda_function" "payments_webhook" {
     ignore_changes = [filename, source_code_hash]
   }
 }
+
+# ── The notifications of the App Store ───────────────────────────────────────
+
+# A role of its own, and the narrowest one here. It reads the pointer item of one purchase and
+# writes the subscription onto one account item, and that is the whole of what it may do. It reads
+# no parameter and decrypts nothing: Apple signs each notification, and the root that verifies the
+# signature is in the bundle, so this route needs no credential of ours to believe what it is told.
+
+resource "aws_iam_role" "store_notifications" {
+  name               = "${var.project_name}-store-notifications"
+  assume_role_policy = data.aws_iam_policy_document.lambda_trust.json
+}
+
+data "aws_iam_policy_document" "store_notifications" {
+  statement {
+    sid    = "WriteItsOwnLogs"
+    effect = "Allow"
+    actions = [
+      "logs:CreateLogStream",
+      "logs:PutLogEvents",
+    ]
+    resources = ["${aws_cloudwatch_log_group.store_notifications.arn}:*"]
+  }
+
+  # One item, by its whole key, under a partition that opens with STORE#. That item holds one
+  # attribute, the account a purchase was filed by, and contract PAY-9 names it. The two conditions
+  # are what make the limit real: a ForAllValues test is true when the request names no key at all,
+  # which a scan does not, so the Null condition beside it refuses a request that leaves the key
+  # out.
+  statement {
+    sid       = "ReadOnePurchasePointer"
+    effect    = "Allow"
+    actions   = ["dynamodb:GetItem"]
+    resources = [aws_dynamodb_table.vault.arn]
+
+    condition {
+      test     = "ForAllValues:StringLike"
+      variable = "dynamodb:LeadingKeys"
+      values   = ["STORE#*"]
+    }
+
+    condition {
+      test     = "Null"
+      variable = "dynamodb:LeadingKeys"
+      values   = ["false"]
+    }
+  }
+
+  # The date, the state and the plan, written onto one account item by its whole key. It is an
+  # update and never a put, so a notification can add the seven attributes of contract PAY-5 to an
+  # account and can replace nothing else on it. There is no read of that partition here at all, so
+  # this role cannot read one day of anybody's history, and no query and no scan, so it cannot
+  # learn which accounts exist.
+  statement {
+    sid       = "WriteTheSubscriptionOnOneAccount"
+    effect    = "Allow"
+    actions   = ["dynamodb:UpdateItem"]
+    resources = [aws_dynamodb_table.vault.arn]
+
+    condition {
+      test     = "ForAllValues:StringLike"
+      variable = "dynamodb:LeadingKeys"
+      values   = ["ACC#*"]
+    }
+
+    condition {
+      test     = "Null"
+      variable = "dynamodb:LeadingKeys"
+      values   = ["false"]
+    }
+  }
+}
+
+resource "aws_iam_role_policy" "store_notifications" {
+  name   = "${var.project_name}-store-notifications"
+  role   = aws_iam_role.store_notifications.id
+  policy = data.aws_iam_policy_document.store_notifications.json
+}
+
+resource "aws_cloudwatch_log_group" "store_notifications" {
+  name              = "/aws/lambda/${var.project_name}-store-notifications"
+  retention_in_days = var.log_retention_days
+}
+
+resource "aws_lambda_function" "store_notifications" {
+  function_name = "${var.project_name}-store-notifications"
+  role          = aws_iam_role.store_notifications.arn
+  runtime       = "nodejs22.x"
+  architectures = ["arm64"]
+  handler       = "index.handler"
+  memory_size   = 512
+  # It verifies a chain of certificates and reaches the table twice, and it waits on nobody else at
+  # all. Apple asks for an answer within a bounded time and sends the notification again after a
+  # failure, so a timeout costs a retry rather than a date.
+  timeout = 10
+
+  filename         = data.archive_file.vault_placeholder.output_path
+  source_code_hash = data.archive_file.vault_placeholder.output_base64sha256
+
+  environment {
+    variables = {
+      EMI_VAULT_TABLE = aws_dynamodb_table.vault.name
+    }
+  }
+
+  depends_on = [aws_cloudwatch_log_group.store_notifications]
+
+  # The functions job of .github/workflows/deploy.yml uploads the bundle on a merge. Terraform
+  # would read that bundle as drift and put the placeholder back on the next apply, so the route
+  # in front of this function would answer from a placeholder again.
+  lifecycle {
+    ignore_changes = [filename, source_code_hash]
+  }
+}

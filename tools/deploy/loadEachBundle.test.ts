@@ -52,6 +52,13 @@ import {
   webhookPath,
   type WhatTheWebhookNeeds,
 } from '../../services/vault/src/payments/webhook';
+import {
+  storeNotificationsFor,
+  storeNotificationsPath,
+  thatNotificationIsNotSigned,
+  type WhatTheNotificationsNeed,
+} from '../../services/vault/src/payments/storeNotifications';
+import { appleRoots } from '../../services/vault/src/payments/appleRoot';
 import { createAuthChallenge } from '../../services/vault/src/triggers/createAuthChallenge';
 import { customChallengeName } from '../../services/vault/src/triggers/defineAuthChallenge';
 
@@ -619,6 +626,41 @@ describe('every bundle is loaded in a container of its own, and two in a row can
     });
 
     it('refuses the answer a bundle that took an unsigned delivery would give', () => {
+      expect(check?.owes({ statusCode: 200, body: '{"written":true}' })).toBe(false);
+    });
+  });
+
+  describe('the refusal a notification bundle owes', () => {
+    const [check] = loadChecks['emi-store-notifications'] ?? [];
+
+    /** Every port it needs, each one raising, so a call that happens is a failure here. */
+    const nothingItMayReach = (): WhatTheNotificationsNeed => ({
+      store: {
+        accountOfPurchase: () => Promise.reject(new Error('the table was read')),
+        claimTransaction: () => Promise.reject(new Error('the table was written')),
+        writeSubscription: () => Promise.reject(new Error('the table was written')),
+      },
+      roots: appleRoots,
+      clock: () => new Date('2026-11-24T10:00:00.000Z'),
+    });
+
+    it('asks on the path the handler answers, so the two cannot drift apart', () => {
+      expect((check?.event as { rawPath?: string } | undefined)?.rawPath).toBe(
+        storeNotificationsPath,
+      );
+    });
+
+    it('takes the refusal the handler answers that body with, having read no table', async () => {
+      const answered = await storeNotificationsFor(
+        check?.event as HttpRequestEvent,
+        nothingItMayReach(),
+      );
+
+      expect(check?.owes(answered)).toBe(true);
+      expect(JSON.parse(answered.body)).toEqual({ error: thatNotificationIsNotSigned });
+    });
+
+    it('refuses the answer a bundle that took an unsigned notification would give', () => {
       expect(check?.owes({ statusCode: 200, body: '{"written":true}' })).toBe(false);
     });
   });
