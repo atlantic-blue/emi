@@ -44,6 +44,18 @@ import {
  * that gives it an address.
  */
 
+/**
+ * What the route that draws this screen has to give the navigator.
+ *
+ * A swipe back is the navigator's to refuse and not the screen's, so the screen cannot close
+ * that way out on its own. It names what it needs instead, and the step that gives the paywall an
+ * address passes this through. The hardware back is refused below, where the screen can answer it.
+ */
+export const theOptionsThePaywallNeeds = {
+  gestureEnabled: false,
+  headerShown: false,
+} as const;
+
 export const paywallTestID = 'paywall';
 export const paywallTitleTestID = 'paywall-title';
 export const paywallLineTestID = 'paywall-line';

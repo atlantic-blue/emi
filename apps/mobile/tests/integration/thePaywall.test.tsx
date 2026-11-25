@@ -18,6 +18,7 @@ import {
   paywallTermsTestID,
   paywallTestID,
   paywallTitleTestID,
+  theOptionsThePaywallNeeds,
 } from '../../src/features/paywall/Paywall';
 import {
   planLineTestID,
@@ -392,6 +393,11 @@ describe('the paywall', () => {
 
       expect(roles).toHaveLength(6);
       expect(roles.every(({ role }) => ['radio', 'button', 'link'].includes(role))).toBe(true);
+    });
+
+    it('names the options a route has to give it, so no swipe takes her back off it', () => {
+      expect(theOptionsThePaywallNeeds.gestureEnabled).toBe(false);
+      expect(theOptionsThePaywallNeeds.headerShown).toBe(false);
     });
 
     it('answers the hardware back of the phone, so the system does not take her off it', async () => {
