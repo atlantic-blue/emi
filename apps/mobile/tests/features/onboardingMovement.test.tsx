@@ -75,6 +75,9 @@ jest.mock('../../src/features/reminder/ReminderPresses', () => ({
 jest.mock('../../src/features/account/TheEntitlementRefresh', () => ({
   TheEntitlementRefresh: (): ReactNode => null,
 }));
+jest.mock('../../src/features/paywall/ThePayGate', () => ({
+  ThePayGate: (): ReactNode => null,
+}));
 
 function optionsOf(name: string): StackOptions {
   const found = mockScreens.filter((screen) => screen.name === name);

@@ -999,6 +999,7 @@ export const russian: CatalogueIn<'ru'> = {
   'pastPeriods.stillGoing': 'Ещё идут',
   'pastPeriods.title': 'Когда были последние месячные?',
   'pastPeriods.wayPast': 'Добавлю позже',
+  'paywall.action.again': 'Оформить за {price} в год',
   'paywall.action.monthly': 'Оформить за {price} в месяц',
   'paywall.action.yearly': 'Начать бесплатный месяц',
   'paywall.gets.encrypted': 'Дни зашифрованы на этом телефоне, ключ есть только у вас',
@@ -1006,11 +1007,15 @@ export const russian: CatalogueIn<'ru'> = {
   'paywall.gets.log': 'Отмечайте месячные и самочувствие',
   'paywall.line':
     'Бесплатные приложения зарабатывают на ваших данных. Emi оплачиваете вы, и ваши дни читаете только вы.',
+  'paywall.link.delete': 'Удалить данные',
+  'paywall.link.export': 'Экспортировать данные',
   'paywall.link.privacy': 'Политика конфиденциальности',
   'paywall.link.terms': 'Условия использования',
   'paywall.monthly.line': '{price} сегодня, затем каждый месяц.',
   'paywall.monthly.name': 'На месяц',
   'paywall.monthly.price': '{price} в месяц',
+  'paywall.renewal.again':
+    '{price} сегодня, затем {price} каждый год до отмены подписки. Отмена в настройках App Store.',
   'paywall.renewal.monthly':
     '{price} сегодня, затем {price} каждый месяц до отмены подписки. Отмена в настройках App Store.',
   'paywall.renewal.yearly':
@@ -1020,6 +1025,7 @@ export const russian: CatalogueIn<'ru'> = {
   'paywall.trouble.line': 'Деньги не списаны. Повторите попытку позже.',
   'paywall.trouble.ok': 'OK',
   'paywall.trouble.title': 'Покупка не прошла',
+  'paywall.yearly.again': '{price} сегодня, затем каждый год.',
   'paywall.yearly.freeMonth': 'Первый месяц бесплатно, затем {price} каждый год.',
   'paywall.yearly.name': 'На год',
   'paywall.yearly.offer': 'Месяц бесплатно',

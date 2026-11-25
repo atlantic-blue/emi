@@ -57,7 +57,7 @@ import {
 import * as Localization from 'expo-localization';
 import { router } from 'expo-router';
 import { act, fireEvent, renderRouter, screen } from 'expo-router/testing-library';
-import { defineFeature, loadFeature } from 'jest-cucumber';
+import { type DefineStepFunction, defineFeature, loadFeature } from 'jest-cucumber';
 
 import {
   keepFilledInKeepTestID,
@@ -542,6 +542,7 @@ import {
   forecastPopupTestID,
   forecastPopupTitleTestID,
 } from '../apps/mobile/src/features/calendar/ForecastPopup';
+import { theAppStoreIsPayingForHer } from '../apps/mobile/tests/fixtures/theSubscription';
 import { readableIn, theFieldAndItsValue } from '../apps/mobile/tests/fixtures/whatIsReadable';
 import {
   aBleedingDay,
@@ -958,6 +959,19 @@ const theCycleLengthIsStepFive = 5;
  * reminder.
  */
 const theQuestionsLeftAfterTheCycleLength = 7;
+
+/**
+ * The App Store pays for her, held on the phone in the row the launch read writes.
+ *
+ * The end of the first run reads that row: a woman it names as paid goes to her home screen, and a
+ * woman it does not is asked to pay. The paywall belongs to feature 7, so a scenario here that
+ * walks the whole first run says this and reaches the screens it is about.
+ */
+function theAppStorePaysForHer(and: DefineStepFunction): void {
+  and('the App Store already pays for her', () => {
+    theAppStoreIsPayingForHer(herDatabase(), whenSheOpensIt);
+  });
+}
 
 /** When she taps Save and start, which is the instant everything she answered is written at. */
 const whenSheSaves = whenSheOpensIt;
@@ -1754,6 +1768,8 @@ defineFeature(feature, (test) => {
       app = await sheOpens('/');
     });
 
+    theAppStorePaysForHer(and);
+
     and('she answers every question of the first run', async () => {
       await sheAnswersEveryQuestionOfTheFirstRun();
     });
@@ -1878,6 +1894,8 @@ defineFeature(feature, (test) => {
     when('she opens Emi', async () => {
       app = await sheOpens('/');
     });
+
+    theAppStorePaysForHer(and);
 
     and(
       'she answers every question, and presses Done a second time before the screen goes',
@@ -2143,6 +2161,8 @@ defineFeature(feature, (test) => {
       app = await sheOpens('/');
     });
 
+    theAppStorePaysForHer(and);
+
     and('she reaches the reminder after the first day she logs', async () => {
       await sheReachesTheReminder();
 
@@ -2277,6 +2297,8 @@ defineFeature(feature, (test) => {
       app = await sheOpens('/');
     });
 
+    theAppStorePaysForHer(and);
+
     and('she answers every question of the first run', async () => {
       sheIsOn();
       whatEachScreenSaid.push(screen.getByText(firstRunCopy.welcome.title).props.children);
@@ -2388,6 +2410,8 @@ defineFeature(feature, (test) => {
       await sheOpens('/');
       everyFieldShePassed.push(...fieldsDrawn());
     });
+
+    theAppStorePaysForHer(and);
 
     and('she answers every question of the first run', async () => {
       await shePresses(onboardingActionTestID);
@@ -6712,6 +6736,8 @@ defineFeature(feature, (test) => {
       app = await sheOpens('/');
     });
 
+    theAppStorePaysForHer(and);
+
     and(
       'she gives her name and the year she was born, and reaches the step that asks for her last three periods',
       async () => {
@@ -6818,6 +6844,8 @@ defineFeature(feature, (test) => {
     when('she opens Emi', async () => {
       await sheOpens('/');
     });
+
+    theAppStorePaysForHer(and);
 
     and('she reaches the step that asks for her last three periods', async () => {
       await sheReachesTheThreePeriodsStep();
@@ -6999,6 +7027,8 @@ defineFeature(feature, (test) => {
     when('she opens Emi', async () => {
       app = await sheOpens('/');
     });
+
+    theAppStorePaysForHer(and);
 
     and(
       'she answers every question of the first run, and says she will log her periods as she goes',
@@ -7974,6 +8004,8 @@ defineFeature(feature, (test) => {
         await shePresses(onboardingSkipTestID);
       },
     );
+
+    theAppStorePaysForHer(and);
 
     and('she passes every other question she may pass, and taps Save and start', async () => {
       await shePresses(onboardingSkipTestID);
@@ -9836,6 +9868,8 @@ defineFeature(feature, (test) => {
       await sheOpens('/');
     });
 
+    theAppStorePaysForHer(and);
+
     and('she reaches the step that asks for her last three periods', async () => {
       await sheReachesTheThreePeriodsStep();
     });
@@ -10307,6 +10341,8 @@ defineFeature(feature, (test) => {
     when('she opens Emi', async () => {
       await sheOpens('/');
     });
+
+    theAppStorePaysForHer(and);
 
     and('she reaches the step that asks for her last three periods', async () => {
       await sheReachesTheThreePeriodsStep();

@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import {
+  type TheFreeMonth,
   type WhichPlan,
   thePaywallSaid,
   theLineUnderThePriceOf,
@@ -17,7 +18,8 @@ import {
  *
  * The free month belongs to the yearly plan and to nothing else, so the chip above the price and
  * the sentence under it are drawn on that row alone. A monthly row that borrowed either one would
- * promise a month the App Store will not give her.
+ * promise a month the App Store will not give her, and so would a yearly row drawn for a woman
+ * who has spent hers.
  */
 
 export function planRowTestID(which: WhichPlan): string {
@@ -58,12 +60,15 @@ export function PlanRow({
   which,
   price,
   isChosen,
+  month = 'hers',
   onPress,
 }: {
   readonly which: WhichPlan;
   /** The figure the store quoted, in her own currency. */
   readonly price: string;
   readonly isChosen: boolean;
+  /** Whether the free month is still hers, which the row draws the chip and its line from. */
+  readonly month?: TheFreeMonth;
   readonly onPress: () => void;
 }): ReactNode {
   const said = thePaywallSaid();
@@ -87,7 +92,7 @@ export function PlanRow({
           <Text style={styles.name} testID={planNameTestID(which)}>
             {thePlanNameOf(which)}
           </Text>
-          {which === 'yearly' ? (
+          {which === 'yearly' && month === 'hers' ? (
             <Text style={styles.offer} testID={planOfferTestID(which)}>
               {said.offer}
             </Text>
@@ -97,7 +102,7 @@ export function PlanRow({
           {thePriceOf(which, price)}
         </Text>
         <Text style={styles.line} testID={planLineTestID(which)}>
-          {theLineUnderThePriceOf(which, price)}
+          {theLineUnderThePriceOf(which, price, month)}
         </Text>
       </View>
     </Pressable>

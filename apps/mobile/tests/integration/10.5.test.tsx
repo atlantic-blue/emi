@@ -17,6 +17,8 @@ import { statedCycleLengthDays } from '../../src/features/onboarding/firstRun';
 import { everythingIn } from '../../src/features/export/everything';
 import { labelOf, readableHtml } from '../../src/features/export/readableDocument';
 import { resetExpoSqlite } from '../data/expoSqlite';
+import { THE_KEY_THE_ANSWER_IS_HELD_UNDER } from '../../src/services/store/theAnswerThePhoneHolds';
+import { theAppStoreIsPayingForHer } from '../fixtures/theSubscription';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { aBleedingDay, herDatabase } from '../fixtures/herPhone';
 import { herKeyIsInTheKeychain, herProfileVault, herVault } from '../fixtures/herVault';
@@ -58,6 +60,8 @@ async function aPhoneThatStatedItInTheSettingTable(
 
   database.run('INSERT INTO setting (key, value) VALUES (?, ?)', [statedCycleLengthKey, stated]);
   writeSetting(database, 'firstRunCompletedAt', sheAnsweredAt.toISOString());
+  // She pays for Emi, and without that the application sends her to the paywall instead.
+  theAppStoreIsPayingForHer(database, sheAnsweredAt);
   // The tour runs before the questions, so a phone that answered them has been through it.
   // Without this the application sends her to card 1 and the home screen is never reached.
   writeSetting(database, 'tourSeenAt', sheAnsweredAt.toISOString());
@@ -88,11 +92,17 @@ function herAnswersInPlainWords(database: Database): Uint8Array {
   return profileBytes(held, { now: sheUpgradedAt });
 }
 
-/** The setting table as the bytes on the disk, read with no repository between it and the test. */
+/**
+ * The setting table as the bytes on the disk, read with no repository between it and the test.
+ *
+ * The row the App Store answer is held under is left out. It is a fact about a sale rather than an
+ * answer of hers, and the instant inside it carries digits of its own, so a search for the number
+ * she stated would find one of those instead.
+ */
 function everySetting(database: Database): { key: string; value: string }[] {
-  return database.all<{ key: string; value: string }>(
-    'SELECT key, value FROM setting ORDER BY key',
-  );
+  return database
+    .all<{ key: string; value: string }>('SELECT key, value FROM setting ORDER BY key')
+    .filter((row) => row.key !== THE_KEY_THE_ANSWER_IS_HELD_UNDER);
 }
 
 function moved(database: Database): ReturnType<typeof moveCycleLengthIntoProfile> {

@@ -960,6 +960,7 @@ export const english = {
   'pastPeriods.stillGoing': 'Still going',
   'pastPeriods.title': 'Your last three periods',
   'pastPeriods.wayPast': 'Skip, I will log as I go',
+  'paywall.action.again': 'Subscribe for {price} a year',
   'paywall.action.monthly': 'Subscribe for {price} a month',
   'paywall.action.yearly': 'Start the free month',
   'paywall.gets.encrypted': 'Encrypted on this phone, with a key only you hold',
@@ -967,11 +968,15 @@ export const english = {
   'paywall.gets.log': 'Log your periods and how you feel',
   'paywall.line':
     'A free app takes its money from your data. You pay for Emi, so only you can read your days.',
+  'paywall.link.delete': 'Delete data',
+  'paywall.link.export': 'Export your data',
   'paywall.link.privacy': 'Privacy Policy',
   'paywall.link.terms': 'Terms of Use',
   'paywall.monthly.line': '{price} today, then every month.',
   'paywall.monthly.name': 'Monthly',
   'paywall.monthly.price': '{price} a month',
+  'paywall.renewal.again':
+    '{price} today, then {price} every year until you cancel. You cancel in your App Store settings.',
   'paywall.renewal.monthly':
     '{price} today, then {price} every month until you cancel. You cancel in your App Store settings.',
   'paywall.renewal.yearly':
@@ -981,6 +986,7 @@ export const english = {
   'paywall.trouble.line': 'Nothing was taken from your account. Try again in a moment.',
   'paywall.trouble.ok': 'OK',
   'paywall.trouble.title': 'The purchase did not go through',
+  'paywall.yearly.again': '{price} today, then every year.',
   'paywall.yearly.freeMonth': 'Free for one month. Then {price} every year.',
   'paywall.yearly.name': 'Yearly',
   'paywall.yearly.offer': 'One month free',

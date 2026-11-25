@@ -57,6 +57,7 @@ import {
 } from '../../src/features/pastPeriods/PastPeriodPicker';
 import { pastPeriodRowTestID } from '../../src/features/pastPeriods/PastPeriodsList';
 import { pastPeriodsCopy } from '../../src/features/pastPeriods/copy';
+import { theAppStoreIsPayingForHer } from '../fixtures/theSubscription';
 import { textIn } from '../fixtures/renderedText';
 import { sheGivesAPeriod } from '../fixtures/thePastPeriods';
 import { openDatabaseSync, resetExpoSqlite } from '../data/expoSqlite';
@@ -197,6 +198,7 @@ describe('her last three periods, in one step of the first run', () => {
     resetExpoSqlite();
     resetExpoSecureStore();
     theTourIsBehindHer();
+    theAppStoreIsPayingForHer(herDatabase(), whenSheOpensIt);
   });
 
   afterEach(() => {

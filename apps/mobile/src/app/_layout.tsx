@@ -11,6 +11,7 @@ import { TheSignInRefresh } from '../features/account/TheSignInRefresh';
 import { theNavigatorGround } from '../features/chrome/theme';
 import { LockGate } from '../features/lock/LockGate';
 import { FirstRunProvider } from '../features/onboarding/FirstRunProvider';
+import { ThePayGate } from '../features/paywall/ThePayGate';
 import { ReminderPresses } from '../features/reminder/ReminderPresses';
 import { Fonts } from '../features/type/Fonts';
 import { VaultProvider } from '../services/vault/VaultProvider';
@@ -53,6 +54,7 @@ export default function RootLayout(): ReactNode {
                     <ReminderPresses />
                     <TheSignInRefresh />
                     <TheEntitlementRefresh />
+                    <ThePayGate />
                     <Stack screenOptions={{ headerShown: false }}>
                       <Stack.Screen name="(tabs)" options={{ animationTypeForReplace: 'push' }} />
                       <Stack.Screen

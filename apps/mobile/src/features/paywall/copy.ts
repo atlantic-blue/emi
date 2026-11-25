@@ -27,6 +27,8 @@ export function thePaywallSaid(): {
   readonly restore: string;
   readonly terms: string;
   readonly privacy: string;
+  readonly exportHerData: string;
+  readonly deleteHerData: string;
   readonly troubleTitle: string;
   readonly troubleLine: string;
   readonly troubleOk: string;
@@ -43,6 +45,8 @@ export function thePaywallSaid(): {
     restore: words('paywall.restore'),
     terms: words('paywall.link.terms'),
     privacy: words('paywall.link.privacy'),
+    exportHerData: words('paywall.link.export'),
+    deleteHerData: words('paywall.link.delete'),
     troubleTitle: words('paywall.trouble.title'),
     troubleLine: words('paywall.trouble.line'),
     troubleOk: words('paywall.trouble.ok'),
@@ -72,29 +76,59 @@ export function thePriceOf(which: WhichPlan, price: string): string {
 }
 
 /**
+ * Whether the free month is still hers to start. Apple gives one introductory offer to one woman
+ * in a subscription group, so a woman who paid before is sold the plan at its price and the three
+ * sentences below say so.
+ */
+export type TheFreeMonth = 'hers' | 'spent';
+
+/**
  * The line under the price. The yearly row says how long the free month lasts and what is taken
  * when it ends, which is what Apple asks of a trial. The monthly row promises no month at all,
- * because one introductory offer reaches one woman in a subscription group and the yearly plan
- * holds it.
+ * and neither does the yearly row once the month is spent.
  */
-export function theLineUnderThePriceOf(which: WhichPlan, price: string): string {
-  return which === 'yearly'
+export function theLineUnderThePriceOf(
+  which: WhichPlan,
+  price: string,
+  month: TheFreeMonth = 'hers',
+): string {
+  if (which === 'monthly') {
+    return words('paywall.monthly.line', undefined, { price });
+  }
+
+  return month === 'hers'
     ? words('paywall.yearly.freeMonth', undefined, { price })
-    : words('paywall.monthly.line', undefined, { price });
+    : words('paywall.yearly.again', undefined, { price });
 }
 
 /** The full renewal price, which App Review reads under the button. */
-export function theRenewalPriceOf(which: WhichPlan, price: string): string {
-  return which === 'yearly'
+export function theRenewalPriceOf(
+  which: WhichPlan,
+  price: string,
+  month: TheFreeMonth = 'hers',
+): string {
+  if (which === 'monthly') {
+    return words('paywall.renewal.monthly', undefined, { price });
+  }
+
+  return month === 'hers'
     ? words('paywall.renewal.yearly', undefined, { price })
-    : words('paywall.renewal.monthly', undefined, { price });
+    : words('paywall.renewal.again', undefined, { price });
 }
 
 /** The word on the button, which names the free month only where the free month is hers. */
-export function theActionFor(which: WhichPlan, price: string): string {
-  return which === 'yearly'
+export function theActionFor(
+  which: WhichPlan,
+  price: string,
+  month: TheFreeMonth = 'hers',
+): string {
+  if (which === 'monthly') {
+    return words('paywall.action.monthly', undefined, { price });
+  }
+
+  return month === 'hers'
     ? words('paywall.action.yearly')
-    : words('paywall.action.monthly', undefined, { price });
+    : words('paywall.action.again', undefined, { price });
 }
 
 /** The order the board puts the rows in, the yearly plan first, which is the one selected. */

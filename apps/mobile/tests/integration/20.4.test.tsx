@@ -25,6 +25,7 @@ import { logFlowDoneTestID } from '../../src/features/log/LogFlow';
 import { defaultCycleLengthDays } from '../../src/features/onboarding/firstRun';
 import { saveButtonTestID } from '../../src/features/onboarding/SaveAndStart';
 import { resetExpoSqlite } from '../data/expoSqlite';
+import { theAppStoreIsPayingForHer } from '../fixtures/theSubscription';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { dayOf, herDatabase } from '../fixtures/herPhone';
 import { theProfileVaultOnHerPhone } from '../fixtures/herVault';
@@ -58,6 +59,9 @@ const sheSaysHerCycleRuns = defaultCycleLengthDays + 2;
  */
 async function sheWalksTheFirstRunWithNoDate(): Promise<void> {
   await renderRouter(appDirectory, { initialUrl: '/' });
+  // The App Store pays for her, so the hold sends her home rather than to the paywall, which has
+  // a file of its own.
+  theAppStoreIsPayingForHer(herDatabase(), whenSheOpensIt);
   await sheAnswersEveryQuestionWithNoDate({ cycleLengthDays: sheSaysHerCycleRuns });
   await sheTapsSaveAndStart();
 }

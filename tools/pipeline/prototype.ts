@@ -29,7 +29,7 @@ export const canvasFile = 'canvas.json';
  * round: the document is the palette it has to stand in, and the canvas the tool wrote does not
  * place it. The colour check reads both, and only the counts tell them apart.
  */
-export const boardsDrawnAfterTheExport: readonly string[] = ['paywall'];
+export const boardsDrawnAfterTheExport: readonly string[] = ['paywall', 'paywallLapsed'];
 
 /** The document written from those screens. */
 export const designSystemDocument = join('docs', 'design', 'prototype-design-system.md');

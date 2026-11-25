@@ -24,6 +24,7 @@ import { expoKeychain } from '../../src/services/vault/keychain';
 import { vaultKeyItem } from '../../src/services/vault/vaultKey';
 import { openDatabaseSync, resetExpoSqlite } from '../data/expoSqlite';
 import { databaseFileName, expoDatabase } from '../../src/data/expoDatabase';
+import { theAppStoreIsPayingForHer } from '../fixtures/theSubscription';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { sheAnswersEveryQuestion as sheWalksTheFirstRun } from '../fixtures/theFirstRun';
 import { sheTapsSaveAndStart } from '../fixtures/theSave';
@@ -85,6 +86,7 @@ describe('she answers everything, leaves before she taps Save and start, and not
     resetExpoSqlite();
     resetExpoSecureStore();
     theTourIsBehindHer();
+    theAppStoreIsPayingForHer(herDatabase(), whenSheOpensIt);
   });
 
   afterEach(() => {

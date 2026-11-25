@@ -61,9 +61,14 @@ with the fifty two.
 the free month on that row alone, the full renewal price, Restore purchases and the two links App
 Review asks for. It has no close control.
 
-One value it paints is not in the palette and is not being added to it. The `drawnNotBuilt` block
-of `docs/design/prototype-design-system.md` records what it paints, the name Emi draws instead and
-the reason.
+**The paywall after a lapse.** `paywallLapsed`, approved on 2026-11-25. The same screen for a
+woman who paid before. The free month is gone from the yearly row, from the button and from the
+renewal line, because Apple gives that offer once. Two links are added, Export your data and
+Delete data, so a woman who is held here still reaches her own records.
+
+One value the two boards paint is not in the palette and is not being added to it. The
+`drawnNotBuilt` block of `docs/design/prototype-design-system.md` records what they paint, the
+name Emi draws instead and the reason.
 
 ## Copy on these screens that must never be built, because it is false
 

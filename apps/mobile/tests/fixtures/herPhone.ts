@@ -9,6 +9,7 @@ import { logDay } from '../../src/features/cycle/rebuild';
 import { defaultCycleLengthDays } from '../../src/features/onboarding/firstRun';
 import { openDatabaseSync } from '../data/expoSqlite';
 import { herKeyIsInTheKeychain, herProfileVault, herVault } from './herVault';
+import { theAppStoreIsPayingForHer } from './theSubscription';
 
 /**
  * The phone a rendered test drives. The application opens its own database by name, so a test
@@ -35,10 +36,12 @@ export function aBleedingDay(day: string): DayRecord {
 }
 
 /**
- * Her phone before she opens it: the days she recorded, her sealed profile, and the markers the
- * first run wrote.
- * Without those answers the application sends her back to the first run and she never reaches the
- * screen under test.
+ * Her phone before she opens it: the days she recorded, her sealed profile, the markers the first
+ * run wrote, and the subscription the App Store pays for.
+ * Without those answers the application sends her back to the first run, and without the
+ * subscription it sends her to the paywall, so either way the screen under test is never reached.
+ * A test about the paywall holds the state it is about instead, with the fixtures of
+ * `theSubscription.ts`.
  */
 export async function herPhoneHolds(
   firstRunFinishedAt: Date,
@@ -96,4 +99,5 @@ export async function herPhoneHoldsTheseAnswers(
   // The tour runs before the two questions, so a phone that answered them has been through it.
   // Without this the application sends her to card 1 and the screen under test is never reached.
   writeSetting(database, 'tourSeenAt', firstRunFinishedAt.toISOString());
+  theAppStoreIsPayingForHer(database, firstRunFinishedAt);
 }

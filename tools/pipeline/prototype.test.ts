@@ -88,7 +88,7 @@ describe('every colour in the redesign prototype has a name in the design docume
   describe('both sides are read, so an empty read is not taken for agreement', () => {
     it('reads fifty two screens of the export, the boards after it, and the canvas', () => {
       expect(theExport).toHaveLength(52);
-      expect(boardsDrawnAfterTheExport).toHaveLength(1);
+      expect(boardsDrawnAfterTheExport).toHaveLength(2);
       expect(screens).toHaveLength(theExport.length + boardsDrawnAfterTheExport.length);
       expect(readdirSync(join(root, prototypeDirectory))).toContain(canvasFile);
       expect(screens.every((file) => markupOf(file).includes('<x-dc>'))).toBe(true);
@@ -101,14 +101,13 @@ describe('every colour in the redesign prototype has a name in the design docume
       expect(basesDrawn.size).toBe(35);
     });
 
-    it('reads the thirty nine colours the board drawn after the export paints', () => {
+    it('reads the colours the boards drawn after the export paint, thirty nine each', () => {
       const later = painted.filter(({ file }) =>
         boardsDrawnAfterTheExport.includes(file.replace(screenSuffix, '')),
       );
-      const mentions = later.flatMap(({ markup }) => coloursDrawnIn(markup));
 
-      expect(later).toHaveLength(1);
-      expect(mentions).toHaveLength(39);
+      expect(later).toHaveLength(2);
+      expect(later.map(({ markup }) => coloursDrawnIn(markup).length)).toEqual([39, 39]);
     });
 
     it('reads a document that names at least as many colours as the screens paint with', () => {

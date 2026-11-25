@@ -23,6 +23,7 @@ import {
 import { PlanRow } from './PlanRow';
 import {
   THE_TERMS_OF_USE,
+  type TheFreeMonth,
   type WhichPlan,
   thePaywallSaid,
   theActionFor,
@@ -40,16 +41,20 @@ import {
  * full renewal price, how long the free month lasts and what is taken when it ends, a way to
  * restore a purchase, and a press to the terms and to the privacy policy.
  *
- * Nothing routes to this screen yet. The step that puts it at the end of the first run is the one
- * that gives it an address.
+ * It is the last screen of the first run, reached once her answers are written, and a purchase or
+ * a restore is the only way off it.
+ *
+ * A woman who paid before reads the same screen with the free month taken out of it, because Apple
+ * gives that offer once. Her two ways to her own records are on it, since a wall with no way to
+ * export and no way to delete would hold what she wrote.
  */
 
 /**
  * What the route that draws this screen has to give the navigator.
  *
  * A swipe back is the navigator's to refuse and not the screen's, so the screen cannot close
- * that way out on its own. It names what it needs instead, and the step that gives the paywall an
- * address passes this through. The hardware back is refused below, where the screen can answer it.
+ * that way out on its own. It names what it needs instead, and the layout of the first run passes
+ * this through. The hardware back is refused below, where the screen can answer it.
  */
 export const theOptionsThePaywallNeeds = {
   gestureEnabled: false,
@@ -65,6 +70,8 @@ export const paywallRenewalTestID = 'paywall-renewal';
 export const paywallRestoreTestID = 'paywall-restore';
 export const paywallTermsTestID = 'paywall-terms';
 export const paywallPrivacyTestID = 'paywall-privacy';
+export const paywallExportTestID = 'paywall-export';
+export const paywallDeleteTestID = 'paywall-delete';
 
 export function paywallGetTestID(at: number): string {
   return `${paywallGetsTestID}-${String(at)}`;
@@ -104,8 +111,11 @@ export function Paywall({
   buying,
   holding,
   now,
+  month = 'hers',
   files = filesNothing,
   onPaid,
+  onExport,
+  onDelete,
   openThePage,
 }: {
   /** The plans the store named, with the figure it quoted for each one. */
@@ -113,6 +123,8 @@ export function Paywall({
   readonly buying: BuysInTheStore;
   readonly holding: HoldsTheAnswer;
   readonly now: () => Date;
+  /** Whether the free month is still hers, which is the whole difference between the two boards. */
+  readonly month?: TheFreeMonth;
   /**
    * How a transaction reaches the server, which is the same route the launch read files with.
    * A build with nothing to file with files nothing.
@@ -120,6 +132,9 @@ export function Paywall({
   readonly files?: FilesWhatTheStoreNamed;
   /** Where she goes once the store says she is paid up, which is out of this screen. */
   readonly onPaid: (entitlement: WhatSheIsEntitledToNow) => void;
+  /** The two ways to her own records, drawn only for a woman who already wrote some. */
+  readonly onExport?: () => void;
+  readonly onDelete?: () => void;
   readonly openThePage: (address: string) => void;
 }): ReactNode {
   const said = thePaywallSaid();
@@ -191,6 +206,7 @@ export function Paywall({
             <PlanRow
               isChosen={one.which === chosen}
               key={one.which}
+              month={month}
               onPress={() => {
                 setChosen(one.which);
               }}
@@ -205,14 +221,14 @@ export function Paywall({
             <>
               <PrimaryButton
                 isReady={!isAsking}
-                label={theActionFor(row.which, row.plan.priceInWords)}
+                label={theActionFor(row.which, row.plan.priceInWords, month)}
                 onPress={() => {
                   void ask(() => sheBuys(row.plan.product.identifier, buying, holding, now, files));
                 }}
                 testID={paywallActionTestID}
               />
               <Text style={styles.renewal} testID={paywallRenewalTestID}>
-                {theRenewalPriceOf(row.which, row.plan.priceInWords)}
+                {theRenewalPriceOf(row.which, row.plan.priceInWords, month)}
               </Text>
             </>
           )}
@@ -247,6 +263,26 @@ export function Paywall({
             >
               <Text style={styles.linkSaid}>{said.privacy}</Text>
             </Pressable>
+            {onExport === undefined ? null : (
+              <Pressable
+                accessibilityRole="link"
+                onPress={onExport}
+                style={styles.link}
+                testID={paywallExportTestID}
+              >
+                <Text style={styles.linkSaid}>{said.exportHerData}</Text>
+              </Pressable>
+            )}
+            {onDelete === undefined ? null : (
+              <Pressable
+                accessibilityRole="link"
+                onPress={onDelete}
+                style={styles.link}
+                testID={paywallDeleteTestID}
+              >
+                <Text style={styles.linkSaid}>{said.deleteHerData}</Text>
+              </Pressable>
+            )}
           </View>
         </View>
       </ScrollView>

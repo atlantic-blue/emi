@@ -23,6 +23,7 @@ import {
   thePhoneHasNothingEnrolled,
   unlocked,
 } from '../fixtures/expoLocalAuthentication';
+import { theAppStoreIsPayingForHer } from '../fixtures/theSubscription';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { defaultCycleLengthDays } from '../../src/features/onboarding/firstRun';
 import { sheAnswersEveryQuestion } from '../fixtures/theFirstRun';
@@ -134,6 +135,9 @@ describe('the lock shows when she comes back to the application', () => {
   describe('a fresh install', () => {
     it('holds the lock on, read from the settings the first run wrote', async () => {
       await sheOpensEmi();
+      // The App Store pays for her, so the hold sends her home rather than to the paywall, which
+      // has a file of its own.
+      theAppStoreIsPayingForHer(herDatabase(), whenSheOpensIt);
 
       await sheAnswersEveryQuestion({
         periodStartedOn: addDays(today, -2),
