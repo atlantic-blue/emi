@@ -40,6 +40,8 @@ export const THE_FREE_MONTH_IS_PAID_AS = 'free-trial';
  */
 export interface WhatTheStoreSaysAboutATransaction {
   readonly productIdentifier: string;
+  /** This transaction alone. A renewal carries a new one, which is why the filing is per one. */
+  readonly transactionIdentifier: string;
   /** The identifier that survives every renewal, which is the one the server asks Apple about. */
   readonly originalTransactionIdentifier: string;
   readonly expiresAtInMilliseconds: number | null;
@@ -66,6 +68,17 @@ export interface WhatSheIsEntitledToNow {
 
 function emiSells(one: WhatTheStoreSaysAboutATransaction): boolean {
   return theProductsEmiSells.some((product) => product.identifier === one.productIdentifier);
+}
+
+/**
+ * The transactions of a plan Emi sells. The store hands over every purchase of her Apple Account,
+ * including one made in another application, so this is the filter every reader of that list
+ * starts with.
+ */
+export function theSubscriptionsEmiSells(
+  said: readonly WhatTheStoreSaysAboutATransaction[],
+): readonly WhatTheStoreSaysAboutATransaction[] {
+  return said.filter(emiSells);
 }
 
 function wasTakenBack(one: WhatTheStoreSaysAboutATransaction, atMilliseconds: number): boolean {
@@ -156,7 +169,7 @@ export function whatTheseTransactionsEntitleHerTo(
 ): WhatSheIsEntitledToNow {
   const atMilliseconds = now.getTime();
   const readAt = now.toISOString();
-  const hers = said.filter(emiSells);
+  const hers = theSubscriptionsEmiSells(said);
   const covering = hers.filter((one) => coversHerAt(one, atMilliseconds));
   const furthest = theFurthestOf(covering);
 

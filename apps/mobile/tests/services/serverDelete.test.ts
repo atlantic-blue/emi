@@ -4,10 +4,9 @@ import {
   accountPath,
   deleteTheServerAccount,
   serverDeleteMilliseconds,
-  type SendRequest,
-  type VaultRequest,
 } from '../../src/services/sync/deleteAccount';
 import { deviceKey, deviceKeyItem } from '../../src/services/sync/deviceKey';
+import type { SendRequest, VaultRequest } from '../../src/services/sync/send';
 import { vaultAddress, vaultAddressVariable } from '../../src/services/sync/vaultAddress';
 import { fixedRandom, memorySecureStore } from '../fixtures/secureStore';
 

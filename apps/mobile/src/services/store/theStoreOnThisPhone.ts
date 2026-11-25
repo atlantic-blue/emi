@@ -57,6 +57,7 @@ export function theTransactionIn(purchase: Purchase): WhatTheStoreSaysAboutATran
 
   return {
     productIdentifier: purchase.productId,
+    transactionIdentifier: apple.transactionId ?? purchase.id,
     originalTransactionIdentifier: apple.originalTransactionIdentifierIOS ?? purchase.id,
     expiresAtInMilliseconds: apple.expirationDateIOS ?? null,
     revokedAtInMilliseconds: apple.revocationDateIOS ?? null,
