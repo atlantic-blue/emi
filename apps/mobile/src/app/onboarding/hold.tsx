@@ -4,15 +4,18 @@ import type { ReactNode } from 'react';
 import { useDatabase } from '../../data/DatabaseProvider';
 import { SaveAndStart } from '../../features/onboarding/SaveAndStart';
 import { useFirstRun } from '../../features/onboarding/FirstRunProvider';
+import { whereSheGoesNext } from '../../features/paywall/whereSheGoesNext';
+import { readHerSignIn } from '../../services/signIn/herSignIn';
 import { theSettingTableHolds } from '../../services/store/theAnswerThePhoneHolds';
-import { sheIsPaidUp } from '../../services/store/thePurchase';
+import { expoKeychain } from '../../services/vault/keychain';
 
 /**
- * The last screen of the first run that asks her anything, and the only one that writes. The
- * paywall replaces it once the write is done, so her answers are in the database before she is
- * asked for money. A woman the store already pays for is never asked, and goes home.
+ * The last screen of the first run that asks her anything, and the only one that writes. The sign
+ * in and the paywall come after it, so her answers are in the database before she is asked for an
+ * account and before she is asked for money. A woman the store already pays for is asked for
+ * neither, and goes home.
  *
- * Whichever one arrives replaces this screen rather than sitting on top of it, so a press of back
+ * Whichever screen arrives replaces this one rather than sitting on top of it, so a press of back
  * does not walk her into a save she has already given.
  *
  * The route keeps the name it has in the mockups and in every link to it.
@@ -25,11 +28,13 @@ export default function SaveRoute(): ReactNode {
   return (
     <SaveAndStart
       onSave={() =>
-        writeEverything().then(() => {
-          router.replace(
-            sheIsPaidUp(theSettingTableHolds(database).read()) ? '/' : '/onboarding/paywall',
-          );
-        })
+        writeEverything()
+          .then(() => readHerSignIn(expoKeychain()))
+          .then((signedIn) => {
+            router.replace(
+              whereSheGoesNext(theSettingTableHolds(database).read(), signedIn !== null),
+            );
+          })
       }
     />
   );

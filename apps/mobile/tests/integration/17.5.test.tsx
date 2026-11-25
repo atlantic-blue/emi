@@ -70,6 +70,7 @@ import { resetExpoSqlite } from '../data/expoSqlite';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { aProfileRecord } from '../fixtures/profileRecord';
 import { herProfileVault, theProfileVaultOnHerPhone } from '../fixtures/herVault';
+import { THE_KEY_THE_ANSWER_IS_HELD_UNDER } from '../../src/services/store/theAnswerThePhoneHolds';
 import { aBleedingDay, dayOf, herDatabase, herPhoneHoldsTheseAnswers } from '../fixtures/herPhone';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
@@ -363,9 +364,21 @@ function named(groups: readonly SymptomGroup[]): readonly string[] {
   return groups.map(groupTileTestID);
 }
 
-/** Every plain row of the setting table, so a second copy of an answer has somewhere to be found. */
+/**
+ * Every plain row of the setting table that could hold an answer of hers, so a second copy has
+ * somewhere to be found.
+ *
+ * The row the App Store answer is held under is left out. It is a fact about a sale and never one
+ * she entered, and the instant and the plan identifier inside it carry digits of their own, so a
+ * search for the number she typed would find one of those instead.
+ */
 function thePlainSettings(): { key: string; value: string }[] {
-  return herDatabase().all<{ key: string; value: string }>('SELECT key, value FROM setting');
+  return herDatabase()
+    .all<{
+      key: string;
+      value: string;
+    }>('SELECT key, value FROM setting')
+    .filter((row) => row.key !== THE_KEY_THE_ANSWER_IS_HELD_UNDER);
 }
 
 describe('she changes any answer she gave and the screen that reads it follows', () => {

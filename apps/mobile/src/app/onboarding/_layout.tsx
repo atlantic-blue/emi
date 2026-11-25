@@ -10,12 +10,13 @@ import { theOptionsThePaywallNeeds } from '../../features/paywall/Paywall';
  * platform does, which is the movement an unrelated screen gets. The root layout hides the
  * header, and the first run must not grow one here.
  *
- * The paywall at the end is named on its own, because a swipe back is the navigator's to refuse
- * and the screen cannot close that way out from inside itself.
+ * The sign in and the paywall at the end are named on their own, because a swipe back is the
+ * navigator's to refuse and neither screen can close that way out from inside itself.
  */
 export default function OnboardingLayout(): ReactNode {
   return (
     <Stack screenOptions={{ headerShown: false, animation: 'slide_from_right' }}>
+      <Stack.Screen name="sign-in" options={theOptionsThePaywallNeeds} />
       <Stack.Screen name="paywall" options={theOptionsThePaywallNeeds} />
     </Stack>
   );

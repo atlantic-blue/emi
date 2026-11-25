@@ -1,5 +1,6 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
+import { theAppStoreIsPayingForHer } from '../fixtures/theSubscription';
 import { sheGivesAPeriod } from '../fixtures/thePastPeriods';
 
 import type { Focus } from '@emi/crypto';
@@ -164,6 +165,7 @@ describe('what Emi does with what she said, after the forecast', () => {
     resetExpoSqlite();
     resetExpoSecureStore();
     theTourIsBehindHer();
+    theAppStoreIsPayingForHer(herDatabase(), whenSheOpensIt);
   });
 
   afterEach(() => {

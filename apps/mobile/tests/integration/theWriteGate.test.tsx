@@ -14,27 +14,15 @@ import {
 } from '../../src/features/export/ExportScreen';
 import { exportFileStem } from '../../src/features/export/files';
 import { dayParameter } from '../../src/features/calendar/askedMonth';
-import {
-  editPeriodRowTestID,
-  editPeriodSaveTestID,
-} from '../../src/features/calendar/EditPeriodScreen';
-import {
-  historyCycleTestID,
-  historyCyclesTestID,
-  historyScreenTestID,
-} from '../../src/features/history/HistoryScreen';
+import { editPeriodSaveTestID } from '../../src/features/calendar/EditPeriodScreen';
 import { flowOptionTestID } from '../../src/features/log/FlowPicker';
 import { logFlowTestID } from '../../src/features/log/LogFlow';
-import { logSymptomsSaveTestID } from '../../src/features/log/LogSymptoms';
-import { groupTileTestID } from '../../src/features/log/GroupTiles';
 import {
   deleteActionTestID,
   deletedScreenTestID,
 } from '../../src/features/settings/DeleteEverything';
-import {
-  settingsDeleteTestID,
-  settingsExportTestID,
-} from '../../src/features/settings/SettingsScreen';
+import { paywallDeleteTestID, paywallExportTestID } from '../../src/features/paywall/Paywall';
+import { identityRefreshItem } from '../../src/services/signIn/herSignIn';
 import { theSettingTableHolds } from '../../src/services/store/theAnswerThePhoneHolds';
 import type { WhatSheIsEntitledTo } from '../../src/services/store/theEntitlement';
 import { theStatesSheCanBeIn } from '../../src/services/store/theEntitlement';
@@ -47,9 +35,10 @@ import { rowsHeld } from '../../src/services/vault/wipe';
 import { resetExpoSqlite } from '../data/expoSqlite';
 import { fileOnThePhone, resetExpoFileSystem } from '../fixtures/expoFileSystem';
 import { theStoreCannotBeReached, theStoreStartsAgain } from '../fixtures/expoIap';
-import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
+import { resetExpoSecureStore, setItemAsync } from '../fixtures/expoSecureStore';
 import { resetExpoSharing } from '../fixtures/expoSharing';
 import { aBleedingDay, dayOf, herDatabase, herPhoneHolds } from '../fixtures/herPhone';
+import { herPhoneKnowsNothingAboutHerSubscription } from '../fixtures/theSubscription';
 import { herVault } from '../fixtures/herVault';
 
 jest.mock('expo-iap', () => jest.requireActual('../fixtures/expoIap'));
@@ -68,16 +57,8 @@ const today = dayOf(whenSheOpensIt);
 /** The flow she taps on the log, which is a flow she has never given this day. */
 const theFlowSheTaps = 'light';
 
-/** The flow every day she already wrote carries, which is the flow a read must give back. */
-const theFlowHerDaysAlreadyHold = 'medium';
-
-/** A symptom of the sleep group, reached from one of the tiles under the flow picker. */
-const theSymptomSheMarks = 'insomnia';
-
 /** The tab she presses in the dock, named as the navigator names the screen it reaches. */
 const theLogTab = 'log/index';
-const theHistoryTab = 'history';
-const thePrivacyTab = 'settings/index';
 
 const herCycleLengthDays = 28;
 const herPeriodLengthDays = 3;
@@ -101,15 +82,29 @@ const theDaySheCorrects = herRecordedDays[herRecordedDays.length - 1] as string;
 /** The first day of her newest period, which is where the period editor opens. */
 const herNewestPeriodStarted = herPeriodStarts[herPeriodStarts.length - 1] as string;
 
-/** The day after the last one she recorded, which the editor lists and she can add. */
-const theDaySheAddsToThePeriod = addDays(theDaySheCorrects, 1);
+async function sheOpensEmi(at = '/'): Promise<{ readonly pathname: () => string }> {
+  const app = renderRouter(appDirectory, { initialUrl: at });
 
-async function sheOpensEmi(at = '/'): Promise<void> {
-  await renderRouter(appDirectory, { initialUrl: at });
+  await app;
+
+  return { pathname: () => app.getPathname() };
 }
 
 async function shePresses(testID: string): Promise<void> {
   await fireEvent.press(screen.getByTestId(testID));
+}
+
+/** An account she signed in to on this phone before, which the keychain is what holds. */
+async function sheIsAlreadySignedIn(): Promise<void> {
+  await setItemAsync(
+    identityRefreshItem,
+    JSON.stringify({
+      way: 'email',
+      address: 'julia@example.com',
+      since: '2026-05-01',
+      refreshToken: 'a-refresh-token-made-up-for-the-test',
+    }),
+  );
 }
 
 /**
@@ -127,7 +122,9 @@ async function herPhoneIsIn(state: WhatSheIsEntitledTo | 'nothingIsKnownYet'): P
 
   const database = herDatabase();
 
-  if (state !== 'nothingIsKnownYet') {
+  if (state === 'nothingIsKnownYet') {
+    herPhoneKnowsNothingAboutHerSubscription(database);
+  } else {
     theSettingTableHolds(database).hold({
       state,
       until: new Date(whenSheOpensIt.getTime() + 60 * 1000).toISOString(),
@@ -216,113 +213,90 @@ describe('the write gate on the phone', () => {
     );
   });
 
-  describe('she taps to log a day with no answer about money on the phone', () => {
+  /**
+   * The gate allows a write in these two states, and nothing reaches it to ask: Emi has no free
+   * content, so the way to paying stands in front of every screen that writes. The allowance is
+   * what keeps the first run writing her answers, which is the one write that happens in front of
+   * the paywall.
+   */
+  describe('she has no answer about money on the phone', () => {
     it.each(['neverPaid', 'nothingIsKnownYet'] as const)(
-      'writes the day, because no paywall holds her yet, in the %s state',
+      'is on the way to paying rather than on the log, in the %s state',
       async (state) => {
         await herPhoneIsIn(state);
-        await sheOpensEmi();
+        const app = await sheOpensEmi();
 
-        await sheTapsToLogADay();
-
-        expect(theRecordOf(today)?.flow).toBe(theFlowSheTaps);
-        expect(screen.getByTestId(flowOptionTestID(theFlowSheTaps))).toBeChecked();
+        await waitFor(() => {
+          expect(app.pathname()).toBe('/onboarding/sign-in');
+        });
+        expect(screen.queryByTestId(logFlowTestID)).toBeNull();
+        expect(theDaysOnHerPhone()).toEqual([...herRecordedDays]);
       },
     );
   });
 
-  describe('she taps to log a day after the money stopped', () => {
+  /**
+   * Two gates stand in front of a write once the money stops, and each one is enough on its own.
+   * The paywall takes her off every screen that writes, and the gate below it refuses the write a
+   * screen would make. A day she already wrote is left exactly as it was either way.
+   */
+  describe('she reaches no write at all after the money stopped', () => {
     it.each(['lapsed', 'refunded'] as const)(
-      'writes no record of that day, in the %s state',
+      'is on the paywall rather than on the log, in the %s state',
       async (state) => {
         await herPhoneIsIn(state);
-        await sheOpensEmi();
+        const app = await sheOpensEmi();
 
-        await sheTapsToLogADay();
-
+        await waitFor(() => {
+          expect(app.pathname()).toBe('/onboarding/sign-in');
+        });
+        expect(screen.queryByTestId(logFlowTestID)).toBeNull();
         expect(theRecordOf(today)).toBeUndefined();
         expect(theDaysOnHerPhone()).toEqual([...herRecordedDays]);
       },
     );
 
-    it.each(['lapsed', 'refunded'] as const)(
-      'leaves her on the log with the flow unpicked, in the %s state',
-      async (state) => {
-        await herPhoneIsIn(state);
-        await sheOpensEmi();
+    it.each([
+      [
+        'the editor of a whole period',
+        `/calendar/period?${dayParameter}=${herNewestPeriodStarted}`,
+      ],
+      ['a day she already wrote', `/day/${theDaySheCorrects}`],
+    ])(
+      'takes her off %s, opened by its own address, and changes nothing',
+      async (_what, address) => {
+        await herPhoneIsIn('lapsed');
 
-        await sheTapsToLogADay();
+        const before = theRecordOf(theDaySheCorrects);
+        const app = await sheOpensEmi(address);
 
-        expect(screen.getByTestId(logFlowTestID)).toBeTruthy();
-        expect(screen.getByTestId(flowOptionTestID(theFlowSheTaps))).not.toBeChecked();
+        await waitFor(() => {
+          expect(app.pathname()).toBe('/onboarding/sign-in');
+        });
+
+        expect(screen.queryByTestId(editPeriodSaveTestID)).toBeNull();
+        expect(theRecordOf(theDaySheCorrects)).toEqual(before);
+        expect(theDaysOnHerPhone()).toEqual([...herRecordedDays]);
+        expect(readDayLog(herDatabase(), theDaySheCorrects)?.revision).toBe(1);
       },
     );
-
-    it('writes no symptom she marks and saves, in the lapsed state', async () => {
-      await herPhoneIsIn('lapsed');
-      await sheOpensEmi();
-
-      await shePresses(tabTestID(theLogTab));
-      await shePresses(groupTileTestID('sleep'));
-      await shePresses(`symptom-chip-${theSymptomSheMarks}`);
-      await shePresses(logSymptomsSaveTestID);
-
-      expect(theRecordOf(today)).toBeUndefined();
-      expect(theDaysOnHerPhone()).toEqual([...herRecordedDays]);
-    });
-
-    it('writes no day of a whole period she corrects in one save, in the lapsed state', async () => {
-      await herPhoneIsIn('lapsed');
-      await sheOpensEmi(`/calendar/period?${dayParameter}=${herNewestPeriodStarted}`);
-
-      await shePresses(editPeriodRowTestID(theDaySheAddsToThePeriod));
-      await shePresses(editPeriodSaveTestID);
-
-      expect(theDaysOnHerPhone()).toEqual([...herRecordedDays]);
-      expect(readDayLog(herDatabase(), theDaySheCorrects)?.revision).toBe(1);
-    });
-
-    it('leaves a day she already wrote exactly as it was when she corrects it, in the lapsed state', async () => {
-      await herPhoneIsIn('lapsed');
-
-      const before = theRecordOf(theDaySheCorrects);
-
-      await sheOpensEmi(`/day/${theDaySheCorrects}`);
-      await shePresses(flowOptionTestID(theFlowSheTaps));
-
-      expect(theRecordOf(theDaySheCorrects)).toEqual(before);
-      expect(readDayLog(herDatabase(), theDaySheCorrects)?.revision).toBe(1);
-    });
   });
 
-  describe('she is lapsed and she wants her own history', () => {
-    it('opens a day she wrote and reads back the flow she gave it', async () => {
-      await herPhoneIsIn('lapsed');
-      await sheOpensEmi(`/day/${theDaySheCorrects}`);
-
-      expect(screen.getByTestId(flowOptionTestID(theFlowHerDaysAlreadyHold))).toBeChecked();
-    });
-
-    it('opens the history and reads the cycles her days make', async () => {
-      await herPhoneIsIn('lapsed');
-      await sheOpensEmi();
-
-      await shePresses(tabTestID(theHistoryTab));
-
-      expect(screen.getByTestId(historyScreenTestID)).toBeTruthy();
-      expect(screen.getByTestId(historyCyclesTestID)).toBeTruthy();
-      for (const start of herPeriodStarts) {
-        expect(screen.getByTestId(historyCycleTestID(start))).toBeTruthy();
-      }
-    });
-
+  /**
+   * Taking her days and deleting them never stop, which is contracts KEEP-2 and KEEP-3. She is
+   * signed in here, so the paywall is the screen she lands on, and both links are on it.
+   */
+  describe('she is lapsed and she wants her own days', () => {
     it('exports every day she ever wrote, and the export finishes', async () => {
       await herPhoneIsIn('lapsed');
-      await sheOpensEmi();
+      await sheIsAlreadySignedIn();
+      const app = await sheOpensEmi();
 
-      await shePresses(tabTestID(thePrivacyTab));
-      await shePresses(settingsExportTestID);
+      await waitFor(() => {
+        expect(app.pathname()).toBe('/onboarding/paywall');
+      });
 
+      await shePresses(paywallExportTestID);
       expect(screen.getByTestId(exportScreenTestID)).toBeTruthy();
 
       await shePresses(exportActionTestID);
@@ -336,10 +310,14 @@ describe('the write gate on the phone', () => {
 
     it('deletes everything in one press, and the phone is left holding no row at all', async () => {
       await herPhoneIsIn('lapsed');
-      await sheOpensEmi();
+      await sheIsAlreadySignedIn();
+      const app = await sheOpensEmi();
 
-      await shePresses(tabTestID(thePrivacyTab));
-      await shePresses(settingsDeleteTestID);
+      await waitFor(() => {
+        expect(app.pathname()).toBe('/onboarding/paywall');
+      });
+
+      await shePresses(paywallDeleteTestID);
       await shePresses(deleteActionTestID);
 
       expect(screen.getByTestId(deletedScreenTestID)).toBeTruthy();
@@ -351,11 +329,6 @@ describe('the write gate on the phone', () => {
     it('writes the day she taps, with every day she wrote before the lapse still there', async () => {
       const database = await herPhoneIsIn('lapsed');
 
-      await sheOpensEmi();
-      await sheTapsToLogADay();
-
-      expect(theRecordOf(today)).toBeUndefined();
-
       theSettingTableHolds(database).hold({
         state: 'paid',
         until: new Date(whenSheOpensIt.getTime() + 60 * 1000).toISOString(),
@@ -364,7 +337,8 @@ describe('the write gate on the phone', () => {
         readAt: whenSheOpensIt.toISOString(),
       });
 
-      await shePresses(flowOptionTestID(theFlowSheTaps));
+      await sheOpensEmi();
+      await sheTapsToLogADay();
 
       expect(theRecordOf(today)?.flow).toBe(theFlowSheTaps);
       expect(theDaysOnHerPhone()).toEqual([...herRecordedDays, today]);

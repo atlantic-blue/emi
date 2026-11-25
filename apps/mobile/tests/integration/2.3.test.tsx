@@ -503,9 +503,9 @@ describe('the first run ends on the home screen with her period recorded', () =>
       // question rather than asking one of its own, so it is named here and counted apart.
       const opensFromAQuestion = ['all-symptoms.tsx'];
 
-      // The screen at the end that sells Emi. It asks her for money rather than for an answer, so
-      // it is named on its own and counted apart as well.
-      const sellsEmi = ['paywall.tsx'];
+      // The two screens at the end. One asks her for an account and the other for money, so neither
+      // is a question about her and both are named on their own and counted apart.
+      const sellsEmi = ['sign-in.tsx', 'paywall.tsx'];
 
       for (const name of [...asksHerNothing, ...opensFromAQuestion, ...sellsEmi]) {
         expect(held).toContain(name);
