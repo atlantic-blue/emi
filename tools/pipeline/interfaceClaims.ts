@@ -166,6 +166,23 @@ function priceAndAddressClaimsIn(file: string, text: string): Claim[] {
 }
 
 /**
+ * The one address on the website the application may name, written exactly as the application
+ * writes it, with the language left as a hole.
+ *
+ * Apple asks every subscription to link to a privacy policy, and Emi has one page for it. The
+ * rule the host is refused under is guideline 3.1.1(a), which refuses a press towards another way
+ * to pay, and this page sells nothing. The line is removed from the text before the host is
+ * looked for, so the host in any other sentence, under any other path, is still refused.
+ */
+export const approvedAddresses: readonly string[] = [
+  'https://myemi.app/{language}/privacy-policy/',
+];
+
+function withoutApprovedAddresses(source: string): string {
+  return approvedAddresses.reduce((text, address) => text.split(address).join(' '), source);
+}
+
+/**
  * Her answers on the Sex page, from the sexPage board. Each one names what she used, which is a
  * fact about her day and not a promise Emi makes, so the word is allowed as that exact catalogue
  * entry and nowhere else. The same word in any other sentence, or under any other key, is refused.
@@ -181,7 +198,7 @@ function withoutAnswerLabels(source: string): string {
 }
 
 export function interfaceClaimsIn(file: string, contents: string): Claim[] {
-  const source = withoutAnswerLabels(withoutModuleSpecifiers(contents));
+  const source = withoutApprovedAddresses(withoutAnswerLabels(withoutModuleSpecifiers(contents)));
   const text = searchableText(source);
 
   return [

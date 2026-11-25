@@ -1,4 +1,11 @@
-import type { PurchaseIOS, PurchaseOfferIOS, PurchaseOptions, RenewalInfoIOS } from 'expo-iap';
+import type {
+  MutationFinishTransactionArgs,
+  MutationRequestPurchaseArgs,
+  PurchaseIOS,
+  PurchaseOfferIOS,
+  PurchaseOptions,
+  RenewalInfoIOS,
+} from 'expo-iap';
 
 import type {
   WhatIsAskedOfTheStore,
@@ -237,4 +244,110 @@ export function purchaseUpdatedListener(listener: (purchase: PurchaseIOS) => voi
       holding.listeners = holding.listeners.filter((one) => one !== told);
     },
   };
+}
+
+/**
+ * The purchase half of the stand in: the press, the finish and the restore.
+ *
+ * The press answers the transaction the store made, or raises the way the library raises. A
+ * refusal the woman caused carries the library's own cancel code, so the application tells her
+ * pressing cancel apart from a store that would not sell.
+ */
+
+interface WhatThePressDoesBehind {
+  made: PurchaseIOS | null;
+  raises: { code?: string } | null;
+  restoreFails: boolean;
+  presses: MutationRequestPurchaseArgs[];
+  finished: MutationFinishTransactionArgs[];
+  restores: number;
+}
+
+const pressing: WhatThePressDoesBehind = {
+  made: null,
+  raises: null,
+  restoreFails: false,
+  presses: [],
+  finished: [],
+  restores: 0,
+};
+
+/** The store sells her this transaction when she presses. */
+export function theStoreSells(made: PurchaseIOS): void {
+  pressing.made = made;
+  pressing.raises = null;
+}
+
+/** The library code for a woman who pressed cancel in the system sheet. */
+export const THE_CANCEL_CODE = 'user-cancelled';
+
+/** She opens the system sheet and presses cancel. */
+export function sheCancelsThePurchase(): void {
+  pressing.raises = { code: THE_CANCEL_CODE };
+}
+
+/** The store refuses the press, for any reason that is not her pressing cancel. */
+export function theStoreRefusesThePurchase(): void {
+  pressing.raises = { code: 'service-error' };
+}
+
+/** The restore itself is refused, which is a store that cannot be reached. */
+export function theStoreRefusesTheRestore(): void {
+  pressing.restoreFails = true;
+}
+
+/** Every press the library took, as the library was given it. */
+export function thePressesOnTheStore(): readonly MutationRequestPurchaseArgs[] {
+  return [...pressing.presses];
+}
+
+/** Every transaction the application finished, as the library was given it. */
+export function theTransactionsFinished(): readonly MutationFinishTransactionArgs[] {
+  return [...pressing.finished];
+}
+
+/** How many times the store was asked to restore her purchases. */
+export function theRestoresAskedFor(): number {
+  return pressing.restores;
+}
+
+/** A store that sells nothing and remembers nothing, for the test that is about to run. */
+export function thePressesStartAgain(): void {
+  pressing.made = null;
+  pressing.raises = null;
+  pressing.restoreFails = false;
+  pressing.presses = [];
+  pressing.finished = [];
+  pressing.restores = 0;
+}
+
+export async function requestPurchase(
+  args: MutationRequestPurchaseArgs,
+): Promise<PurchaseIOS | null> {
+  store.calls.push('requestPurchase');
+  pressing.presses.push(args);
+
+  if (pressing.raises !== null) {
+    return Promise.reject(Object.assign(new Error('the store refused the press'), pressing.raises));
+  }
+
+  return Promise.resolve(pressing.made);
+}
+
+export async function finishTransaction(args: MutationFinishTransactionArgs): Promise<void> {
+  store.calls.push('finishTransaction');
+  pressing.finished.push(args);
+
+  return Promise.resolve();
+}
+
+export async function restorePurchases(): Promise<void> {
+  store.calls.push('restorePurchases');
+  pressing.restores += 1;
+
+  if (pressing.restoreFails) {
+    throw new Error('the store cannot be reached');
+  }
+
+  return Promise.resolve();
 }
