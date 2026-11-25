@@ -30,7 +30,7 @@ keychain through the same port.
 cycle usually runs. `src/features/home` draws the home screen. `src/features/cycle/rebuild.ts` is
 the write path: `logDay`, `editDay` and `deleteDay`.
 
-## The plans in the store
+## The App Store on her phone
 
 `src/services/store/theProducts.ts` records the three products App Store Connect holds.
 `thePlans.ts` asks the store for those three identifiers and keeps the answer in the order of the
@@ -39,6 +39,15 @@ record, so the figure a screen shows is the one the App Store quotes in her own 
 
 The library carries a native module, so a plan list answers in a build of the application and never
 in Expo Go.
+
+`theEntitlement.ts` works out one of the six states of `docs/design/app-store-payments.md` from the
+transactions the store names, and it is a function of those transactions and the instant it was
+asked, so a test states a transaction and reads a state back. `theEntitlementWhenSheOpens.ts` asks
+the store at launch and keeps watching it, because a renewal, a purchase on another device and a
+refund all arrive with nobody pressing anything. `theAnswerThePhoneHolds.ts` keeps the answer in
+one setting row, so a store that cannot be reached leaves the last known answer standing instead of
+locking her out. `src/features/account/TheEntitlementRefresh.tsx` is what starts both, and it draws
+nothing: no screen reads the answer yet.
 
 `storekit/Emi.storekit` holds the same three products for the simulator, so the plans answer with
 no sandbox account behind them. Xcode reads it once it is selected: in the scheme of the generated

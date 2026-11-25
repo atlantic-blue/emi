@@ -8,6 +8,7 @@ export type SettingKey =
   | 'articleAnswer'
   | 'dailyLogReminder'
   | 'dailyLogReminderTime'
+  | 'entitlement'
   | 'firstRunCompletedAt'
   | 'forecastPopupClosed'
   | 'lockOnReturn'
@@ -21,6 +22,7 @@ export const settingKeys: readonly SettingKey[] = [
   'articleAnswer',
   'dailyLogReminder',
   'dailyLogReminderTime',
+  'entitlement',
   'firstRunCompletedAt',
   'forecastPopupClosed',
   'lockOnReturn',

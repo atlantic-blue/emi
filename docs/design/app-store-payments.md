@@ -36,7 +36,9 @@ read a value, the section says so.
 Status: designed
 
 The application holds the purchase library of section 10, and it reads the plan list of the three
-products from the store. It holds no entitlement read, no write gate and no paywall. One line of
+products from the store. It reads what she holds at launch, works out one of the six states of
+section 5, and keeps that answer on the phone. It holds no write gate and no paywall, so nothing on
+any screen reads the answer yet. One line of
 the tour says "One month free, then 39 euros a year", in English, Russian and Spanish. That line is
 the only thing in the product about money.
 
@@ -747,13 +749,17 @@ the plan list in a sandbox account needs a device, and that half is the operator
 Waits for: step 2.
 
 **4. The entitlement, read on launch.**
-Changes: the application reads the current entitlements at launch and listens for transactions that
-happen elsewhere. The answer is held, so a store that cannot be reached keeps the last known answer
-instead of locking her out.
+Changes: the application reads every transaction she holds at launch, and works out one of the six
+states of section 5 from them. It watches the store for the transactions nobody presses for: a
+renewal, a purchase on another device, a refund. The answer is held in one row on the phone, so a
+store that cannot be reached keeps the last known answer instead of locking her out. Nothing on
+screen reads it yet.
 Proves it: a test with the store unreachable asserts the last known answer stands. A test of a fresh
 install with the store reporting ownership asserts she is not asked to pay again. A refunded
-transaction is asserted absent.
-Waits for: step 3.
+transaction is asserted absent. One test per state, and a mutation that drops the held answer is
+watched going red.
+Waits for: step 3. The sandbox purchase that moves her between these states needs a device, and that
+half is the operator's to run.
 
 **5. The write gate on the phone.**
 Changes: a write is refused in the lapsed and refunded states, and allowed in the free month, the

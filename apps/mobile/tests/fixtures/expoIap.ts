@@ -1,3 +1,5 @@
+import type { PurchaseIOS, PurchaseOfferIOS, PurchaseOptions, RenewalInfoIOS } from 'expo-iap';
+
 import type {
   WhatIsAskedOfTheStore,
   WhatTheStoreSaysAboutAProduct,
@@ -99,4 +101,140 @@ export async function fetchProducts(
   }
 
   return Promise.resolve(store.names?.filter((one) => asked.skus.includes(one.id)) ?? null);
+}
+
+/**
+ * The transactions half of the stand in. It answers in the library's own `PurchaseIOS`, so a field
+ * the library renames stops this file compiling rather than quietly reading as absent.
+ */
+
+interface WhatSheHoldsBehind {
+  purchases: PurchaseIOS[] | null;
+  readOfWhatSheHoldsFails: boolean;
+  listenerCannotAttach: boolean;
+  listeners: (() => void)[];
+  optionsRead: (PurchaseOptions | null | undefined)[];
+}
+
+const holding: WhatSheHoldsBehind = {
+  purchases: [],
+  readOfWhatSheHoldsFails: false,
+  listenerCannotAttach: false,
+  listeners: [],
+  optionsRead: [],
+};
+
+/** Every field the library marks required, so a test states only the ones its rule is about. */
+export function aTransactionTheStoreHolds(
+  productId: string,
+  these: Partial<PurchaseIOS> = {},
+): PurchaseIOS {
+  return {
+    id: `${productId}-1`,
+    transactionId: `${productId}-1`,
+    productId,
+    purchaseState: 'purchased',
+    quantity: 1,
+    store: 'apple',
+    storeId: 'apple',
+    transactionDate: Date.parse('2026-11-01T00:00:00.000Z'),
+    isAutoRenewing: true,
+    ...these,
+  };
+}
+
+/** What StoreKit fills in while Apple is still trying her card. */
+export function theRenewalInformation(these: Partial<RenewalInfoIOS> = {}): RenewalInfoIOS {
+  return { willAutoRenew: true, ...these };
+}
+
+/** The transaction of a yearly plan still inside its free month. */
+export function theFreeMonthOffer(): PurchaseOfferIOS {
+  return { id: 'one-month-free', type: 'introductory', paymentMode: 'free-trial' };
+}
+
+/** The store holds these transactions and no others, from now on. */
+export function theStoreHoldsTheseTransactions(these: readonly PurchaseIOS[]): void {
+  holding.purchases = [...these];
+}
+
+/** The read comes back with nothing at all, which the library answers as null. */
+export function theStoreNamesNoTransaction(): void {
+  holding.purchases = null;
+}
+
+/** The read of what she holds is refused, as it is on a phone with no network. */
+export function theStoreCannotSayWhatSheHolds(): void {
+  holding.readOfWhatSheHoldsFails = true;
+}
+
+/** The native module is absent, so the watch cannot be attached at all. */
+export function theWatchCannotBeAttached(): void {
+  holding.listenerCannotAttach = true;
+}
+
+/** How many watches are attached to the store right now. */
+export function theWatchesOnTheStore(): number {
+  return holding.listeners.length;
+}
+
+/** Every set of options a read of what she holds was given. */
+export function theOptionsTheReadsWereGiven(): readonly (PurchaseOptions | null | undefined)[] {
+  return [...holding.optionsRead];
+}
+
+/**
+ * A transaction happens somewhere else and the store tells every watch about it.
+ *
+ * A watch answers by asking the store again, which is a chain of promises nobody here holds, so
+ * the queue is flushed through a timer rather than by awaiting a fixed number of ticks.
+ */
+export async function aTransactionArrivesFromElsewhere(): Promise<void> {
+  for (const listener of [...holding.listeners]) {
+    listener();
+  }
+
+  await new Promise((settled) => setTimeout(settled, 0));
+}
+
+/** A store holding no transaction and remembering nothing, for the test that is about to run. */
+export function theTransactionsStartAgain(): void {
+  holding.purchases = [];
+  holding.readOfWhatSheHoldsFails = false;
+  holding.listenerCannotAttach = false;
+  holding.listeners = [];
+  holding.optionsRead = [];
+}
+
+export async function getAvailablePurchases(
+  options?: PurchaseOptions | null,
+): Promise<readonly PurchaseIOS[] | null> {
+  store.calls.push('getAvailablePurchases');
+  holding.optionsRead.push(options);
+
+  if (holding.readOfWhatSheHoldsFails) {
+    throw new Error('the store cannot say what she holds');
+  }
+
+  return Promise.resolve(holding.purchases === null ? null : [...holding.purchases]);
+}
+
+export function purchaseUpdatedListener(listener: (purchase: PurchaseIOS) => void): {
+  remove: () => void;
+} {
+  store.calls.push('purchaseUpdatedListener');
+
+  if (holding.listenerCannotAttach) {
+    throw new Error("Cannot find native module 'ExpoIap'");
+  }
+
+  const told = (): void => listener(aTransactionTheStoreHolds('whatever-the-store-named'));
+
+  holding.listeners.push(told);
+
+  return {
+    remove: () => {
+      holding.listeners = holding.listeners.filter((one) => one !== told);
+    },
+  };
 }
