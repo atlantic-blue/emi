@@ -33,7 +33,7 @@ export interface FlowLog {
   readonly now: Date;
 }
 
-export function logFlow(db: Database, vault: DayVault, log: FlowLog): DayAndCycles {
+export function logFlow(db: Database, vault: DayVault, log: FlowLog): DayAndCycles | undefined {
   const held = readDayLog(db, log.day);
   const write = { day: log.day, payload: vault.seal(theDayAfter(db, vault, log)), now: log.now };
 
@@ -58,7 +58,7 @@ export interface FlowsLog {
  * symptoms and everything else it holds. Every day is sealed before the write opens, because sealing
  * reads the day the table holds and the write is the part that has to be all or nothing.
  */
-export function logFlows(db: Database, vault: DayVault, log: FlowsLog): DaysAndCycles {
+export function logFlows(db: Database, vault: DayVault, log: FlowsLog): DaysAndCycles | undefined {
   const writes = log.days.map((each) => ({
     day: each.day,
     payload: vault.seal(theDayAfter(db, vault, { ...each, now: log.now })),
@@ -123,7 +123,11 @@ export interface SymptomLog {
  * its mark and everything else it holds, because the group is one control on a day that carries
  * the rest of her answers.
  */
-export function logSymptoms(db: Database, vault: DayVault, log: SymptomLog): DayAndCycles {
+export function logSymptoms(
+  db: Database,
+  vault: DayVault,
+  log: SymptomLog,
+): DayAndCycles | undefined {
   const held = readDayLog(db, log.day);
   const record: DayRecord = {
     ...(held ? withoutTheSymptoms(vault.open(held.payload)) : {}),
@@ -193,7 +197,7 @@ function theDayWith(held: DayRecord | undefined, log: DiaryLog): DayRecord {
  * write of a day, so the day keeps its flow and its mark, and a day with no flow cannot close her
  * period.
  */
-export function logDiary(db: Database, vault: DayVault, log: DiaryLog): DayAndCycles {
+export function logDiary(db: Database, vault: DayVault, log: DiaryLog): DayAndCycles | undefined {
   const held = readDayLog(db, log.day);
   const record = theDayWith(held ? vault.open(held.payload) : undefined, log);
   const write = { day: log.day, payload: vault.seal(record), now: log.now };
@@ -231,7 +235,7 @@ export interface SexLog {
  * One save of the Sex page. The three answers replace the three the day held, and the day keeps its
  * flow, its symptoms and everything else, through the same save as every other write of a day.
  */
-export function logSex(db: Database, vault: DayVault, log: SexLog): DayAndCycles {
+export function logSex(db: Database, vault: DayVault, log: SexLog): DayAndCycles | undefined {
   const held = readDayLog(db, log.day);
   const record: DayRecord = {
     ...(held ? withoutTheSexAnswers(vault.open(held.payload)) : {}),
@@ -288,7 +292,7 @@ export interface PeriodLog {
  * The mark that the bleeding was not her period belongs to the bleeding, so it stays only while the
  * day still carries a bleeding flow.
  */
-export function logPeriod(db: Database, vault: DayVault, log: PeriodLog): DayAndCycles {
+export function logPeriod(db: Database, vault: DayVault, log: PeriodLog): DayAndCycles | undefined {
   const held = readDayLog(db, log.day);
   const kept: Partial<DayRecord> = held ? withoutThePeriodAnswers(vault.open(held.payload)) : {};
   const { bleedingIsUnexpected, ...rest } = kept;
@@ -346,7 +350,11 @@ export interface OvulationLog {
  * One answer to the popup. The day keeps everything else it holds, through the same save as every
  * other write of a day, and the record says the popup showed, so it does not show again that day.
  */
-export function logOvulationAnswer(db: Database, vault: DayVault, log: OvulationLog): DayAndCycles {
+export function logOvulationAnswer(
+  db: Database,
+  vault: DayVault,
+  log: OvulationLog,
+): DayAndCycles | undefined {
   const held = readDayLog(db, log.day);
   const kept: Partial<DayRecord> = held ? vault.open(held.payload) : {};
   const { ovulationSigns, ovulationPopup, ...rest } = kept;

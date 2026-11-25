@@ -37,8 +37,9 @@ Status: designed
 
 The application holds the purchase library of section 10, and it reads the plan list of the three
 products from the store. It reads what she holds at launch, works out one of the six states of
-section 5, and keeps that answer on the phone. It holds no write gate and no paywall, so nothing on
-any screen reads the answer yet. One line of
+section 5, and keeps that answer on the phone. A write of a record she entered reads that answer
+and is refused in the lapsed state and in the refunded state. It holds no paywall and no prompt,
+so nothing on any screen says why a write was refused. One line of
 the tour says "One month free, then 39 euros a year", in English, Russian and Spanish. That line is
 the only thing in the product about money.
 
@@ -764,10 +765,14 @@ half is the operator's to run.
 **5. The write gate on the phone.**
 Changes: a write is refused in the lapsed and refunded states, and allowed in the free month, the
 paid state and the cancelling state. Reading, exporting and deleting are untouched in every state.
-The never paid state is not a case here, because the paywall holds her and she reaches no screen
-that writes.
+A write is allowed in the never paid state and where no answer is worked out yet, because no
+paywall exists to hold her and a refusal would lock every woman on a build out of her own diary.
+The gate is one check, and the linter holds the write statements of the day log to the one module
+that asks it. The first run writes her answers under a transaction of its own and asks nothing,
+which is the one write the never paid state allows.
 Proves it: one case per state, driven through the screen and asserted on what she is left with. A
-mutation that gates a read is watched failing.
+mutation that gates a read is watched failing, and so is a mutation that takes the gate off one
+write path.
 Waits for: step 4.
 
 **6. The prompt where the write was refused.**

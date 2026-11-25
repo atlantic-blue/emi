@@ -101,7 +101,11 @@ const theFlowOfADaySheTakesOff: Flow = 'none';
  * One save of the whole period. Every day it changes becomes a day record whose revision rises, and
  * the cache is rebuilt from the day log afterwards rather than written.
  */
-export function savePeriodRange(db: Database, vault: DayVault, save: PeriodSave): DaysAndCycles {
+export function savePeriodRange(
+  db: Database,
+  vault: DayVault,
+  save: PeriodSave,
+): DaysAndCycles | undefined {
   const changed = whatSheChanged(save);
 
   if (!sheChangedSomething(changed)) {
@@ -131,7 +135,7 @@ function logTheChanges(
   db: Database,
   vault: DayVault,
   { changed, today, now }: TheChanges,
-): DaysAndCycles {
+): DaysAndCycles | undefined {
   for (const day of [...changed.added, ...changed.removed]) {
     if (refusalFor({ day, today }) !== undefined) {
       throw new PeriodSaveError(
@@ -161,7 +165,11 @@ export interface PeriodDelete {
  * Remove period day on the calendar gives one day, so the two places leave the same records: no
  * bleeding on that day, and everything else the day holds kept.
  */
-export function deletePeriod(db: Database, vault: DayVault, remove: PeriodDelete): DaysAndCycles {
+export function deletePeriod(
+  db: Database,
+  vault: DayVault,
+  remove: PeriodDelete,
+): DaysAndCycles | undefined {
   if (remove.held.length === 0) {
     throw new PeriodSaveError('no-period-is-held', 'Emi holds no day of this period to delete');
   }
