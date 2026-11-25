@@ -12,6 +12,7 @@ import { registerAccount } from '../../../../services/vault/src/handlers/registe
 import { dynamoEntitlementStore } from '../../../../services/vault/src/payments/dynamoEntitlements';
 import { stopsEveryRenewal } from '../../../../services/vault/src/payments/stopRenewals';
 import { putRecordFor } from '../../../../services/vault/src/handlers/putRecord';
+import { sheIsPaidUp } from '../../../../services/vault/tests/fixtures/requests';
 import { dynamoStore, partitionFor } from '../../../../services/vault/src/store/dynamo';
 import {
   fakeTable,
@@ -164,6 +165,7 @@ async function herAccountOnTheServer(): Promise<HerVaultAccount> {
       eventFor('PUT', path, recordBody, headers, allowed.context?.accountId),
       store,
       at_,
+      sheIsPaidUp,
     );
 
     expect(written.statusCode).toBe(200);

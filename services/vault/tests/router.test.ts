@@ -1,6 +1,15 @@
 import { accountIdFor, base64Of, sealRecord } from '@emi/crypto';
 
+import type { HttpRequestEvent, HttpResponse } from '../src/api';
+
+import { theAppleStore, theYearlyProduct } from '../src/payments/appStore';
+import { dynamoEntitlementStore } from '../src/payments/dynamoEntitlements';
 import type { StopsEveryRenewal } from '../src/payments/stopRenewals';
+import {
+  aSubscriptionIsNeeded,
+  paymentIsRequired,
+  saysWhetherSheMayWrite,
+} from '../src/payments/writeGate';
 import {
   nothingAnswersThatPath,
   routeKeyOf,
@@ -8,8 +17,13 @@ import {
   type WhatTheStoreRouteNeeds,
 } from '../src/router';
 import { dynamoStore } from '../src/store/dynamo';
-import { aTransactionId, fakeAppStore, theCredential } from './fixtures/appStore';
-import { fakeTable, tableName } from './fixtures/dynamoTable';
+import {
+  aTransactionId,
+  fakeAppStore,
+  theCredential,
+  theOriginalTransactionId,
+} from './fixtures/appStore';
+import { fakeTable, type FakeTable, tableName } from './fixtures/dynamoTable';
 import {
   anAccount,
   authorizedEvent,
@@ -29,20 +43,41 @@ const accountId = accountIdFor(pair.publicKey);
 const vaultKey = new Uint8Array(32).fill(5);
 const recordId = '019826c2-4d00-7a1b-8c3d-0f1e2a3b4c5d';
 const now = new Date('2026-09-28T09:00:00.000Z');
+const aYearOn = '2027-09-28T09:00:00.000Z';
 
-function answeringStore(withAnAccount: boolean): ReturnType<typeof dynamoStore> {
-  const store = dynamoStore(fakeTable(), tableName);
+/**
+ * The table one case answers over, with her account on it and the year she bought written the way
+ * the filing route writes it, because a put reaches no handler at all without one.
+ */
+async function aTable(
+  withAnAccount: boolean,
+  paidUntil = aYearOn,
+  state = 'active',
+): Promise<FakeTable> {
+  const table = fakeTable();
+  const store = dynamoStore(table, tableName);
 
   if (withAnAccount) {
-    void store.createAccount(anAccount(pair, now));
+    await store.createAccount(anAccount(pair, now));
+    await store.writeSubscription({
+      accountId,
+      subscribedUntil: paidUntil,
+      subscriptionStore: theAppleStore,
+      subscriptionTransaction: theOriginalTransactionId,
+      subscriptionCheckedAt: now.toISOString(),
+      subscriptionState: state,
+      subscriptionEventAt: Math.floor(now.getTime() / 1000),
+      subscriptionPlan: theYearlyProduct,
+    });
   }
 
-  return store;
+  return table;
 }
 
 /**
- * The renewal a delete stops. No case here gives an account a payment, so this answers that there
- * was nothing to stop, and a route that started reaching Stripe would fail rather than pass.
+ * The renewal a delete stops. No case here links a card payment to an account, so this answers
+ * that there was nothing to stop, and a route that started reaching Stripe would fail rather than
+ * pass.
  */
 const stopsNothing: StopsEveryRenewal = (payerDigests) => {
   expect(payerDigests).toEqual([]);
@@ -56,8 +91,24 @@ const theStore = (): WhatTheStoreRouteNeeds => ({
   apiKey: () => Promise.resolve(theCredential),
 });
 
-function answering(withAnAccount = true): ReturnType<typeof router> {
-  return router(answeringStore(withAnAccount), stopsNothing, theStore(), () => now);
+function answeringOver(table: FakeTable): ReturnType<typeof router> {
+  const store = dynamoStore(table, tableName);
+
+  return router(
+    store,
+    stopsNothing,
+    theStore(),
+    saysWhetherSheMayWrite({
+      accounts: store,
+      entitlements: dynamoEntitlementStore(table, tableName),
+    }),
+    () => now,
+  );
+}
+
+/** One request, carried to the router over a table of its own. */
+async function answering(event: HttpRequestEvent, withAnAccount = true): Promise<HttpResponse> {
+  return answeringOver(await aTable(withAnAccount))(event);
 }
 
 function aSealedRecord(): string {
@@ -85,7 +136,7 @@ describe('one function answers the four signed routes and refuses every other pa
         instant: now,
       });
 
-      const answer = await answering(false)(event);
+      const answer = await answering(event, false);
 
       expect(answer.statusCode).toBe(201);
       expect(JSON.parse(answer.body)).toMatchObject({ accountId });
@@ -100,10 +151,27 @@ describe('one function answers the four signed routes and refuses every other pa
         instant: now,
       });
 
-      const answer = await answering()(authorizedEvent(event, accountId));
+      const answer = await answering(authorizedEvent(event, accountId));
 
       expect(answer.statusCode).toBe(200);
       expect(JSON.parse(answer.body)).toMatchObject({ revision: 1 });
+    });
+
+    it('refuses the same put, as the moment to pay, when the subscription ran out', async () => {
+      const body = aSealedRecord();
+      const { event } = signedRequest(pair, {
+        method: 'PUT',
+        path: `/v1/records/${recordId}`,
+        body,
+        instant: now,
+      });
+
+      const table = await aTable(true, '2026-09-01T09:00:00.000Z', 'lapsed');
+      const answer = await answeringOver(table)(authorizedEvent(event, accountId));
+
+      expect(answer.statusCode).toBe(paymentIsRequired);
+      expect(errorIn(answer.body)).toBe(aSubscriptionIsNeeded);
+      expect(table.items().some((item) => 'payload' in item)).toBe(false);
     });
 
     it('answers a page of records on a get of the records path', async () => {
@@ -113,7 +181,7 @@ describe('one function answers the four signed routes and refuses every other pa
         instant: now,
       });
 
-      const answer = await answering()(authorizedEvent(event, accountId));
+      const answer = await answering(authorizedEvent(event, accountId));
 
       expect(answer.statusCode).toBe(200);
       expect(JSON.parse(answer.body)).toMatchObject({ records: [] });
@@ -128,7 +196,7 @@ describe('one function answers the four signed routes and refuses every other pa
         instant: now,
       });
 
-      const answer = await answering()(authorizedEvent(event, accountId));
+      const answer = await answering(authorizedEvent(event, accountId));
 
       expect(answer.statusCode).toBe(200);
       expect(JSON.parse(answer.body)).toMatchObject({ subscribedUntil: expect.any(String) });
@@ -141,7 +209,7 @@ describe('one function answers the four signed routes and refuses every other pa
         instant: now,
       });
 
-      const answer = await answering()(authorizedEvent(event, accountId));
+      const answer = await answering(authorizedEvent(event, accountId));
 
       expect(answer.statusCode).toBe(200);
       expect(JSON.parse(answer.body)).toMatchObject({ deleted: true });
@@ -157,7 +225,7 @@ describe('one function answers the four signed routes and refuses every other pa
         instant: now,
       });
 
-      const answer = await answering()(event);
+      const answer = await answering(event);
 
       expect(answer.statusCode).toBe(404);
       expect(errorIn(answer.body)).toBe(nothingAnswersThatPath);
@@ -170,7 +238,7 @@ describe('one function answers the four signed routes and refuses every other pa
         instant: now,
       });
 
-      const answer = await answering()(authorizedEvent(event, accountId));
+      const answer = await answering(authorizedEvent(event, accountId));
 
       expect(answer.statusCode).toBe(404);
     });
@@ -182,7 +250,7 @@ describe('one function answers the four signed routes and refuses every other pa
         instant: now,
       });
 
-      const answer = await answering()(event);
+      const answer = await answering(event);
 
       expect(answer.body).not.toContain('/v1/');
       expect(answer.body).not.toContain('GET');
@@ -196,7 +264,7 @@ describe('one function answers the four signed routes and refuses every other pa
         instant: now,
       });
 
-      await router(dynamoStore(table, tableName), stopsNothing, theStore(), () => now)(event);
+      await answeringOver(table)(event);
 
       expect(table.calls()).toMatchObject({ getItem: 0, putItem: 0, query: 0 });
     });

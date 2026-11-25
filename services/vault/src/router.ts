@@ -6,6 +6,7 @@ import { accountsPath, register } from './handlers/register';
 import type { ReachesTheAppStore } from './payments/appStore';
 import { fileTransaction, storeSubscriptionPath } from './payments/fileTransaction';
 import type { StopsEveryRenewal } from './payments/stopRenewals';
+import type { SaysWhetherSheMayWrite } from './payments/writeGate';
 import type { AccountDeleteStore, AccountStore, SubscriptionStore } from './store/accounts';
 import type { RecordStore } from './store/records';
 
@@ -42,17 +43,19 @@ export const nothingAnswersThatPath = 'nothing answers that path';
  * handler, so a test moves every route to the same instant with one argument.
  *
  * The renewal the delete stops is passed in rather than defaulted, because a router built without
- * it would answer every delete and leave each subscription renewing.
+ * it would answer every delete and leave each subscription renewing. The gate a write passes is
+ * passed in for the same reason: a router built without it would answer every write.
  */
 export function routesOf(
   store: VaultStore,
   stopsRenewals: StopsEveryRenewal,
   theStore: WhatTheStoreRouteNeeds,
+  mayWrite: SaysWhetherSheMayWrite,
   clock: () => Date = () => new Date(),
 ): Record<string, SignedRoute> {
   return {
     [`POST ${accountsPath}`]: register(store, clock),
-    [`PUT ${recordPathPrefix}`]: putRecord(store, clock),
+    [`PUT ${recordPathPrefix}`]: putRecord(store, mayWrite, clock),
     [`GET ${recordsPath}`]: pullRecords(store),
     [`DELETE ${accountPath}`]: deleteAccount(store, stopsRenewals),
     [`POST ${storeSubscriptionPath}`]: fileTransaction({
@@ -83,9 +86,10 @@ export function router(
   store: VaultStore,
   stopsRenewals: StopsEveryRenewal,
   theStore: WhatTheStoreRouteNeeds,
+  mayWrite: SaysWhetherSheMayWrite,
   clock: () => Date = () => new Date(),
 ): SignedRoute {
-  const routes = routesOf(store, stopsRenewals, theStore, clock);
+  const routes = routesOf(store, stopsRenewals, theStore, mayWrite, clock);
 
   return async (event) => {
     const route = routes[routeKeyOf(event)];

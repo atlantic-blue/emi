@@ -3,15 +3,21 @@ import { bytesFromBase64, readEnvelope, refusalMessages } from '@emi/crypto';
 import { answer, bodyTextOf, type HttpRequestEvent, type HttpResponse, refusal } from '../api';
 import { authorizedAccountIn } from '../auth/authorizer';
 import { signedBodyRefusal } from '../auth/signedBody';
+import {
+  aSubscriptionIsNeeded,
+  paymentIsRequired,
+  type SaysWhetherSheMayWrite,
+} from '../payments/writeGate';
 import type { RecordStore } from '../store/records';
 
 /**
  * Contract WIRE-2, a record written. The service reads the shape of the envelope and never its
- * content, so everything below is about the size of the bytes, the order of the revisions and the
- * identifier they are filed under.
+ * content, so most of what is below is about the size of the bytes, the order of the revisions and
+ * the identifier they are filed under.
  *
- * The subscription gate belongs to this endpoint too, and it is built in feature 7 step 4 where
- * there is a receipt to read. Until then a write is refused for the reasons here and no other.
+ * The subscription is the other half of it. A write is the one request of this service that stops
+ * when nobody paid, and it stops before the body is parsed: an account that may not write is told
+ * to pay rather than told what else was wrong with the request it sent.
  */
 
 /** Bytes. An envelope larger than this is refused, which is contract WIRE-2. */
@@ -109,6 +115,7 @@ export async function putRecordFor(
   event: HttpRequestEvent,
   store: RecordStore,
   now: Date,
+  mayWrite: SaysWhetherSheMayWrite,
 ): Promise<HttpResponse> {
   const accountId = authorizedAccountIn(event);
 
@@ -126,6 +133,10 @@ export async function putRecordFor(
 
   if (bodyRefusal !== null) {
     return bodyRefusal;
+  }
+
+  if (!(await mayWrite(accountId, now))) {
+    return refusal(paymentIsRequired, aSubscriptionIsNeeded);
   }
 
   const recordId = recordIdIn(event);
@@ -157,10 +168,11 @@ export async function putRecordFor(
   return answer(200, { revision: written.revision });
 }
 
-/** The route the api calls, with its storage bound to it. */
+/** The route the api calls, with its storage and the gate she passes bound to it. */
 export function putRecord(
   store: RecordStore,
+  mayWrite: SaysWhetherSheMayWrite,
   clock: () => Date = () => new Date(),
 ): (event: HttpRequestEvent) => Promise<HttpResponse> {
-  return (event) => putRecordFor(event, store, clock());
+  return (event) => putRecordFor(event, store, clock(), mayWrite);
 }

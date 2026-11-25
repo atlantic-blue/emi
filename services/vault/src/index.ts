@@ -38,6 +38,7 @@ export * from './payments/stripeEvents';
 export * from './payments/stripeSecrets';
 export * from './payments/stripeSignature';
 export * from './payments/webhook';
+export * from './payments/writeGate';
 export * from './router';
 export * from './store/accounts';
 export * from './store/answers';

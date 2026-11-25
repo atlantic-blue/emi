@@ -192,6 +192,10 @@ function accountFrom(item: Item): StoredAccount {
     recoverySalt: bytesOf(item.recoverySalt),
     createdAt: textOf(item.createdAt),
     recordCount: numberOf(item.recordCount),
+    // Each one is left out rather than read as an empty string, because absent is what the write
+    // gate reads as "nobody has bought a plan in a store".
+    ...('subscribedUntil' in item ? { subscribedUntil: textOf(item.subscribedUntil) } : {}),
+    ...('subscriptionState' in item ? { subscriptionState: textOf(item.subscriptionState) } : {}),
   };
 }
 

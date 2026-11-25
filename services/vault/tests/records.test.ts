@@ -5,7 +5,13 @@ import { maximumEnvelopeBytes, putRecordFor } from '../src/handlers/putRecord';
 import { dynamoStore } from '../src/store/dynamo';
 import { pageCostOf, type RecordStore, type StoredRecord } from '../src/store/records';
 import { fakeTable, type FakeTable, tableName } from './fixtures/dynamoTable';
-import { anAccount, authorizedEvent, keyPairFromSeed, signedRequest } from './fixtures/requests';
+import {
+  anAccount,
+  authorizedEvent,
+  keyPairFromSeed,
+  sheIsPaidUp,
+  signedRequest,
+} from './fixtures/requests';
 
 /**
  * Contracts WIRE-2 and WIRE-3, through the handlers and the storage together. The store under
@@ -46,7 +52,7 @@ async function putting(
 ): Promise<Written> {
   const path = `/v1/records/${recordId}`;
   const { event } = signedRequest(pair, { method: 'PUT', path, body, instant: at });
-  const answered = await putRecordFor(authorizedEvent(event, carrying), store, at);
+  const answered = await putRecordFor(authorizedEvent(event, carrying), store, at, sheIsPaidUp);
 
   return {
     status: answered.statusCode,
@@ -322,6 +328,7 @@ describe('a record she writes to the vault', () => {
         ),
         storeOver(table),
         writtenAt,
+        sheIsPaidUp,
       );
 
       expect(answered.statusCode).toBe(403);
@@ -335,7 +342,7 @@ describe('a record she writes to the vault', () => {
       const body = recordBody(1, envelopeFor('2026-03-04'));
       const { event } = signedRequest(pair, { method: 'PUT', path, body, instant: writtenAt });
 
-      const answered = await putRecordFor(event, storeOver(table), writtenAt);
+      const answered = await putRecordFor(event, storeOver(table), writtenAt, sheIsPaidUp);
 
       expect(answered.statusCode).toBe(403);
       expect(table.items().some((item) => 'payload' in item)).toBe(false);

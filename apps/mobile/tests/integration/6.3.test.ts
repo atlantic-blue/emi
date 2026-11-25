@@ -5,6 +5,7 @@ import { authorizeRequest } from '../../../../services/vault/src/auth/authorizer
 import { registerAccount } from '../../../../services/vault/src/handlers/register';
 import { pullRecordsFor } from '../../../../services/vault/src/handlers/pullRecords';
 import { putRecordFor } from '../../../../services/vault/src/handlers/putRecord';
+import { sheIsPaidUp } from '../../../../services/vault/tests/fixtures/requests';
 import { dynamoStore } from '../../../../services/vault/src/store/dynamo';
 import {
   fakeTable,
@@ -140,6 +141,7 @@ async function writes(
     carriedToTheFunction('PUT', path, body, headers, allowed.context?.accountId),
     phone.store,
     at,
+    sheIsPaidUp,
   );
 
   return {
