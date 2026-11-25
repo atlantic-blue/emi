@@ -18,6 +18,7 @@ import { firstRunCopy, tourCopy } from '../../src/features/onboarding/copy';
 import { defaultCycleLengthDays } from '../../src/features/onboarding/firstRun';
 import { markTourSeen, tourIsSeen } from '../../src/features/onboarding/tour';
 import { openDatabaseSync, resetExpoSqlite } from '../data/expoSqlite';
+import { theAppStoreIsPayingForHer } from '../fixtures/theSubscription';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { sheAnswersEveryQuestion } from '../fixtures/theFirstRun';
 import { sheTapsSaveAndStart } from '../fixtures/theSave';
@@ -87,6 +88,9 @@ async function sheAnswersEveryQuestionOfTheFirstRun(): Promise<void> {
     periodStartedOn: herPeriodStarted,
     cycleLengthDays: defaultCycleLengthDays + 1,
   });
+  // The App Store pays for her, so the hold sends her home rather than to the paywall, which has
+  // a file of its own.
+  theAppStoreIsPayingForHer(herDatabase(), whenSheOpensIt);
   // Her answers are written at the hold and nowhere else, so the walk ends there.
   await sheTapsSaveAndStart();
 }

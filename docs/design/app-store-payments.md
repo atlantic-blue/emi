@@ -35,9 +35,14 @@ read a value, the section says so.
 
 Status: designed
 
-The application holds no purchase library, no StoreKit code and no entitlement read. One line of
-the tour says "One month free, then 39 euros a year", in English, Russian and Spanish. That line is
-the only thing in the product about money.
+The application holds the purchase library of section 10, and it reads the plan list of the three
+products from the store. It reads what she holds at launch, works out one of the six states of
+section 5, and keeps that answer on the phone. A write of a record she entered reads that answer
+and is refused in the lapsed state and in the refunded state. It holds no paywall and no prompt,
+so nothing on any screen says why a write was refused. Every subscription transaction the store
+names is filed with the server, signed by her device key. One line of the tour says "One month
+free, then 39 euros a year", in English, Russian and Spanish. That line is the only thing in the
+product about money.
 
 The route on myemi.app is built. It sells one yearly plan through Stripe, and
 `docs/design/payments.md` designs it. The first sentence of that document said the store route was
@@ -68,8 +73,10 @@ decision now.
 7. The free month belongs to the yearly plan alone. The monthly plan and the Black Friday product
    carry no offer of any kind.
 8. The paywall comes after the questions of the first run.
-9. She cannot close the paywall, for now. What a person who has not paid may do is decided later, in
-   https://github.com/atlantic-blue/emi/issues/622.
+9. She cannot close the paywall. Emi has no free content, so a person who has not paid reaches
+   nothing but the sign in and the paywall, and for a lapse or a refund the export and the delete
+   beside them. That holds on the first run and on every later opening, and it replaces the earlier
+   answer that https://github.com/atlantic-blue/emi/issues/622 would settle what she may do.
 10. Emi is for iPhone only, for now, and Google Play is out of scope. The application sells through
     the App Store alone. It carries no link to myemi.app and never names it as a way to pay, because
     guideline 3.1.1(a) forbids that outside the United States. A woman who paid on myemi.app unlocks
@@ -338,10 +345,8 @@ else. The first run is the one write this state allows. Her answers are what dra
 so refusing them would leave her with a product that shows nothing.
 
 Deleting everything stays open from the paywall, because her answers are already written and a wall
-with no way out would hold them. Everything else about this state is open:
-https://github.com/atlantic-blue/emi/issues/622 decides what she may read and export before she
-pays, and the paywall gets a close control when it does. Nothing below depends on that answer,
-because the states that follow all start with a payment.
+with no way out would hold them. Decision 9 answers the rest of this state: she reaches the sign in
+and the paywall and nothing else, and the paywall gets no close control.
 
 **Free month.** Everything. This is the paid state with no money taken. It ends on the instant Apple
 reports, and the application reads that instant and not a count of days.
@@ -351,8 +356,8 @@ reports, and the application reads that instant and not a count of days.
 **Cancelling.** Everything, until the period she paid for ends. The renewal is off and the date is
 unchanged, so nothing on any screen changes except the line in Settings that says when it stops.
 
-**Lapsed.** She reads every day she ever wrote, exports all of it, and deletes everything. No new
-write, and no edit of an old day. A prompt to subscribe sits where the write was refused.
+**Lapsed.** The paywall holds her, by decision 9. She exports every day she ever wrote and she
+deletes everything, both from that screen. No new write, and no edit of an old day.
 
 **Refunded.** The same as lapsed, from the instant the refund lands rather than from the end of the
 period. Her records stay exactly as they are. Apple is clear that the entitlement goes at once:
@@ -366,8 +371,14 @@ and 5 for revoked. (https://developer.apple.com/documentation/appstoreserverapi/
 gate treats 1, 3 and 4 as paid. That is a decision this design makes rather than one it found. A
 woman whose card expired on holiday keeps her diary while Apple sorts it out.
 
-Contracts PAY-4 and WIRE-5 are the floor under every row above. Reading, exporting and deleting
-never stop, in any state, for ever.
+Contracts PAY-4 and WIRE-5 are the floor under every row above. Exporting and deleting never stop,
+in any state, for ever, and the paywall carries a link to each one.
+
+Decision 9 narrows what reading means in the two states that stop paying. Emi has no free content,
+so a woman the phone reads as lapsed or refunded is held on the paywall and opens no day and no
+history from it. Her days are still hers: the export hands her every one of them, and the delete
+takes them off the phone and off the server. PAY-4 in `docs/contracts.md` still reads as though she
+opens a day, and the operator decides whether that contract now says what this section says.
 
 ## 6. Where the prompt appears, and what it says
 
@@ -375,8 +386,8 @@ Status: designed
 
 Four places, and no more. A prompt in a fifth place reads as nagging.
 
-**The paywall in the first run.** Once, at the end of the first run, after the questions, by
-decision 8. Her answers are written before she is asked for money, so she has something to come back
+**The paywall in the first run.** Once, at the end of the first run, after the questions and the
+sign in, by decision 8. Her answers are written before either one, so she has something to come back
 to. It carries the brand argument, the plans and every line App Review asks for. Section 11 lists it
 as a board.
 
@@ -649,9 +660,9 @@ to pay that Apple does not allow it to name.
 
 ## 10. Which library the application uses
 
-Status: designed
+Status: built
 
-`expo-iap`, at version 6.5.1 today. The application is on Expo 57 and React Native 0.86, and it is
+`expo-iap`, pinned at version 6.5.1. The application is on Expo 57 and React Native 0.86, and it is
 already built with a development client. This library is the one in that ecosystem with a current
 release. It speaks StoreKit 2, which is what the signed transaction and the server library
 both need.
@@ -659,6 +670,9 @@ both need.
 The cost is a native module. The application needs a new binary before any of this runs, and nothing
 about a purchase can be proved in a simulator alone. The path names the one step that needs a
 device.
+
+`apps/mobile/src/services/store/theStoreOnThisPhone.ts` is the one file that names the library.
+Everything above it takes a port, so a test reads the plans with no store and no phone.
 
 The alternative was a third party subscription service, and the non goals say why it is refused.
 
@@ -699,6 +713,12 @@ action each.
 **7. The Black Friday row on the paywall.** One extra row for the product of section 3, at
 19.99 euros a year, every year, with no free month. It shows only while the window is open.
 
+**8. The paywall after a lapse.** The same screen as board 1, drawn for a woman who paid before.
+The free month is gone from the yearly row, from the button and from the renewal line, because
+Apple gives that offer once. Two links are added, one to her export and one to her delete, so a
+woman who is held here still reaches her own records. Approved on 2026-11-25 and committed as
+`docs/design/prototype/paywallLapsed.dc.html`.
+
 One board that the first draft of this design asked for is no longer needed now. A screen for a
 woman who has never paid waits for
 https://github.com/atlantic-blue/emi/issues/622, because she cannot close the paywall and reaches no
@@ -734,27 +754,38 @@ Black Friday product carry no offer. A mutation of each value is watched going r
 Waits for: step 1. The operator made the three products in App Store Connect on 24 November 2026.
 
 **3. The purchase library, and a binary that starts.**
-Changes: the library is added and the application is built with it.
-Proves it: the packaged application starts and reads the plan list from the store in a sandbox
-account. This is the one step that needs a device, and it is the operator's to run or to approve.
+Changes: the library is added. One module reads the plan list of the three products from the store,
+and nothing on screen reads it yet. A configuration file holds the same three products for the
+simulator, so a plan list answers there with no sandbox account.
+Proves it: tests of the module against a stand in for the library, and a test that the autolinking
+of Expo names the native module for an Apple build. The packaged application starting and reading
+the plan list in a sandbox account needs a device, and that half is the operator's to run.
 Waits for: step 2.
 
 **4. The entitlement, read on launch.**
-Changes: the application reads the current entitlements at launch and listens for transactions that
-happen elsewhere. The answer is held, so a store that cannot be reached keeps the last known answer
-instead of locking her out.
+Changes: the application reads every transaction she holds at launch, and works out one of the six
+states of section 5 from them. It watches the store for the transactions nobody presses for: a
+renewal, a purchase on another device, a refund. The answer is held in one row on the phone, so a
+store that cannot be reached keeps the last known answer instead of locking her out. Nothing on
+screen reads it yet.
 Proves it: a test with the store unreachable asserts the last known answer stands. A test of a fresh
 install with the store reporting ownership asserts she is not asked to pay again. A refunded
-transaction is asserted absent.
-Waits for: step 3.
+transaction is asserted absent. One test per state, and a mutation that drops the held answer is
+watched going red.
+Waits for: step 3. The sandbox purchase that moves her between these states needs a device, and that
+half is the operator's to run.
 
 **5. The write gate on the phone.**
 Changes: a write is refused in the lapsed and refunded states, and allowed in the free month, the
 paid state and the cancelling state. Reading, exporting and deleting are untouched in every state.
-The never paid state is not a case here, because the paywall holds her and she reaches no screen
-that writes.
+A write is allowed in the never paid state and where no answer is worked out yet, because no
+paywall exists to hold her and a refusal would lock every woman on a build out of her own diary.
+The gate is one check, and the linter holds the write statements of the day log to the one module
+that asks it. The first run writes her answers under a transaction of its own and asks nothing,
+which is the one write the never paid state allows.
 Proves it: one case per state, driven through the screen and asserted on what she is left with. A
-mutation that gates a read is watched failing.
+mutation that gates a read is watched failing, and so is a mutation that takes the gate off one
+write path.
 Waits for: step 4.
 
 **6. The prompt where the write was refused.**
@@ -773,12 +804,22 @@ the paid state with the ring drawn. A test of a cancelled purchase asserts she i
 paywall.
 Waits for: step 4, and boards 1 and 6.
 
-**8. The paywall in the first run.**
-Changes: the paywall takes its place at the end of the first run, after the questions.
-Proves it: a test walks the whole first run, asserts the paywall comes after the last question, and
-asserts her answers are written before it. A test asserts the skip of the tour still reaches the
-questions and then the paywall. The pictures of the first run are generated again.
-Waits for: step 7, and board 1.
+**8. The paywall in the first run, and on every later opening.**
+Changes: the questions, then the sign in, then the paywall. Her answers are written before the sign
+in, so a woman who closes Emi on either screen comes back to a product that knows her. The sign in
+is the screen Settings already reaches, with no way past it and no way back, and a woman who
+already signed in goes straight to the paywall. On every later opening a woman the phone reads as
+never paid, lapsed, refunded or unknown goes the same way, which includes every woman on a build
+today. The free month, the paid state and the cancelling state pass straight through, everywhere.
+A woman who paid before reads the second board: no free month, because Apple gives it once, and two
+links to her own records. A purchase or a restore lands her where the first run used to land.
+Proves it: a test walks the first run and asserts the order, with her answers in the database before
+the sign in. A test opens Emi as a woman who finished the first run and never paid, and asserts the
+sign in and then the paywall. One case per state asserts who passes and who is held. A test in the
+lapsed state asserts no free month is promised, then opens the export and the delete from the
+paywall and asserts each one finishes and comes back. The mutation that lets a woman who never paid
+through is watched going red.
+Waits for: step 7, board 1, and the second board.
 
 **9. The filing route on the server.**
 Changes: one route takes a transaction identifier, signed by her device key. It asks Apple, then
@@ -794,7 +835,8 @@ reads as pay rather than as an error. A pull, an export and a delete work in eve
 closes WIRE-5.
 Proves it: a test sets the date in the past, then pulls, exports and deletes, and asserts all three
 work. A put is asserted refused. A mutation that gates the pull is watched failing.
-Waits for: step 9.
+Waits for: steps 9 and 19. The server holds no date until the phone files, so a gate that lands
+first refuses a woman who paid.
 
 **11. The notification endpoint.**
 Changes: one route, version 2. The signature is verified first. The types of section 8 write the
@@ -857,6 +899,20 @@ Changes: the listing, the screenshots and the privacy answers carry the subscrip
 Proves it: the wording gate reads the listing. The operator reads the screenshots.
 Waits for: steps 7 and 13.
 
+**19. The phone files each purchase with the server.**
+Changes: the application files every subscription transaction it learns of with the route of step 9,
+signed by her device key. A purchase, a renewal, a restore and a transaction from another device
+each reach that route once. The identifier is written to the setting table as pending before the
+call, so a phone that stops files it on the next launch. A refusal that names the transaction clears
+the pending identifier and keeps its reason. Nothing new appears on screen, and the answer moves
+nothing the phone thinks she holds, because the phone reads that from the store.
+Proves it: a test files a purchase through a double of the library and a double of the network, and
+asserts one signed call that carries the identifier and nothing else. A test with the network down
+asserts the identifier is still pending, and that the next launch files it. A test asserts a second
+notice of one transaction files nothing new. The mutation that clears the pending identifier before
+the call answers is watched going red.
+Waits for: steps 4 and 9.
+
 ## How sure I am
 
 Status: designed
@@ -901,7 +957,7 @@ The App Review rules: 75 per cent. The four paywall lines, the restore rule and 
 are quoted. What lowers it is that no reviewer has read this build, and a gate only catches the words
 we thought of.
 
-The path: 85 per cent. Six of its eighteen steps wait on a board, and a step with no board is a
+The path: 85 per cent. Six of its nineteen steps wait on a board, and a step with no board is a
 step that invents a screen. One step waits on dates the operator sets for the next Black Friday, and
 no other step waits on an answer.
 

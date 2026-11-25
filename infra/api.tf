@@ -321,6 +321,38 @@ resource "aws_lambda_permission" "payments_webhook" {
   source_arn    = "${aws_apigatewayv2_api.vault.execution_arn}/*/*"
 }
 
+# The notifications of the App Store run in a function of their own, under the role that reads the
+# pointer of one purchase and writes the date on one account item. The vault function cannot be
+# reached without a signature of her device key, and this one is reached by Apple, so the two are
+# kept apart: neither can do the other's half.
+resource "aws_apigatewayv2_integration" "store_notifications" {
+  api_id                 = aws_apigatewayv2_api.vault.id
+  integration_type       = "AWS_PROXY"
+  integration_uri        = aws_lambda_function.store_notifications.invoke_arn
+  payload_format_version = "2.0"
+  timeout_milliseconds   = 10000
+}
+
+# What Apple posts when a subscription renews, lapses or is refunded, with nothing of Emi running
+# on her phone. It carries no authorizer because Apple holds no token of this account: it signs the
+# whole body instead, and the function verifies that chain of certificates against the root it
+# carries before it reads one field. A body that fails the check is answered 400 and written
+# nowhere. The address of this route is the one the operator pastes into App Store Connect.
+resource "aws_apigatewayv2_route" "store_notifications" {
+  api_id             = aws_apigatewayv2_api.vault.id
+  route_key          = "POST /v1/payments/store/notifications"
+  target             = "integrations/${aws_apigatewayv2_integration.store_notifications.id}"
+  authorization_type = "NONE"
+}
+
+resource "aws_lambda_permission" "store_notifications" {
+  statement_id  = "AllowInvokeFromTheApi"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.store_notifications.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.vault.execution_arn}/*/*"
+}
+
 resource "aws_lambda_permission" "vault" {
   statement_id  = "AllowInvokeFromTheApi"
   action        = "lambda:InvokeFunction"

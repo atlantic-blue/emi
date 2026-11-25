@@ -8,6 +8,7 @@ import { tabTestID } from '@emi/ui';
 import { screen } from '@testing-library/react-native';
 import { fireEvent, renderRouter } from 'expo-router/testing-library';
 import { AccessibilityInfo } from 'react-native';
+import { theAppStoreIsPayingForHer } from '../fixtures/theSubscription';
 import { sheGivesAPeriod } from '../fixtures/thePastPeriods';
 
 import { listCycles } from '../../src/data/cycleRepository';
@@ -201,6 +202,7 @@ describe('the fertile window shows only for her who asked for it', () => {
   describe('the question she is asked after the feeling', () => {
     beforeEach(() => {
       theTourIsBehindHer();
+      theAppStoreIsPayingForHer(herDatabase(), whenSheOpensIt);
     });
 
     it('is where the feeling hands her, whether she answered it or passed it by', async () => {
@@ -330,6 +332,7 @@ describe('the fertile window shows only for her who asked for it', () => {
   describe('her answers, at the hold', () => {
     beforeEach(() => {
       theTourIsBehindHer();
+      theAppStoreIsPayingForHer(herDatabase(), whenSheOpensIt);
     });
 
     for (const goal of goalValues) {

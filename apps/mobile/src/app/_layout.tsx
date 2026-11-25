@@ -6,10 +6,12 @@ import { useEffect } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { DatabaseProvider } from '../data/DatabaseProvider';
+import { TheEntitlementRefresh } from '../features/account/TheEntitlementRefresh';
 import { TheSignInRefresh } from '../features/account/TheSignInRefresh';
 import { theNavigatorGround } from '../features/chrome/theme';
 import { LockGate } from '../features/lock/LockGate';
 import { FirstRunProvider } from '../features/onboarding/FirstRunProvider';
+import { ThePayGate } from '../features/paywall/ThePayGate';
 import { ReminderPresses } from '../features/reminder/ReminderPresses';
 import { Fonts } from '../features/type/Fonts';
 import { VaultProvider } from '../services/vault/VaultProvider';
@@ -51,6 +53,8 @@ export default function RootLayout(): ReactNode {
                   <ThemeProvider value={theNavigatorGround}>
                     <ReminderPresses />
                     <TheSignInRefresh />
+                    <TheEntitlementRefresh />
+                    <ThePayGate />
                     <Stack screenOptions={{ headerShown: false }}>
                       <Stack.Screen name="(tabs)" options={{ animationTypeForReplace: 'push' }} />
                       <Stack.Screen

@@ -1,5 +1,6 @@
 import type { SecureStore } from '../vault/keychain';
 import { readDeviceKey } from './deviceKey';
+import { answeredWithin, fetchSender, type SendRequest } from './send';
 import { signRequestHeaders } from './sign';
 import { vaultAddress, withoutATrailingSlash } from './vaultAddress';
 
@@ -33,23 +34,6 @@ export type ServerDeleteOutcome = 'gone' | 'no-account' | 'not-reached';
 /** The one thing the phone's delete asks of the network. */
 export type ServerDelete = () => Promise<ServerDeleteOutcome>;
 
-/** A request as this module makes one, which is a method, an address and four signed headers. */
-export interface VaultRequest {
-  readonly url: string;
-  readonly method: string;
-  readonly headers: Readonly<Record<string, string>>;
-}
-
-/** All this module is given of the network, so a test drives the real signing and no socket. */
-export type SendRequest = (request: VaultRequest) => Promise<{ readonly status: number }>;
-
-/** The sender the application runs on, which is the platform's own. */
-export const fetchSender: SendRequest = async (request) => {
-  const answered = await fetch(request.url, { method: request.method, headers: request.headers });
-
-  return { status: answered.status };
-};
-
 /**
  * The account on the server, gone.
  *
@@ -77,12 +61,13 @@ export async function deleteTheServerAccount(
   const headers = signRequestHeaders(key, { method: 'DELETE', path: accountPath }, now);
 
   try {
-    const answered = await answeredInTime(
+    const answered = await answeredWithin(
       send({
         url: `${withoutATrailingSlash(address)}${accountPath}`,
         method: 'DELETE',
         headers,
       }),
+      serverDeleteMilliseconds,
     );
 
     return answered?.status === 200 ? 'gone' : 'not-reached';
@@ -98,23 +83,4 @@ export function serverAccountDelete(
   clock: () => Date = () => new Date(),
 ): ServerDelete {
   return () => deleteTheServerAccount(keychain, send, clock());
-}
-
-/**
- * The answer, or nothing at all once the wait is over. The request is not cancelled, because a
- * signed delete that lands late is a delete that landed; it is only stopped from being waited on.
- */
-async function answeredInTime<Answer>(sending: Promise<Answer>): Promise<Answer | null> {
-  let waited: ReturnType<typeof setTimeout> | undefined = undefined;
-
-  try {
-    return await Promise.race([
-      sending,
-      new Promise<null>((resolve) => {
-        waited = setTimeout(() => resolve(null), serverDeleteMilliseconds);
-      }),
-    ]);
-  } finally {
-    clearTimeout(waited);
-  }
 }

@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { CYCLES_BEFORE_A_FORECAST, cyclesFrom, forecastFrom } from '@emi/cycle';
 import { render, screen } from '@testing-library/react-native';
 import { fireEvent, renderRouter } from 'expo-router/testing-library';
+import { theAppStoreIsPayingForHer } from '../fixtures/theSubscription';
 import { aWalkPeriodLengthDays, sheGivesAPeriod } from '../fixtures/thePastPeriods';
 
 import { listCycles } from '../../src/data/cycleRepository';
@@ -186,6 +187,7 @@ describe('her first forecast is a range, before anything is written', () => {
     resetExpoSqlite();
     resetExpoSecureStore();
     theTourIsBehindHer();
+    theAppStoreIsPayingForHer(herDatabase(), whenSheOpensIt);
   });
 
   afterEach(() => {

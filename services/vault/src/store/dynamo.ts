@@ -6,6 +6,7 @@ import type {
   AccountStore,
   ClaimOutcome,
   CreateOutcome,
+  PurchasePointerStore,
   RememberOutcome,
   StoredAccount,
   StoredSubscription,
@@ -232,7 +233,12 @@ export async function refusedByItsCondition(write: Promise<void>): Promise<boole
 export function dynamoStore(
   table: DynamoDbTable,
   tableName: string,
-): AccountStore & RecordStore & AccountDeleteStore & OneTimeAnswerStore & SubscriptionStore {
+): AccountStore &
+  RecordStore &
+  AccountDeleteStore &
+  OneTimeAnswerStore &
+  SubscriptionStore &
+  PurchasePointerStore {
   const keyOf = (accountId: string, sortKey: string): Item => ({
     pk: { S: partitionFor(accountId) },
     sk: { S: sortKey },
@@ -356,6 +362,17 @@ export function dynamoStore(
 
   return {
     payerDigestsOf: (accountId: string): Promise<readonly string[]> => payerDigestsUnder(accountId),
+
+    accountOfPurchase: async (transactionDigest: string): Promise<string | undefined> => {
+      const held = await table.getItem({
+        TableName: tableName,
+        Key: purchaseKeyOf(transactionDigest),
+        ConsistentRead: true,
+      });
+      const accountId = textOf(held?.accountId);
+
+      return accountId.length === 0 ? undefined : accountId;
+    },
 
     claimTransaction: async (
       transactionDigest: string,

@@ -5,6 +5,8 @@ import { CONTRAST_FLOOR, contrastRatio } from '../../packages/tokens/src/colour'
 
 import {
   type Described,
+  addressesLinkedOn,
+  boardsDrawnAfterTheExport,
   canvasFile,
   claimsHeading,
   claimsNotRecorded,
@@ -25,6 +27,7 @@ import {
   proseOf,
   screenSuffix,
   sectionUnder,
+  wordsDrawnOn,
 } from './prototype.ts';
 
 /**
@@ -53,9 +56,17 @@ const described = describedIn(document);
 const named = namedValues(described);
 const painted = screens.map((file) => ({ file, markup: markupOf(file) }));
 
+/**
+ * The screens of the export of 2026-10-01, which are the ones this document was written from.
+ * A board drawn after it is held to the palette too, and counted apart from it.
+ */
+const theExport = painted.filter(
+  ({ file }) => !boardsDrawnAfterTheExport.includes(file.replace(screenSuffix, '')),
+);
+
 /** Every colour the 52 screens paint with, as the opaque colour underneath each one. */
 const basesDrawn = new Set(
-  painted.flatMap(({ markup }) => coloursDrawnIn(markup).map((value) => opaqueBaseOf(value))),
+  theExport.flatMap(({ markup }) => coloursDrawnIn(markup).map((value) => opaqueBaseOf(value))),
 );
 
 /** The same colour written as a function at the alpha given, so no value is typed in this file. */
@@ -75,17 +86,28 @@ const aColourNobodyDraws = `#${[...(described.colours['accent'] ?? '').slice(1)]
 
 describe('every colour in the redesign prototype has a name in the design document', () => {
   describe('both sides are read, so an empty read is not taken for agreement', () => {
-    it('reads fifty two screens and the canvas that places them', () => {
-      expect(screens).toHaveLength(52);
+    it('reads fifty two screens of the export, the boards after it, and the canvas', () => {
+      expect(theExport).toHaveLength(52);
+      expect(boardsDrawnAfterTheExport).toHaveLength(2);
+      expect(screens).toHaveLength(theExport.length + boardsDrawnAfterTheExport.length);
       expect(readdirSync(join(root, prototypeDirectory))).toContain(canvasFile);
       expect(screens.every((file) => markupOf(file).includes('<x-dc>'))).toBe(true);
     });
 
     it('reads two thousand four hundred and forty nine colours, under thirty five distinct ones', () => {
-      const mentions = painted.flatMap(({ markup }) => coloursDrawnIn(markup));
+      const mentions = theExport.flatMap(({ markup }) => coloursDrawnIn(markup));
 
       expect(mentions).toHaveLength(2449);
       expect(basesDrawn.size).toBe(35);
+    });
+
+    it('reads the colours the boards drawn after the export paint, thirty nine each', () => {
+      const later = painted.filter(({ file }) =>
+        boardsDrawnAfterTheExport.includes(file.replace(screenSuffix, '')),
+      );
+
+      expect(later).toHaveLength(2);
+      expect(later.map(({ markup }) => coloursDrawnIn(markup).length)).toEqual([39, 39]);
     });
 
     it('reads a document that names at least as many colours as the screens paint with', () => {
@@ -293,7 +315,7 @@ describe('the four phase fills and the four inks', () => {
 describe('the prototype in the repository', () => {
   const held = readdirSync(join(root, prototypeDirectory)).sort();
 
-  it('holds fifty two screens, the canvas, the readme and the copy review, and nothing else', () => {
+  it('holds every board, the canvas, the readme and the copy review, and nothing else', () => {
     expect(held).toEqual([...screens, canvasFile, 'README.md', 'copy-review.md'].sort());
   });
 
@@ -315,7 +337,8 @@ describe('the prototype in the repository', () => {
       .map((file) => file.replace(screenSuffix, ''))
       .filter((name) => !(name in mockups.screens));
 
-    expect(unknown).toEqual(['Main']);
+    // The canvas launches Main, and a board drawn after the mockups stage names no screen of it.
+    expect(unknown).toEqual(['Main', ...boardsDrawnAfterTheExport]);
   });
 
   it('reads the parts a browser paints from, and not the words between them', () => {
@@ -357,5 +380,62 @@ describe('the copy review of screens 6 to 22', () => {
     expect(falseClaimsOfTheCopyReview).toContain(claim);
     expect(review).not.toContain(claim);
     expect(claimsNotRecorded(review, readme)).toEqual([]);
+  });
+});
+
+describe('a colour a later board paints that Emi does not build', () => {
+  const recorded = Object.entries(described.drawnNotBuilt);
+
+  it('reads the block, so an empty read is not taken for agreement', () => {
+    expect(recorded).toHaveLength(1);
+  });
+
+  it.each(recorded)('names the board that paints %s, and it paints it', (_name, drawn) => {
+    const board = painted.find(({ file }) => file === `${drawn.on}${screenSuffix}`);
+
+    expect(board).toBeDefined();
+    expect(coloursDrawnIn(String(board?.markup)).map(opaqueBaseOf)).toContain(
+      opaqueBaseOf(drawn.board),
+    );
+  });
+
+  it.each(recorded)('names a palette colour %s is drawn as instead', (_name, drawn) => {
+    expect(Object.keys(described.colours)).toContain(drawn.builds);
+  });
+
+  it.each(recorded)('says why %s is not a name of its own', (_name, drawn) => {
+    expect(drawn.reason.length).toBeGreaterThan(20);
+  });
+
+  it('is what lets the board pass the colour check, and nothing else is', () => {
+    const without = { ...described, drawnNotBuilt: {} };
+
+    expect(coloursWithNoName(namedValues(without), painted)).toHaveLength(recorded.length);
+  });
+});
+
+describe('the words and the addresses a board writes', () => {
+  const board = markupOf(`${String(boardsDrawnAfterTheExport[0])}${screenSuffix}`);
+
+  it('reads the sentences on the glass, in the order the board writes them', () => {
+    const said = wordsDrawnOn(board);
+
+    expect(said.length).toBeGreaterThan(10);
+    expect(said[0]).toBe('Emi has no free version.');
+  });
+
+  it('leaves out the style, the script and the links a browser reads and nobody sees', () => {
+    const said = wordsDrawnOn(board);
+
+    expect(said.join(' ')).not.toContain('font-size');
+    expect(said.join(' ')).not.toContain('renderVals');
+    expect(said.join(' ')).not.toContain('fonts.googleapis.com');
+  });
+
+  it('reads the addresses the board presses to, and not the font it loads', () => {
+    const addresses = addressesLinkedOn(board);
+
+    expect(addresses).toHaveLength(2);
+    expect(addresses.every((address) => !address.includes('fonts.googleapis.com'))).toBe(true);
   });
 });

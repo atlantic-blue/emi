@@ -1,6 +1,7 @@
 import { join } from 'node:path';
 
 import { longestName } from '@emi/crypto';
+import { theAppStoreIsPayingForHer } from '../fixtures/theSubscription';
 import { sheGivesAPeriod } from '../fixtures/thePastPeriods';
 
 import { act, fireEvent, renderRouter, screen, within } from 'expo-router/testing-library';
@@ -134,6 +135,7 @@ describe('she gives her name and the home screen greets her by it', () => {
     resetExpoSqlite();
     resetExpoSecureStore();
     theTourIsBehindHer();
+    theAppStoreIsPayingForHer(herDatabase(), whenSheOpensIt);
   });
 
   afterEach(() => {

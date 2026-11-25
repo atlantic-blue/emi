@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
+import { theAppStoreIsPayingForHer } from '../fixtures/theSubscription';
 import { sheGivesAPeriod } from '../fixtures/thePastPeriods';
 
 import type { Focus } from '@emi/crypto';
@@ -171,6 +172,7 @@ describe('the focus screen no longer says it, and Privacy still changes the answ
     resetExpoSqlite();
     resetExpoSecureStore();
     theTourIsBehindHer();
+    theAppStoreIsPayingForHer(herDatabase(), whenSheOpensIt);
   });
 
   afterEach(() => {

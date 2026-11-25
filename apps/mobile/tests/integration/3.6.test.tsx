@@ -1,5 +1,6 @@
 import { tabTestID } from '@emi/ui';
 import { join } from 'node:path';
+import { theAppStoreIsPayingForHer } from '../fixtures/theSubscription';
 import { OnAPhone } from '../fixtures/theSafeArea';
 
 import type { DayRecord } from '@emi/crypto';
@@ -522,6 +523,8 @@ describe('the ring shows the forecast the arithmetic produced', () => {
       // The tour runs before the two questions, so a phone that answered them has been through
       // it. Without this the application sends her to card 1 and this screen is never reached.
       writeSetting(database, 'tourSeenAt', whenSheOpensIt.toISOString());
+      // She pays for Emi, and without that the application sends her to the paywall instead.
+      theAppStoreIsPayingForHer(database, whenSheOpensIt);
     }
 
     function theRingSays(): string {

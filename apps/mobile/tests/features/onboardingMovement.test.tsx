@@ -55,8 +55,8 @@ jest.mock('expo-router', () => {
   };
 });
 
-// The providers reach a database, a keychain, a lock and the notifications, and none of them decide
-// a movement.
+// The providers reach a database, a keychain, a lock, the notifications and the App Store, and
+// none of them decide a movement.
 jest.mock('../../src/data/DatabaseProvider', () => ({
   DatabaseProvider: ({ children }: { children: ReactNode }) => children,
 }));
@@ -71,6 +71,12 @@ jest.mock('../../src/features/onboarding/FirstRunProvider', () => ({
 }));
 jest.mock('../../src/features/reminder/ReminderPresses', () => ({
   ReminderPresses: (): ReactNode => null,
+}));
+jest.mock('../../src/features/account/TheEntitlementRefresh', () => ({
+  TheEntitlementRefresh: (): ReactNode => null,
+}));
+jest.mock('../../src/features/paywall/ThePayGate', () => ({
+  ThePayGate: (): ReactNode => null,
 }));
 
 function optionsOf(name: string): StackOptions {

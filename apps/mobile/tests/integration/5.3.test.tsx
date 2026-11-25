@@ -29,6 +29,7 @@ import { logDay } from '../../src/features/cycle/rebuild';
 import { flowLogged, logFlow } from '../../src/features/log/logDay';
 import { dayVault } from '../../src/services/vault/dayVault';
 import { openDatabaseSync, resetExpoSqlite } from '../data/expoSqlite';
+import { theAppStoreIsPayingForHer } from '../fixtures/theSubscription';
 import { aDayRecord } from '../fixtures/dayRecord';
 import { herDatabase } from '../fixtures/herPhone';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
@@ -478,6 +479,8 @@ describe('a raw database read reveals nothing about the day', () => {
       // The tour runs before the two questions, so a phone that answered them has been through
       // it. Without this the application sends her to card 1 and this screen is never reached.
       writeSetting(database, 'tourSeenAt', sheWroteAt.toISOString());
+      // She pays for Emi, and without that the application sends her to the paywall instead.
+      theAppStoreIsPayingForHer(database, sheWroteAt);
 
       return database;
     }

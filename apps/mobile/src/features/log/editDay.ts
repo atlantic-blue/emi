@@ -81,7 +81,7 @@ export function unexpectedOn(db: Database, vault: DayVault, open: DayToOpen): bo
  * One press on a day she reopened. The write is the write today takes, because a day she is
  * correcting is a day like any other: it keeps what it already held and its revision rises.
  */
-export function editFlow(db: Database, vault: DayVault, edit: DayEdit): DayAndCycles {
+export function editFlow(db: Database, vault: DayVault, edit: DayEdit): DayAndCycles | undefined {
   requireSheCanEdit(edit);
 
   return logFlow(db, vault, {
@@ -108,7 +108,11 @@ export interface SymptomEdit extends DayToOpen {
  * The symptoms of a day she reopened, written as the whole list, as the log of today writes them.
  * A day ahead of her is refused here too, so the screen is not the only thing holding the rule.
  */
-export function editSymptoms(db: Database, vault: DayVault, edit: SymptomEdit): DayAndCycles {
+export function editSymptoms(
+  db: Database,
+  vault: DayVault,
+  edit: SymptomEdit,
+): DayAndCycles | undefined {
   requireSheCanEdit(edit);
 
   return logSymptoms(db, vault, { day: edit.day, symptoms: edit.symptoms, now: edit.now });
@@ -127,7 +131,7 @@ export interface NoteEdit extends DayToOpen {
 }
 
 /** The note of a day she reopened. An empty note takes the note off the day. */
-export function editNote(db: Database, vault: DayVault, edit: NoteEdit): DayAndCycles {
+export function editNote(db: Database, vault: DayVault, edit: NoteEdit): DayAndCycles | undefined {
   requireSheCanEdit(edit);
 
   return logDiary(db, vault, { day: edit.day, change: { note: edit.note }, now: edit.now });

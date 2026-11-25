@@ -20,6 +20,7 @@ import { writeSetting } from '../../src/data/settingRepository';
 import { homeScreenTestID } from '../../src/features/home/HomeScreen';
 import { expoSqliteWritesInto, resetExpoSqlite } from '../data/expoSqlite';
 import { nodeDatabase } from '../data/nodeDatabase';
+import { theAppStoreIsPayingForHer } from '../fixtures/theSubscription';
 import { aDayRecord } from '../fixtures/dayRecord';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { herDatabase } from '../fixtures/herPhone';
@@ -341,6 +342,8 @@ async function thePhoneTheApplicationOpens(directory: string): Promise<string> {
   // The tour runs before the questions, so a phone that answered them has been through it, and
   // without this she is sent to the first card and never reaches her home screen.
   writeSetting(database, 'tourSeenAt', sheWroteThemAt.toISOString());
+  // She pays for Emi, and without that she is sent to the paywall instead of to her home screen.
+  theAppStoreIsPayingForHer(database, sheWroteThemAt);
 
   return join(directory, 'emi.db');
 }

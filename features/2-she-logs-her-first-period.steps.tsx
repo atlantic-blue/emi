@@ -57,7 +57,7 @@ import {
 import * as Localization from 'expo-localization';
 import { router } from 'expo-router';
 import { act, fireEvent, renderRouter, screen } from 'expo-router/testing-library';
-import { defineFeature, loadFeature } from 'jest-cucumber';
+import { type DefineStepFunction, defineFeature, loadFeature } from 'jest-cucumber';
 
 import {
   keepFilledInKeepTestID,
@@ -542,6 +542,7 @@ import {
   forecastPopupTestID,
   forecastPopupTitleTestID,
 } from '../apps/mobile/src/features/calendar/ForecastPopup';
+import { theAppStoreIsPayingForHer } from '../apps/mobile/tests/fixtures/theSubscription';
 import { readableIn, theFieldAndItsValue } from '../apps/mobile/tests/fixtures/whatIsReadable';
 import {
   aBleedingDay,
@@ -794,6 +795,7 @@ import { interfaceClaimsIn } from '../tools/pipeline/interfaceClaims';
 import {
   type Described,
   type Screen,
+  boardsDrawnAfterTheExport,
   coloursDrawnIn,
   coloursWithNoName,
   describedIn,
@@ -957,6 +959,19 @@ const theCycleLengthIsStepFive = 5;
  * reminder.
  */
 const theQuestionsLeftAfterTheCycleLength = 7;
+
+/**
+ * The App Store pays for her, held on the phone in the row the launch read writes.
+ *
+ * The end of the first run reads that row: a woman it names as paid goes to her home screen, and a
+ * woman it does not is asked to pay. The paywall belongs to feature 7, so a scenario here that
+ * walks the whole first run says this and reaches the screens it is about.
+ */
+function theAppStorePaysForHer(and: DefineStepFunction): void {
+  and('the App Store already pays for her', () => {
+    theAppStoreIsPayingForHer(herDatabase(), whenSheOpensIt);
+  });
+}
 
 /** When she taps Save and start, which is the instant everything she answered is written at. */
 const whenSheSaves = whenSheOpensIt;
@@ -1753,6 +1768,8 @@ defineFeature(feature, (test) => {
       app = await sheOpens('/');
     });
 
+    theAppStorePaysForHer(and);
+
     and('she answers every question of the first run', async () => {
       await sheAnswersEveryQuestionOfTheFirstRun();
     });
@@ -1877,6 +1894,8 @@ defineFeature(feature, (test) => {
     when('she opens Emi', async () => {
       app = await sheOpens('/');
     });
+
+    theAppStorePaysForHer(and);
 
     and(
       'she answers every question, and presses Done a second time before the screen goes',
@@ -2142,6 +2161,8 @@ defineFeature(feature, (test) => {
       app = await sheOpens('/');
     });
 
+    theAppStorePaysForHer(and);
+
     and('she reaches the reminder after the first day she logs', async () => {
       await sheReachesTheReminder();
 
@@ -2276,6 +2297,8 @@ defineFeature(feature, (test) => {
       app = await sheOpens('/');
     });
 
+    theAppStorePaysForHer(and);
+
     and('she answers every question of the first run', async () => {
       sheIsOn();
       whatEachScreenSaid.push(screen.getByText(firstRunCopy.welcome.title).props.children);
@@ -2387,6 +2410,8 @@ defineFeature(feature, (test) => {
       await sheOpens('/');
       everyFieldShePassed.push(...fieldsDrawn());
     });
+
+    theAppStorePaysForHer(and);
 
     and('she answers every question of the first run', async () => {
       await shePresses(onboardingActionTestID);
@@ -6711,6 +6736,8 @@ defineFeature(feature, (test) => {
       app = await sheOpens('/');
     });
 
+    theAppStorePaysForHer(and);
+
     and(
       'she gives her name and the year she was born, and reaches the step that asks for her last three periods',
       async () => {
@@ -6817,6 +6844,8 @@ defineFeature(feature, (test) => {
     when('she opens Emi', async () => {
       await sheOpens('/');
     });
+
+    theAppStorePaysForHer(and);
 
     and('she reaches the step that asks for her last three periods', async () => {
       await sheReachesTheThreePeriodsStep();
@@ -6998,6 +7027,8 @@ defineFeature(feature, (test) => {
     when('she opens Emi', async () => {
       app = await sheOpens('/');
     });
+
+    theAppStorePaysForHer(and);
 
     and(
       'she answers every question of the first run, and says she will log her periods as she goes',
@@ -7213,6 +7244,7 @@ defineFeature(feature, (test) => {
   }) => {
     const repositoryRoot = join(__dirname, '..');
     let painted: Screen[] = [];
+    let theExport: Screen[] = [];
     let described: Described;
     let named: ReadonlySet<string> = new Set();
 
@@ -7221,7 +7253,7 @@ defineFeature(feature, (test) => {
       `rgba(${[1, 3, 5].map((at) => Number.parseInt(value.slice(at, at + 2), 16)).join(',')},${alpha})`;
 
     given(
-      'the fifty two screens of the redesign prototype, and the design document written from them',
+      'the fifty two screens of the redesign prototype, the boards drawn after it, and the design document written from them',
       () => {
         painted = readdirSync(join(repositoryRoot, prototypeDirectory))
           .filter((file) => file.endsWith(screenSuffix))
@@ -7230,16 +7262,21 @@ defineFeature(feature, (test) => {
             file,
             markup: readFileSync(join(repositoryRoot, prototypeDirectory, file), 'utf8'),
           }));
+        theExport = painted.filter(
+          ({ file }) => !boardsDrawnAfterTheExport.includes(file.replace(screenSuffix, '')),
+        );
         described = describedIn(readFileSync(join(repositoryRoot, designSystemDocument), 'utf8'));
 
-        expect(painted).toHaveLength(52);
+        expect(theExport).toHaveLength(52);
+        expect(boardsDrawnAfterTheExport.length).toBeGreaterThan(0);
+        expect(painted).toHaveLength(52 + boardsDrawnAfterTheExport.length);
         expect(Object.keys(described.colours).length).toBeGreaterThan(30);
       },
     );
 
     when('every colour the screens paint with is read against the names in that document', () => {
       named = namedValues(described);
-      const mentions = painted.flatMap(({ markup }) => coloursDrawnIn(markup));
+      const mentions = theExport.flatMap(({ markup }) => coloursDrawnIn(markup));
 
       expect(mentions).toHaveLength(2449);
       expect(new Set(mentions.map(opaqueBaseOf)).size).toBe(35);
@@ -7270,6 +7307,29 @@ defineFeature(feature, (test) => {
         ]),
       ).toEqual([]);
     });
+
+    and(
+      'a colour a later board paints that Emi does not build records the name Emi draws instead',
+      () => {
+        const recorded = Object.entries(described.drawnNotBuilt);
+
+        expect(recorded.length).toBeGreaterThan(0);
+
+        for (const [, drawn] of recorded) {
+          const board = painted.find(({ file }) => file === `${drawn.on}${screenSuffix}`);
+
+          expect(coloursDrawnIn(String(board?.markup)).map(opaqueBaseOf)).toContain(
+            opaqueBaseOf(drawn.board),
+          );
+          expect(Object.keys(described.colours)).toContain(drawn.builds);
+          expect(drawn.reason.length).toBeGreaterThan(20);
+        }
+
+        expect(
+          coloursWithNoName(namedValues({ ...described, drawnNotBuilt: {} }), painted),
+        ).toHaveLength(recorded.length);
+      },
+    );
 
     and(
       'a colour the prototype paints under the contrast floor records the value Emi builds instead',
@@ -7944,6 +8004,8 @@ defineFeature(feature, (test) => {
         await shePresses(onboardingSkipTestID);
       },
     );
+
+    theAppStorePaysForHer(and);
 
     and('she passes every other question she may pass, and taps Save and start', async () => {
       await shePresses(onboardingSkipTestID);
@@ -9806,6 +9868,8 @@ defineFeature(feature, (test) => {
       await sheOpens('/');
     });
 
+    theAppStorePaysForHer(and);
+
     and('she reaches the step that asks for her last three periods', async () => {
       await sheReachesTheThreePeriodsStep();
     });
@@ -10277,6 +10341,8 @@ defineFeature(feature, (test) => {
     when('she opens Emi', async () => {
       await sheOpens('/');
     });
+
+    theAppStorePaysForHer(and);
 
     and('she reaches the step that asks for her last three periods', async () => {
       await sheReachesTheThreePeriodsStep();

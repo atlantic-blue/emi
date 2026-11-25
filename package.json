@@ -79,6 +79,7 @@
     "generate:calendar-largest-text-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern calendarLargestText",
     "generate:edit-period-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern editPeriod.picture",
     "generate:edit-period-largest-text-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern editPeriodLargestText",
+    "generate:paywall-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern paywall.picture",
     "generate:wash-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern wash.picture",
     "generate:answers-again-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern answersAgain.picture",
     "test": "npm run test:workspace && npm run test:mobile && npm run test:website && npm run test:behaviour",
