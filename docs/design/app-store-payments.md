@@ -35,7 +35,8 @@ read a value, the section says so.
 
 Status: designed
 
-The application holds no purchase library, no StoreKit code and no entitlement read. One line of
+The application holds the purchase library of section 10, and it reads the plan list of the three
+products from the store. It holds no entitlement read, no write gate and no paywall. One line of
 the tour says "One month free, then 39 euros a year", in English, Russian and Spanish. That line is
 the only thing in the product about money.
 
@@ -649,9 +650,9 @@ to pay that Apple does not allow it to name.
 
 ## 10. Which library the application uses
 
-Status: designed
+Status: built
 
-`expo-iap`, at version 6.5.1 today. The application is on Expo 57 and React Native 0.86, and it is
+`expo-iap`, pinned at version 6.5.1. The application is on Expo 57 and React Native 0.86, and it is
 already built with a development client. This library is the one in that ecosystem with a current
 release. It speaks StoreKit 2, which is what the signed transaction and the server library
 both need.
@@ -659,6 +660,9 @@ both need.
 The cost is a native module. The application needs a new binary before any of this runs, and nothing
 about a purchase can be proved in a simulator alone. The path names the one step that needs a
 device.
+
+`apps/mobile/src/services/store/theStoreOnThisPhone.ts` is the one file that names the library.
+Everything above it takes a port, so a test reads the plans with no store and no phone.
 
 The alternative was a third party subscription service, and the non goals say why it is refused.
 
@@ -734,9 +738,12 @@ Black Friday product carry no offer. A mutation of each value is watched going r
 Waits for: step 1. The operator made the three products in App Store Connect on 24 November 2026.
 
 **3. The purchase library, and a binary that starts.**
-Changes: the library is added and the application is built with it.
-Proves it: the packaged application starts and reads the plan list from the store in a sandbox
-account. This is the one step that needs a device, and it is the operator's to run or to approve.
+Changes: the library is added. One module reads the plan list of the three products from the store,
+and nothing on screen reads it yet. A configuration file holds the same three products for the
+simulator, so a plan list answers there with no sandbox account.
+Proves it: tests of the module against a stand in for the library, and a test that the autolinking
+of Expo names the native module for an Apple build. The packaged application starting and reading
+the plan list in a sandbox account needs a device, and that half is the operator's to run.
 Waits for: step 2.
 
 **4. The entitlement, read on launch.**

@@ -1,0 +1,108 @@
+{
+  "identifier" : "E1A7B0C4",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+
+  ],
+  "settings" : {
+    "_failTransactionsEnabled" : false,
+    "_locale" : "en_US",
+    "_storefront" : "DEU"
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "21877001",
+      "localizations" : [
+
+      ],
+      "name" : "Emi",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "39.00",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "21877011",
+          "introductoryOffer" : {
+            "internalID" : "21877012",
+            "paymentMode" : "free",
+            "subscriptionPeriod" : "P1M"
+          },
+          "localizations" : [
+            {
+              "description" : "One year of Emi. Your records stay on your phone.",
+              "displayName" : "Emi, one year",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "blue.atlantic.emi.yearly",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Emi, one year",
+          "subscriptionGroupID" : "21877001",
+          "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "5.00",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "21877021",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "One month of Emi. Your records stay on your phone.",
+              "displayName" : "Emi, one month",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "blue.atlantic.emi.monthly",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Emi, one month",
+          "subscriptionGroupID" : "21877001",
+          "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "19.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "21877031",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "One year of Emi, at the lower price on every renewal.",
+              "displayName" : "Emi, one year at the lower price",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "blue.atlantic.emi.yearly.halfprice",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Emi, one year at the lower price",
+          "subscriptionGroupID" : "21877001",
+          "type" : "RecurringSubscription"
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 3,
+    "minor" : 0
+  }
+}
