@@ -49,7 +49,11 @@ const aYearOn = '2027-09-28T09:00:00.000Z';
  * The table one case answers over, with her account on it and the year she bought written the way
  * the filing route writes it, because a put reaches no handler at all without one.
  */
-async function aTable(withAnAccount: boolean, paidUntil = aYearOn): Promise<FakeTable> {
+async function aTable(
+  withAnAccount: boolean,
+  paidUntil = aYearOn,
+  state = 'active',
+): Promise<FakeTable> {
   const table = fakeTable();
   const store = dynamoStore(table, tableName);
 
@@ -61,7 +65,7 @@ async function aTable(withAnAccount: boolean, paidUntil = aYearOn): Promise<Fake
       subscriptionStore: theAppleStore,
       subscriptionTransaction: theOriginalTransactionId,
       subscriptionCheckedAt: now.toISOString(),
-      subscriptionState: 'active',
+      subscriptionState: state,
       subscriptionEventAt: Math.floor(now.getTime() / 1000),
       subscriptionPlan: theYearlyProduct,
     });
@@ -162,7 +166,7 @@ describe('one function answers the four signed routes and refuses every other pa
         instant: now,
       });
 
-      const table = await aTable(true, '2026-09-01T09:00:00.000Z');
+      const table = await aTable(true, '2026-09-01T09:00:00.000Z', 'lapsed');
       const answer = await answeringOver(table)(authorizedEvent(event, accountId));
 
       expect(answer.statusCode).toBe(paymentIsRequired);

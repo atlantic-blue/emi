@@ -5,15 +5,22 @@ import { accountIdContextKey, authorizeRequest } from '../src/auth/authorizer';
 import { accountPath } from '../src/handlers/deleteAccount';
 import { recordsPath } from '../src/handlers/pullRecords';
 import { recordPathPrefix } from '../src/handlers/putRecord';
-import { statusIsExpired } from '../src/payments/appStore';
+import {
+  statusIsExpired,
+  statusIsInBillingRetry,
+  statusIsInGracePeriod,
+} from '../src/payments/appStore';
 import { dynamoEntitlementStore } from '../src/payments/dynamoEntitlements';
 import { storeSubscriptionPath } from '../src/payments/fileTransaction';
 import type { StopsEveryRenewal } from '../src/payments/stopRenewals';
+import { expired, gracePeriodExpired } from '../src/payments/storeEvents';
+import { storeNotificationsFor, storeNotificationsPath } from '../src/payments/storeNotifications';
 import {
   aSubscriptionIsNeeded,
   paymentIsRequired,
   type SaysWhetherSheMayWrite,
   saysWhetherSheMayWrite,
+  theStoreStateThatCovers,
 } from '../src/payments/writeGate';
 import { router } from '../src/router';
 import { dynamoStore, identitySortKeyPrefix, type Item, partitionFor } from '../src/store/dynamo';
@@ -24,6 +31,7 @@ import {
   theCredential,
   type WhatTheStoreAnswers,
 } from './fixtures/appStore';
+import { aNotification, thePinnedRoots } from './fixtures/appleNotifications';
 import { fakeTable, type FakeTable, tableName } from './fixtures/dynamoTable';
 import { anAccount, keyPairFromSeed, signedRequest } from './fixtures/requests';
 
@@ -219,6 +227,12 @@ async function herAccount(answers: WhatTheStoreAnswers = {}): Promise<HerVault> 
   return { table, api };
 }
 
+/**
+ * The instant Apple signed the notification that ended her year, which is after the expiry and
+ * before the write that meets the refusal.
+ */
+const whenAppleSaidItEnded = '2027-11-24T09:30:00.000Z';
+
 /** Her account, the year bought in the App Store, and two days written while it ran. */
 async function herYearAndTwoDays(): Promise<HerVault> {
   const { table, api } = await herAccount();
@@ -227,6 +241,34 @@ async function herYearAndTwoDays(): Promise<HerVault> {
   expect((await writes(api, firstRecord, theMinuteAfter)).status).toBe(200);
   expect((await writes(api, secondRecord, aMinuteAfter(theMinuteAfter))).status).toBe(200);
   expect(textOf(accountItem(table).subscribedUntil)).toBe(aYearOn);
+
+  return { table, api };
+}
+
+/**
+ * The year she bought, ended the way the server learns it: Apple signs a notification and the
+ * route writes the state. A date alone does not end it, because the App Store carries a woman
+ * whose card is being retried past the instant it first gave.
+ */
+async function herYearThenItExpired(type: string = expired): Promise<HerVault> {
+  const { table, api } = await herYearAndTwoDays();
+
+  const answered = await storeNotificationsFor(
+    {
+      rawPath: storeNotificationsPath,
+      headers: { 'content-type': 'application/json' },
+      requestContext: { http: { method: 'POST' } },
+      body: aNotification({ type, notifiedAt: whenAppleSaidItEnded }),
+    },
+    {
+      store: api.store,
+      roots: thePinnedRoots,
+      clock: () => new Date(whenAppleSaidItEnded),
+    },
+  );
+
+  expect(answered.statusCode).toBe(200);
+  expect(textOf(accountItem(table).subscriptionState)).toBe('lapsed');
 
   return { table, api };
 }
@@ -257,7 +299,7 @@ describe('a new entry needs a subscription, and everything she already wrote sta
     });
 
     it('writes when the store purchase ran out and the card on myemi.app still runs', async () => {
-      const { table, api } = await herYearAndTwoDays();
+      const { table, api } = await herYearThenItExpired();
       await herSignInIsLinked(table);
       await herCardPaidUntil(api, '2028-11-24T09:00:00.000Z', theMinuteAfter);
 
@@ -280,7 +322,7 @@ describe('a new entry needs a subscription, and everything she already wrote sta
 
   describe('a woman whose subscription ran out writes nothing new', () => {
     it('is refused 402, which the application reads as pay and not as a fault', async () => {
-      const { api } = await herYearAndTwoDays();
+      const { api } = await herYearThenItExpired();
 
       const written = await writes(api, thirdRecord, afterTheLapse);
 
@@ -292,7 +334,7 @@ describe('a new entry needs a subscription, and everything she already wrote sta
     });
 
     it('leaves the table as it was: no new record, and a count that did not move', async () => {
-      const { table, api } = await herYearAndTwoDays();
+      const { table, api } = await herYearThenItExpired();
       const held = herItems(table).length;
 
       expect((await writes(api, thirdRecord, afterTheLapse)).status).toBe(paymentIsRequired);
@@ -307,7 +349,7 @@ describe('a new entry needs a subscription, and everything she already wrote sta
     });
 
     it('is refused an edit of a day she wrote while she was paid up', async () => {
-      const { table, api } = await herYearAndTwoDays();
+      const { table, api } = await herYearThenItExpired();
 
       const edited = await writes(api, firstRecord, afterTheLapse, 2);
 
@@ -316,7 +358,7 @@ describe('a new entry needs a subscription, and everything she already wrote sta
     });
 
     it('is told to subscribe and nothing else: no date, no plan and no route', async () => {
-      const { api } = await herYearAndTwoDays();
+      const { api } = await herYearThenItExpired();
 
       const written = await writes(api, thirdRecord, afterTheLapse);
       const told = JSON.stringify(written.body);
@@ -328,7 +370,7 @@ describe('a new entry needs a subscription, and everything she already wrote sta
     });
 
     it('is refused when the card on myemi.app ran out as well', async () => {
-      const { table, api } = await herYearAndTwoDays();
+      const { table, api } = await herYearThenItExpired();
       await herSignInIsLinked(table);
       await herCardPaidUntil(api, '2027-06-01T00:00:00.000Z', theMinuteAfter);
 
@@ -367,9 +409,56 @@ describe('a new entry needs a subscription, and everything she already wrote sta
     });
   });
 
+  describe('the card the App Store is still trying', () => {
+    it('lets her write while the store retries it, after the instant the store first gave', async () => {
+      const { table, api } = await herAccount({
+        transactions: [
+          paidUntil('2026-11-20T09:00:00.000Z', {
+            status: statusIsInBillingRetry,
+            signedDate: Date.parse('2026-11-24T09:30:00.000Z'),
+          }),
+        ],
+      });
+
+      expect((await files(api, theMinuteShePaid)).status).toBe(200);
+      const written = await writes(api, firstRecord, theMinuteAfter);
+
+      expect(textOf(accountItem(table).subscribedUntil)).toBe('2026-11-20T09:00:00.000Z');
+      expect(textOf(accountItem(table).subscriptionState)).toBe(theStoreStateThatCovers);
+      expect(written.status).toBe(200);
+      expect(recordItems(table)).toHaveLength(1);
+    });
+
+    it('lets her write while the grace period after a failed renewal runs', async () => {
+      const { table, api } = await herAccount({
+        transactions: [
+          paidUntil('2026-11-20T09:00:00.000Z', {
+            status: statusIsInGracePeriod,
+            signedDate: Date.parse('2026-11-24T09:30:00.000Z'),
+          }),
+        ],
+      });
+
+      expect((await files(api, theMinuteShePaid)).status).toBe(200);
+      const written = await writes(api, firstRecord, theMinuteAfter);
+
+      expect(written.status).toBe(200);
+      expect(recordItems(table)).toHaveLength(1);
+    });
+
+    it('refuses her once the grace period runs out', async () => {
+      const { table, api } = await herYearThenItExpired(gracePeriodExpired);
+
+      const written = await writes(api, thirdRecord, afterTheLapse);
+
+      expect(written.status).toBe(paymentIsRequired);
+      expect(recordItems(table)).toHaveLength(2);
+    });
+  });
+
   describe('everything she wrote before the lapse stays hers', () => {
     it('pulls every day she wrote, after the date has passed', async () => {
-      const { api } = await herYearAndTwoDays();
+      const { api } = await herYearThenItExpired();
 
       const pulled = await pulls(api, afterTheLapse);
 
@@ -380,7 +469,7 @@ describe('a new entry needs a subscription, and everything she already wrote sta
     });
 
     it('exports every day she wrote, in one answer, after the date has passed', async () => {
-      const { api } = await herYearAndTwoDays();
+      const { api } = await herYearThenItExpired();
 
       const exported = await exportsEverything(api, afterTheLapse);
 
@@ -390,7 +479,7 @@ describe('a new entry needs a subscription, and everything she already wrote sta
     });
 
     it('deletes everything, after the date has passed', async () => {
-      const { table, api } = await herYearAndTwoDays();
+      const { table, api } = await herYearThenItExpired();
 
       const deleted = await deletes(api, afterTheLapse);
 
@@ -400,7 +489,7 @@ describe('a new entry needs a subscription, and everything she already wrote sta
     });
 
     it('pulls, exports and deletes in one run, with the write refused between them', async () => {
-      const { table, api } = await herYearAndTwoDays();
+      const { table, api } = await herYearThenItExpired();
 
       const pulled = await pulls(api, afterTheLapse);
       const refused = await writes(api, thirdRecord, aMinuteAfter(afterTheLapse));
@@ -421,7 +510,7 @@ describe('a new entry needs a subscription, and everything she already wrote sta
 
   describe('which requests the gate stands in front of', () => {
     it('is never asked at all by a pull, an export or a delete', async () => {
-      const { table } = await herYearAndTwoDays();
+      const { table } = await herYearThenItExpired();
       const asked: string[] = [];
       const raises: SaysWhetherSheMayWrite = (accountId) => {
         asked.push(accountId);
@@ -439,7 +528,7 @@ describe('a new entry needs a subscription, and everything she already wrote sta
     });
 
     it('reaches the ways in only when the account item says no store purchase runs', async () => {
-      const { table, api } = await herYearAndTwoDays();
+      const { table, api } = await herYearThenItExpired();
       await herSignInIsLinked(table);
 
       const whilePaid = table.calls();

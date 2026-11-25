@@ -21,6 +21,12 @@ export interface StoredAccount {
    * beside the payment item of each way in, so one account answers for both routes.
    */
   readonly subscribedUntil?: string;
+  /**
+   * Where the store subscription stands, in the four words contract PAY-5 names. The write gate
+   * reads it beside the instant, because the App Store covers her while it retries her card and
+   * the instant it gave has already passed.
+   */
+  readonly subscriptionState?: string;
 }
 
 /**
