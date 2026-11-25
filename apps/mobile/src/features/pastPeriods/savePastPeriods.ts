@@ -107,7 +107,7 @@ export function savePastPeriods(
     readonly today: string;
     readonly now: Date;
   },
-): DaysAndCycles {
+): DaysAndCycles | undefined {
   return savePeriodRange(db, vault, {
     held: theDaysEmiHeld(save.held),
     now: save.now,

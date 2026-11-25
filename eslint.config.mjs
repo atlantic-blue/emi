@@ -65,6 +65,28 @@ const sizeWithoutAFace = [
   },
 ];
 
+// The iOS text size grows text past its box, so the application draws through the capped pair.
+const cappedTextInstead = [
+  {
+    name: 'react-native',
+    importNames: ['Text', 'TextInput'],
+    message:
+      'Import CappedText or CappedTextInput from @emi/ui, so the iOS text size cannot grow the text past its box.',
+  },
+];
+
+// A write of a day asks the write gate first, and the gate is asked in one place. A path that
+// held these statements itself would write in the lapsed and the refunded states, which is the
+// one failure contract PAY-4 names, so the statements stay inside the module that asks.
+const theDayLogWriteStatements = [
+  {
+    group: ['**/data/dayLogRepository'],
+    importNames: ['insertDayLog', 'updateDayLog', 'softDeleteDayLog'],
+    message:
+      'Write a day through logDay, editDay, deleteDay or saveDays in features/cycle/rebuild.ts, which asks the write gate of services/store/theWriteGate.ts first.',
+  },
+];
+
 export default defineConfig([
   globalIgnores([
     '**/node_modules/**',
@@ -116,17 +138,21 @@ export default defineConfig([
     rules: {
       'no-restricted-imports': [
         'error',
-        {
-          paths: [
-            {
-              name: 'react-native',
-              importNames: ['Text', 'TextInput'],
-              message:
-                'Import CappedText or CappedTextInput from @emi/ui, so the iOS text size cannot grow the text past its box.',
-            },
-          ],
-        },
+        { paths: cappedTextInstead, patterns: theDayLogWriteStatements },
       ],
+    },
+  },
+  {
+    // The first run is the one write a woman who never paid is allowed, and it writes her days,
+    // her answers and the cache under one transaction of its own, so it holds the statements
+    // directly. Everything else reaches them through the gated module above.
+    files: ['apps/mobile/src/**/*.ts'],
+    ignores: [
+      'apps/mobile/src/features/cycle/rebuild.ts',
+      'apps/mobile/src/features/onboarding/firstRun.ts',
+    ],
+    rules: {
+      'no-restricted-imports': ['error', { patterns: theDayLogWriteStatements }],
     },
   },
   {

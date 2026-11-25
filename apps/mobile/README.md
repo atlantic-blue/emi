@@ -28,7 +28,8 @@ keychain through the same port.
 
 `src/features/onboarding` is the first run: what Emi is, when her last period started, how long her
 cycle usually runs. `src/features/home` draws the home screen. `src/features/cycle/rebuild.ts` is
-the write path: `logDay`, `editDay` and `deleteDay`.
+the write path: `logDay`, `editDay` and `deleteDay`. Every write of a record she entered asks the
+write gate first, and the linter holds the write statements of the day log to that module.
 
 ## The App Store on her phone
 
@@ -47,7 +48,14 @@ the store at launch and keeps watching it, because a renewal, a purchase on anot
 refund all arrive with nobody pressing anything. `theAnswerThePhoneHolds.ts` keeps the answer in
 one setting row, so a store that cannot be reached leaves the last known answer standing instead of
 locking her out. `src/features/account/TheEntitlementRefresh.tsx` is what starts both, and it draws
-nothing: no screen reads the answer yet.
+nothing.
+
+`theWriteGate.ts` is the one check a write of a record she entered asks. It reads the state the
+phone holds and nothing else, so it answers with no network. A write is refused in the lapsed
+state and in the refunded state. A write is allowed in the free month, in the paid state and in
+the cancelling state. A write is allowed where she never paid too, and where no answer is worked
+out yet, because no paywall exists and a refusal there would lock every woman on a build out of
+her own diary. Reading, the history, the export and the delete ask nothing, in every state.
 
 `storekit/Emi.storekit` holds the same three products for the simulator, so the plans answer with
 no sandbox account behind them. Xcode reads it once it is selected: in the scheme of the generated
