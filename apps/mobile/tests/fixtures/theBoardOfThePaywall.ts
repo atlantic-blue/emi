@@ -18,27 +18,30 @@ import {
  *
  * The amounts on the board are the figures the store quoted on the day it was drawn, so a
  * comparison only holds where the store in front of the screen quotes the same ones.
+ *
+ * Two boards were approved, one for a woman who has never paid and one for a woman who has, and
+ * each is read the same way.
  */
 
 const repositoryRoot = join(__dirname, '..', '..', '..', '..');
 
 export const theBoardOfThePaywall = 'paywall';
 
-function theMarkup(): string {
-  return readFileSync(
-    join(repositoryRoot, prototypeDirectory, `${theBoardOfThePaywall}${screenSuffix}`),
-    'utf8',
-  );
+/** The second board: the same screen for a woman who paid before, with no free month on it. */
+export const theBoardOfThePaywallAfterALapse = 'paywallLapsed';
+
+function theMarkup(board: string): string {
+  return readFileSync(join(repositoryRoot, prototypeDirectory, `${board}${screenSuffix}`), 'utf8');
 }
 
 /** Every sentence the board writes, in the order it writes them. */
-export function theWordsTheBoardWrites(): string[] {
-  return wordsDrawnOn(theMarkup());
+export function theWordsTheBoardWrites(board: string = theBoardOfThePaywall): string[] {
+  return wordsDrawnOn(theMarkup(board));
 }
 
 /** The two addresses the board presses to. */
-export function theAddressesTheBoardPressesTo(): string[] {
-  return addressesLinkedOn(theMarkup());
+export function theAddressesTheBoardPressesTo(board: string = theBoardOfThePaywall): string[] {
+  return addressesLinkedOn(theMarkup(board));
 }
 
 /**
