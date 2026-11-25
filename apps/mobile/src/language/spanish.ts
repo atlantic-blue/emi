@@ -963,6 +963,7 @@ export const spanish: CatalogueIn<'es'> = {
   'pastPeriods.stillGoing': 'Sigue en curso',
   'pastPeriods.title': 'Tus tres periodos más recientes',
   'pastPeriods.wayPast': 'Omitir, lo anotaré sobre la marcha',
+  'paywall.action.again': 'Suscribirme por {price} al año',
   'paywall.action.monthly': 'Suscribirme por {price} al mes',
   'paywall.action.yearly': 'Empezar el mes gratis',
   'paywall.gets.encrypted': 'Cifrado en este teléfono, con una clave que solo tienes tú',
@@ -970,11 +971,15 @@ export const spanish: CatalogueIn<'es'> = {
   'paywall.gets.log': 'Registra tus periodos y cómo te sientes',
   'paywall.line':
     'Una aplicación gratis se paga con tus datos. Tú pagas Emi, así que solo tú puedes leer tus días.',
+  'paywall.link.delete': 'Borrar datos',
+  'paywall.link.export': 'Exportar tus datos',
   'paywall.link.privacy': 'Política de privacidad',
   'paywall.link.terms': 'Términos de uso',
   'paywall.monthly.line': '{price} hoy, y después cada mes.',
   'paywall.monthly.name': 'Mensual',
   'paywall.monthly.price': '{price} al mes',
+  'paywall.renewal.again':
+    '{price} hoy, después {price} cada año hasta que canceles. Cancelas en los ajustes del App Store.',
   'paywall.renewal.monthly':
     '{price} hoy, después {price} cada mes hasta que canceles. Cancelas en los ajustes del App Store.',
   'paywall.renewal.yearly':
@@ -984,6 +989,7 @@ export const spanish: CatalogueIn<'es'> = {
   'paywall.trouble.line': 'No se te ha cobrado nada. Inténtalo de nuevo en un momento.',
   'paywall.trouble.ok': 'OK',
   'paywall.trouble.title': 'La compra no se completó',
+  'paywall.yearly.again': '{price} hoy, y después cada año.',
   'paywall.yearly.freeMonth': 'Gratis durante un mes. Después, {price} cada año.',
   'paywall.yearly.name': 'Anual',
   'paywall.yearly.offer': 'Un mes gratis',

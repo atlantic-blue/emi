@@ -23,6 +23,7 @@ import {
 import { PlanRow } from './PlanRow';
 import {
   THE_TERMS_OF_USE,
+  type TheFreeMonth,
   type WhichPlan,
   thePaywallSaid,
   theActionFor,
@@ -42,6 +43,10 @@ import {
  *
  * It is the last screen of the first run, reached once her answers are written, and a purchase or
  * a restore is the only way off it.
+ *
+ * A woman who paid before reads the same screen with the free month taken out of it, because Apple
+ * gives that offer once. Her two ways to her own records are on it, since a wall with no way to
+ * export and no way to delete would hold what she wrote.
  */
 
 /**
@@ -65,6 +70,8 @@ export const paywallRenewalTestID = 'paywall-renewal';
 export const paywallRestoreTestID = 'paywall-restore';
 export const paywallTermsTestID = 'paywall-terms';
 export const paywallPrivacyTestID = 'paywall-privacy';
+export const paywallExportTestID = 'paywall-export';
+export const paywallDeleteTestID = 'paywall-delete';
 
 export function paywallGetTestID(at: number): string {
   return `${paywallGetsTestID}-${String(at)}`;
@@ -104,8 +111,11 @@ export function Paywall({
   buying,
   holding,
   now,
+  month = 'hers',
   files = filesNothing,
   onPaid,
+  onExport,
+  onDelete,
   openThePage,
 }: {
   /** The plans the store named, with the figure it quoted for each one. */
@@ -113,6 +123,8 @@ export function Paywall({
   readonly buying: BuysInTheStore;
   readonly holding: HoldsTheAnswer;
   readonly now: () => Date;
+  /** Whether the free month is still hers, which is the whole difference between the two boards. */
+  readonly month?: TheFreeMonth;
   /**
    * How a transaction reaches the server, which is the same route the launch read files with.
    * A build with nothing to file with files nothing.
@@ -120,6 +132,9 @@ export function Paywall({
   readonly files?: FilesWhatTheStoreNamed;
   /** Where she goes once the store says she is paid up, which is out of this screen. */
   readonly onPaid: (entitlement: WhatSheIsEntitledToNow) => void;
+  /** The two ways to her own records, drawn only for a woman who already wrote some. */
+  readonly onExport?: () => void;
+  readonly onDelete?: () => void;
   readonly openThePage: (address: string) => void;
 }): ReactNode {
   const said = thePaywallSaid();
@@ -191,6 +206,7 @@ export function Paywall({
             <PlanRow
               isChosen={one.which === chosen}
               key={one.which}
+              month={month}
               onPress={() => {
                 setChosen(one.which);
               }}
@@ -205,14 +221,14 @@ export function Paywall({
             <>
               <PrimaryButton
                 isReady={!isAsking}
-                label={theActionFor(row.which, row.plan.priceInWords)}
+                label={theActionFor(row.which, row.plan.priceInWords, month)}
                 onPress={() => {
                   void ask(() => sheBuys(row.plan.product.identifier, buying, holding, now, files));
                 }}
                 testID={paywallActionTestID}
               />
               <Text style={styles.renewal} testID={paywallRenewalTestID}>
-                {theRenewalPriceOf(row.which, row.plan.priceInWords)}
+                {theRenewalPriceOf(row.which, row.plan.priceInWords, month)}
               </Text>
             </>
           )}
@@ -247,6 +263,26 @@ export function Paywall({
             >
               <Text style={styles.linkSaid}>{said.privacy}</Text>
             </Pressable>
+            {onExport === undefined ? null : (
+              <Pressable
+                accessibilityRole="link"
+                onPress={onExport}
+                style={styles.link}
+                testID={paywallExportTestID}
+              >
+                <Text style={styles.linkSaid}>{said.exportHerData}</Text>
+              </Pressable>
+            )}
+            {onDelete === undefined ? null : (
+              <Pressable
+                accessibilityRole="link"
+                onPress={onDelete}
+                style={styles.link}
+                testID={paywallDeleteTestID}
+              >
+                <Text style={styles.linkSaid}>{said.deleteHerData}</Text>
+              </Pressable>
+            )}
           </View>
         </View>
       </ScrollView>
