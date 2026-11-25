@@ -2,6 +2,21 @@
 
 Each version lists what changed for the person who uses Emi. The version is `expo.version` in `apps/mobile/app.json`. The store build number goes up by itself on each build, and a released version names the build it shipped as.
 
+## 0.4.0 (25 November 2026)
+
+The App Store payment. Emi reads what she holds in the store, files each purchase with the server, and refuses a new day record after a subscription ends. The paywall screen is built, and no screen opens it yet, so nothing in this build asks her to pay.
+
+### Added
+
+- Emi asks the App Store what she holds each time it opens. A store it cannot reach costs her nothing, because the answer the phone already holds stands. https://github.com/atlantic-blue/emi/pull/634
+- Each purchase she makes is filed with the server, which asks Apple about it first. https://github.com/atlantic-blue/emi/pull/627 https://github.com/atlantic-blue/emi/pull/636
+- The App Store tells the server about each renewal, each lapse and each refund on its own. https://github.com/atlantic-blue/emi/pull/631
+- A paywall screen names the three plans, and the App Store quotes each price in her own currency. No screen opens this paywall yet. https://github.com/atlantic-blue/emi/pull/633 https://github.com/atlantic-blue/emi/pull/637
+
+### Changed
+
+- A new day record is refused where the App Store says her subscription lapsed, or that she took a refund. Reading, the history, the download and the delete stay open in every state. https://github.com/atlantic-blue/emi/pull/635
+
 ## 0.3.3 (22 November 2026)
 
 The first build made for iOS 27 to reach TestFlight. Nothing in the app changes.
