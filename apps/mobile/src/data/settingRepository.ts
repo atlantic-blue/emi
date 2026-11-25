@@ -14,6 +14,7 @@ export type SettingKey =
   | 'lockOnReturn'
   | 'reminderLead'
   | 'reminderTime'
+  | 'storeFiling'
   | 'temperatureUnit'
   | 'tourSeenAt'
   | 'weightUnit';
@@ -28,6 +29,7 @@ export const settingKeys: readonly SettingKey[] = [
   'lockOnReturn',
   'reminderLead',
   'reminderTime',
+  'storeFiling',
   'temperatureUnit',
   'tourSeenAt',
   'weightUnit',
