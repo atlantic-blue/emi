@@ -2,6 +2,7 @@ import type { HoldsTheAnswer } from './theAnswerThePhoneHolds';
 import {
   type ReadsWhatSheHoldsInTheStore,
   type WhatSheIsEntitledToNow,
+  type WhatTheStoreSaysAboutATransaction,
   whatTheseTransactionsEntitleHerTo,
 } from './theEntitlement';
 
@@ -26,6 +27,23 @@ export interface TheWatchOnTheStore {
   readonly stop: () => void;
 }
 
+/**
+ * What every read hands on: the transactions the store named, as it named them. The filing of
+ * contract PAY-3 is the one caller, and a read the store refused hands on none, so the identifier
+ * already waiting in the setting table still gets its next try.
+ */
+export type FilesWhatTheStoreNamed = (
+  these: readonly WhatTheStoreSaysAboutATransaction[],
+) => Promise<void>;
+
+/** A build with nothing to file with, which is every caller that only wants the answer. */
+export const filesNothing: FilesWhatTheStoreNamed = () => Promise.resolve();
+
+interface WhatTheStoreSaid {
+  readonly transactions: readonly WhatTheStoreSaysAboutATransaction[];
+  readonly entitlement: WhatSheIsEntitledToNow;
+}
+
 function whatThePhoneHeld(holding: HoldsTheAnswer): TheAnswerSheOpensWith {
   const held = holding.read();
 
@@ -35,10 +53,12 @@ function whatThePhoneHeld(holding: HoldsTheAnswer): TheAnswerSheOpensWith {
 async function workItOut(
   using: ReadsWhatSheHoldsInTheStore,
   now: () => Date,
-): Promise<WhatSheIsEntitledToNow> {
+): Promise<WhatTheStoreSaid> {
   await using.open();
 
-  return whatTheseTransactionsEntitleHerTo(await using.whatSheHolds(), now());
+  const transactions = await using.whatSheHolds();
+
+  return { transactions, entitlement: whatTheseTransactionsEntitleHerTo(transactions, now()) };
 }
 
 /**
@@ -49,18 +69,22 @@ export async function theEntitlementWhenSheOpens(
   using: ReadsWhatSheHoldsInTheStore,
   holding: HoldsTheAnswer,
   now: () => Date,
+  files: FilesWhatTheStoreNamed = filesNothing,
 ): Promise<TheAnswerSheOpensWith> {
-  let worked: WhatSheIsEntitledToNow;
+  let said: WhatTheStoreSaid;
 
   try {
-    worked = await workItOut(using, now);
+    said = await workItOut(using, now);
   } catch {
+    await files([]);
+
     return whatThePhoneHeld(holding);
   }
 
-  holding.hold(worked);
+  holding.hold(said.entitlement);
+  await files(said.transactions);
 
-  return { entitlement: worked, from: 'theStore' };
+  return { entitlement: said.entitlement, from: 'theStore' };
 }
 
 /**
@@ -72,17 +96,21 @@ export function watchForATransactionElsewhere(
   using: ReadsWhatSheHoldsInTheStore,
   holding: HoldsTheAnswer,
   now: () => Date,
+  files: FilesWhatTheStoreNamed = filesNothing,
 ): TheWatchOnTheStore {
   const askAgain = async (): Promise<void> => {
-    let worked: WhatSheIsEntitledToNow;
+    let said: WhatTheStoreSaid;
 
     try {
-      worked = await workItOut(using, now);
+      said = await workItOut(using, now);
     } catch {
+      await files([]);
+
       return;
     }
 
-    holding.hold(worked);
+    holding.hold(said.entitlement);
+    await files(said.transactions);
   };
 
   try {

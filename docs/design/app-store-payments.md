@@ -39,9 +39,10 @@ The application holds the purchase library of section 10, and it reads the plan 
 products from the store. It reads what she holds at launch, works out one of the six states of
 section 5, and keeps that answer on the phone. A write of a record she entered reads that answer
 and is refused in the lapsed state and in the refunded state. It holds no paywall and no prompt,
-so nothing on any screen says why a write was refused. One line of
-the tour says "One month free, then 39 euros a year", in English, Russian and Spanish. That line is
-the only thing in the product about money.
+so nothing on any screen says why a write was refused. Every subscription transaction the store
+names is filed with the server, signed by her device key. One line of the tour says "One month
+free, then 39 euros a year", in English, Russian and Spanish. That line is the only thing in the
+product about money.
 
 The route on myemi.app is built. It sells one yearly plan through Stripe, and
 `docs/design/payments.md` designs it. The first sentence of that document said the store route was
@@ -812,7 +813,8 @@ reads as pay rather than as an error. A pull, an export and a delete work in eve
 closes WIRE-5.
 Proves it: a test sets the date in the past, then pulls, exports and deletes, and asserts all three
 work. A put is asserted refused. A mutation that gates the pull is watched failing.
-Waits for: step 9.
+Waits for: steps 9 and 19. The server holds no date until the phone files, so a gate that lands
+first refuses a woman who paid.
 
 **11. The notification endpoint.**
 Changes: one route, version 2. The signature is verified first. The types of section 8 write the
@@ -875,6 +877,20 @@ Changes: the listing, the screenshots and the privacy answers carry the subscrip
 Proves it: the wording gate reads the listing. The operator reads the screenshots.
 Waits for: steps 7 and 13.
 
+**19. The phone files each purchase with the server.**
+Changes: the application files every subscription transaction it learns of with the route of step 9,
+signed by her device key. A purchase, a renewal, a restore and a transaction from another device
+each reach that route once. The identifier is written to the setting table as pending before the
+call, so a phone that stops files it on the next launch. A refusal that names the transaction clears
+the pending identifier and keeps its reason. Nothing new appears on screen, and the answer moves
+nothing the phone thinks she holds, because the phone reads that from the store.
+Proves it: a test files a purchase through a double of the library and a double of the network, and
+asserts one signed call that carries the identifier and nothing else. A test with the network down
+asserts the identifier is still pending, and that the next launch files it. A test asserts a second
+notice of one transaction files nothing new. The mutation that clears the pending identifier before
+the call answers is watched going red.
+Waits for: steps 4 and 9.
+
 ## How sure I am
 
 Status: designed
@@ -919,7 +935,7 @@ The App Review rules: 75 per cent. The four paywall lines, the restore rule and 
 are quoted. What lowers it is that no reviewer has read this build, and a gate only catches the words
 we thought of.
 
-The path: 85 per cent. Six of its eighteen steps wait on a board, and a step with no board is a
+The path: 85 per cent. Six of its nineteen steps wait on a board, and a step with no board is a
 step that invents a screen. One step waits on dates the operator sets for the next Black Friday, and
 no other step waits on an answer.
 
