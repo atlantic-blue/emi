@@ -121,9 +121,7 @@ export function Paywall({
 
   function readWhatHappened(left: WhereThePressLeftHer): void {
     if (left.did === 'itRefusedThePress') {
-      Alert.alert(said.troubleTitle, said.troubleLine, [
-        { text: said.troubleOk },
-      ]);
+      Alert.alert(said.troubleTitle, said.troubleLine, [{ text: said.troubleOk }]);
 
       return;
     }

@@ -5,6 +5,8 @@ import type {
   WhatSheIsEntitledToNow,
   WhatTheStoreSaysAboutATransaction,
 } from './theEntitlement';
+import { theStatesSheCanBeIn } from './theEntitlement';
+import { theStatesAWriteIsRefusedIn } from './theWriteGate';
 import { theEntitlementWhenSheOpens } from './theEntitlementWhenSheOpens';
 
 /**
@@ -29,15 +31,21 @@ export type WhatTheStoreDid = 'itAnswered' | 'sheCancelled' | 'itRefusedThePress
  */
 export const THE_CODE_FOR_A_PURCHASE_SHE_CANCELLED = 'user-cancelled';
 
+/** The one state this screen exists for, which is the one state no purchase can leave her in. */
+export const THE_STATE_THE_PAYWALL_HOLDS = 'neverPaid';
+
 /**
- * The states that let her into Emi. A woman who stopped the renewal keeps every day of the period
- * she paid for, so cancelling is one of them, and a restore can land on it.
+ * The states that let her into Emi: every state a write is allowed in, less the one this screen
+ * holds her on.
+ *
+ * It is worked out from the write gate rather than written again, because two lists of paid
+ * states drift until a woman is let past this screen into a product that refuses her writes. A
+ * woman who stopped the renewal keeps every day of the period she paid for, so cancelling is one
+ * of them, and a restore can land on it.
  */
-export const theStatesThatLetHerIn: readonly WhatSheIsEntitledTo[] = [
-  'freeMonth',
-  'paid',
-  'cancelling',
-];
+export const theStatesThatLetHerIn: readonly WhatSheIsEntitledTo[] = theStatesSheCanBeIn.filter(
+  (state) => state !== THE_STATE_THE_PAYWALL_HOLDS && !theStatesAWriteIsRefusedIn.includes(state),
+);
 
 export function sheIsPaidUp(answer: WhatSheIsEntitledToNow | null): boolean {
   return answer !== null && theStatesThatLetHerIn.includes(answer.state);

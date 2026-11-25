@@ -794,6 +794,7 @@ import { interfaceClaimsIn } from '../tools/pipeline/interfaceClaims';
 import {
   type Described,
   type Screen,
+  boardsDrawnAfterTheExport,
   coloursDrawnIn,
   coloursWithNoName,
   describedIn,
@@ -7213,6 +7214,7 @@ defineFeature(feature, (test) => {
   }) => {
     const repositoryRoot = join(__dirname, '..');
     let painted: Screen[] = [];
+    let theExport: Screen[] = [];
     let described: Described;
     let named: ReadonlySet<string> = new Set();
 
@@ -7221,7 +7223,7 @@ defineFeature(feature, (test) => {
       `rgba(${[1, 3, 5].map((at) => Number.parseInt(value.slice(at, at + 2), 16)).join(',')},${alpha})`;
 
     given(
-      'the fifty two screens of the redesign prototype, and the design document written from them',
+      'the fifty two screens of the redesign prototype, the boards drawn after it, and the design document written from them',
       () => {
         painted = readdirSync(join(repositoryRoot, prototypeDirectory))
           .filter((file) => file.endsWith(screenSuffix))
@@ -7230,16 +7232,21 @@ defineFeature(feature, (test) => {
             file,
             markup: readFileSync(join(repositoryRoot, prototypeDirectory, file), 'utf8'),
           }));
+        theExport = painted.filter(
+          ({ file }) => !boardsDrawnAfterTheExport.includes(file.replace(screenSuffix, '')),
+        );
         described = describedIn(readFileSync(join(repositoryRoot, designSystemDocument), 'utf8'));
 
-        expect(painted).toHaveLength(52);
+        expect(theExport).toHaveLength(52);
+        expect(boardsDrawnAfterTheExport.length).toBeGreaterThan(0);
+        expect(painted).toHaveLength(52 + boardsDrawnAfterTheExport.length);
         expect(Object.keys(described.colours).length).toBeGreaterThan(30);
       },
     );
 
     when('every colour the screens paint with is read against the names in that document', () => {
       named = namedValues(described);
-      const mentions = painted.flatMap(({ markup }) => coloursDrawnIn(markup));
+      const mentions = theExport.flatMap(({ markup }) => coloursDrawnIn(markup));
 
       expect(mentions).toHaveLength(2449);
       expect(new Set(mentions.map(opaqueBaseOf)).size).toBe(35);
@@ -7270,6 +7277,29 @@ defineFeature(feature, (test) => {
         ]),
       ).toEqual([]);
     });
+
+    and(
+      'a colour a later board paints that Emi does not build records the name Emi draws instead',
+      () => {
+        const recorded = Object.entries(described.drawnNotBuilt);
+
+        expect(recorded.length).toBeGreaterThan(0);
+
+        for (const [, drawn] of recorded) {
+          const board = painted.find(({ file }) => file === `${drawn.on}${screenSuffix}`);
+
+          expect(coloursDrawnIn(String(board?.markup)).map(opaqueBaseOf)).toContain(
+            opaqueBaseOf(drawn.board),
+          );
+          expect(Object.keys(described.colours)).toContain(drawn.builds);
+          expect(drawn.reason.length).toBeGreaterThan(20);
+        }
+
+        expect(
+          coloursWithNoName(namedValues({ ...described, drawnNotBuilt: {} }), painted),
+        ).toHaveLength(recorded.length);
+      },
+    );
 
     and(
       'a colour the prototype paints under the contrast floor records the value Emi builds instead',

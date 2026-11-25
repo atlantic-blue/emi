@@ -32,6 +32,13 @@ import type { WhatSheIsEntitledToNow } from '../../src/services/store/theEntitle
 import type { APlanInTheStore } from '../../src/services/store/thePlans';
 import { theMonthlyPlan, theYearlyPlan } from '../../src/services/store/theProducts';
 import { theStoreOnThisPhone } from '../../src/services/store/theStoreOnThisPhone';
+import { theStatesSheCanBeIn } from '../../src/services/store/theEntitlement';
+import {
+  THE_STATE_THE_PAYWALL_HOLDS,
+  sheIsPaidUp,
+  theStatesThatLetHerIn,
+} from '../../src/services/store/thePurchase';
+import { theStatesAWriteIsRefusedIn } from '../../src/services/store/theWriteGate';
 import { openTestDatabase } from '../data/nodeDatabase';
 import { resetExpoSqlite } from '../data/expoSqlite';
 import {
@@ -323,6 +330,29 @@ describe('the paywall', () => {
       expect(screen.getByTestId(planRowTestID('monthly')).props.accessibilityState).toEqual({
         checked: false,
       });
+    });
+  });
+
+  describe('the states it lets her past', () => {
+    it('lets her past exactly the states a write is allowed in, less the one it holds her on', () => {
+      const allowed = theStatesSheCanBeIn.filter(
+        (state) => !theStatesAWriteIsRefusedIn.includes(state),
+      );
+
+      expect(theStatesThatLetHerIn).toEqual(
+        allowed.filter((state) => state !== THE_STATE_THE_PAYWALL_HOLDS),
+      );
+      expect(theStatesThatLetHerIn).toEqual(['freeMonth', 'paid', 'cancelling']);
+    });
+
+    it('holds a woman who never paid, and one the store refunded or let lapse', () => {
+      for (const state of theStatesSheCanBeIn) {
+        expect(sheIsPaidUp({ state, until: null, plan: null, transaction: null, readAt: '' })).toBe(
+          theStatesThatLetHerIn.includes(state),
+        );
+      }
+
+      expect(sheIsPaidUp(null)).toBe(false);
     });
   });
 

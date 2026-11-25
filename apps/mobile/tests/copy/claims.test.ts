@@ -173,9 +173,7 @@ describe('the words a screen may not use', () => {
 
       expect(address).toContain(theHostOfTheWebsite);
       expect(address).toContain('privacy-policy');
-      expect(
-        readFileSync(join(repositoryRoot, thePaywallCopy), 'utf8'),
-      ).toContain(address);
+      expect(readFileSync(join(repositoryRoot, thePaywallCopy), 'utf8')).toContain(address);
     });
   });
 

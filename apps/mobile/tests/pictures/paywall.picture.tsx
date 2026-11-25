@@ -89,9 +89,11 @@ async function drawn(state: State): Promise<DrawnScreen> {
     </OnAPhone>,
   );
 
-  if (state.presses !== null) {
+  const presses = state.presses;
+
+  if (presses !== null) {
     await act(async () => {
-      await fireEvent.press(view.getByTestId(planRowTestID(state.presses)));
+      await fireEvent.press(view.getByTestId(planRowTestID(presses)));
     });
   }
 
