@@ -10,11 +10,13 @@ import {
   interfaceWording,
 } from '../../../../tools/pipeline/forbiddenClaims';
 import {
+  approvedAddresses,
   approvedAnswerLabels,
   interfaceClaimsIn,
   interfaceClaimsUnder,
   scannedInterfaceFiles,
   storeListingFiles,
+  theHostOfTheWebsite,
   withoutModuleSpecifiers,
   writtenStoreListingFiles,
 } from '../../../../tools/pipeline/interfaceClaims';
@@ -133,6 +135,45 @@ describe('the words a screen may not use', () => {
 
       expect(interfaceClaimsIn(theCatalogue, `${otherKey},\n`)).toHaveLength(1);
       expect(interfaceClaimsIn(aScreen, sentence)).toHaveLength(1);
+    });
+  });
+
+  describe('the one address on the website a screen may name', () => {
+    const thePaywallCopy = 'apps/mobile/src/features/paywall/copy.ts';
+
+    it.each(approvedAddresses)('is allowed as the line the application writes, %s', (address) => {
+      expect(
+        interfaceClaimsIn(thePaywallCopy, `export const THE_PRIVACY_POLICY = '${address}';\n`),
+      ).toEqual([]);
+    });
+
+    it('is refused under any other path on the same host', () => {
+      const [address] = approvedAddresses;
+      if (address === undefined) {
+        throw new Error('no address is approved');
+      }
+      const elsewhere = address.replace('privacy-policy', 'checkout');
+
+      expect(
+        interfaceClaimsIn(thePaywallCopy, `const pay = '${elsewhere}';\n`).map(describeClaim),
+      ).toHaveLength(1);
+    });
+
+    it('is refused as a bare host in a sentence she reads', () => {
+      expect(
+        interfaceClaimsIn(aScreen, `<Text>Pay on ${theHostOfTheWebsite} instead</Text>\n`),
+      ).toHaveLength(1);
+    });
+
+    it('is what lets the paywall name it, and nothing else is', () => {
+      const [address] = approvedAddresses;
+      if (address === undefined) {
+        throw new Error('no address is approved');
+      }
+
+      expect(address).toContain(theHostOfTheWebsite);
+      expect(address).toContain('privacy-policy');
+      expect(readFileSync(join(repositoryRoot, thePaywallCopy), 'utf8')).toContain(address);
     });
   });
 

@@ -18,11 +18,11 @@ one is a colour the prototype draws below the contrast floor of 4.5 to 1, and th
 records the value the prototype paints, the value Emi builds, the ground each was measured on and
 the reason. The colour check reads the painted value and the token package reads the built one.
 
-`canvas.json` places the screens beside each other, in the seven rows below. The screen the canvas
-launches is `Main.dc.html`, and every other file is named after its screen in
-`docs/design/mockups/flows.json`.
+`canvas.json` places the screens of the export beside each other, in the seven rows below. The
+screen the canvas launches is `Main.dc.html`, and every other file of the export is named after
+its screen in `docs/design/mockups/flows.json`.
 
-## The fifty two screens
+## The fifty two screens of the export
 
 **First run, the questions.** `welcome`, `tour`, `name`, `yearOfBirth`, `lastPeriod`,
 `lastPeriodNext`, `periodBefore`, `cycleLength`.
@@ -48,6 +48,22 @@ Two of these screens draw the operating system rather than Emi. `reminderPermiss
 dialog the phone puts up to ask about notifications, and `notification` draws a notification on the
 lock screen. The colours in those two are the platform's own, so they are named and never measured
 as Emi's text on Emi's ground.
+
+## The boards drawn after the export
+
+A board drawn later is a drawing this palette has to cover rather than a screen the design system
+was written from. It carries no entry in `canvas.json`, because the tool that wrote the canvas
+wrote the export and nothing after it, and it names no screen of the mockups stage, because the
+stage settled before it. `tools/pipeline/prototype.ts` names them and the colour check reads them
+with the fifty two.
+
+**The paywall.** `paywall`, approved on 2026-11-25. The plan rows with the yearly one selected,
+the free month on that row alone, the full renewal price, Restore purchases and the two links App
+Review asks for. It has no close control.
+
+One value it paints is not in the palette and is not being added to it. The `drawnNotBuilt` block
+of `docs/design/prototype-design-system.md` records what it paints, the name Emi draws instead and
+the reason.
 
 ## Copy on these screens that must never be built, because it is false
 

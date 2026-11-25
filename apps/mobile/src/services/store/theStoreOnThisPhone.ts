@@ -2,16 +2,18 @@ import {
   type Purchase,
   type PurchaseIOS,
   fetchProducts,
+  finishTransaction,
   getAvailablePurchases,
   initConnection,
   purchaseUpdatedListener,
+  requestPurchase,
+  restorePurchases,
 } from 'expo-iap';
 
-import type {
-  ReadsWhatSheHoldsInTheStore,
-  WhatTheStoreSaysAboutATransaction,
-} from './theEntitlement';
+import type { WhatTheStoreSaysAboutATransaction } from './theEntitlement';
 import type { ReachesTheStore } from './thePlans';
+import { THE_KIND_EMI_SELLS } from './thePlans';
+import type { BuysInTheStore, ThePurchaseTheStoreMade } from './thePurchase';
 
 /**
  * The App Store on this phone, reached through expo-iap.
@@ -69,7 +71,39 @@ export function theTransactionIn(purchase: Purchase): WhatTheStoreSaysAboutATran
   };
 }
 
-export const theStoreOnThisPhone: ReachesTheStore & ReadsWhatSheHoldsInTheStore = {
+/**
+ * The purchase the library made, with the way to finish it held in a closure over the shape the
+ * library answered. The library type stops here, so nothing above this file holds one.
+ */
+function thePurchaseIn(purchase: Purchase): ThePurchaseTheStoreMade {
+  return {
+    transaction: theTransactionIn(purchase),
+    finish: async () => {
+      await finishTransaction({ isConsumable: false, purchase });
+    },
+  };
+}
+
+/**
+ * The press, as the library takes it. The library documents its own answer as a payload rather
+ * than as an outcome, so a press that comes back with nothing is read as a store that refused it
+ * and never as a purchase nobody can finish.
+ */
+async function buy(identifier: string): Promise<ThePurchaseTheStoreMade> {
+  const made = await requestPurchase({
+    request: { apple: { sku: identifier } },
+    type: THE_KIND_EMI_SELLS,
+  });
+  const one = Array.isArray(made) ? made[0] : made;
+
+  if (one === null || one === undefined) {
+    throw new Error(`the store answered no transaction for ${identifier}`);
+  }
+
+  return thePurchaseIn(one);
+}
+
+export const theStoreOnThisPhone: ReachesTheStore & BuysInTheStore = {
   open: initConnection,
   productsFor: async (asked) => (await fetchProducts(asked)) ?? [],
   /**
@@ -82,4 +116,8 @@ export const theStoreOnThisPhone: ReachesTheStore & ReadsWhatSheHoldsInTheStore 
       theTransactionIn,
     ),
   whenATransactionArrives: (tell) => purchaseUpdatedListener(() => tell()),
+  buy,
+  restore: async () => {
+    await restorePurchases();
+  },
 };

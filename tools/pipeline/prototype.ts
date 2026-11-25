@@ -21,6 +21,16 @@ export const screenSuffix = '.dc.html';
 /** The file that places the screens beside each other, written by the same tool. */
 export const canvasFile = 'canvas.json';
 
+/**
+ * The boards drawn after the export of 2026-10-01, one name each.
+ *
+ * The design system document was written FROM the fifty two screens of that export, so those
+ * fifty two are the side the document is read against. A board drawn later is read the other way
+ * round: the document is the palette it has to stand in, and the canvas the tool wrote does not
+ * place it. The colour check reads both, and only the counts tell them apart.
+ */
+export const boardsDrawnAfterTheExport: readonly string[] = ['paywall'];
+
 /** The document written from those screens. */
 export const designSystemDocument = join('docs', 'design', 'prototype-design-system.md');
 
@@ -48,11 +58,30 @@ export interface RaisedColour {
   readonly reason: string;
 }
 
+/**
+ * A colour a board paints that Emi does not build, and the named colour Emi draws in its place.
+ *
+ * A board drawn by the design tool carries whatever value the tool emitted. Where that value is
+ * a neighbour of a colour the palette already holds, the palette does not gain a second one that
+ * nobody could tell from the first: the board is recorded here, and the screen draws the named
+ * colour. The colour check then reads the board without a name being invented for it.
+ */
+export interface DrawnNotBuilt {
+  /** The value the board paints. */
+  readonly board: string;
+  /** The name of the colour Emi draws in its place, which is a name in the palette. */
+  readonly builds: string;
+  /** Which board paints it, by the name of its file without the suffix. */
+  readonly on: string;
+  readonly reason: string;
+}
+
 /** The blocks of the front matter, each read as it is written. */
 export interface Described {
   /** The palette Emi builds, name to value. */
   readonly colours: Readonly<Record<string, string>>;
   readonly raised: Readonly<Record<string, RaisedColour>>;
+  readonly drawnNotBuilt: Readonly<Record<string, DrawnNotBuilt>>;
   /** Each wash, as the stops it runs through. */
   readonly wash: Readonly<Record<string, readonly string[]>>;
   readonly rounded: Readonly<Record<string, string>>;
@@ -72,6 +101,7 @@ export interface Screen {
 interface FrontMatter {
   colors?: Record<string, string>;
   raised?: Record<string, RaisedColour>;
+  drawnNotBuilt?: Record<string, DrawnNotBuilt>;
   wash?: Record<string, string[]>;
   rounded?: Record<string, string>;
   spacing?: Record<string, string>;
@@ -99,6 +129,7 @@ export function describedIn(document: string): Described {
   return {
     colours: written(read.colors),
     raised: read.raised ?? {},
+    drawnNotBuilt: read.drawnNotBuilt ?? {},
     wash: read.wash ?? {},
     rounded: written(read.rounded),
     spacing: written(read.spacing),
@@ -153,6 +184,7 @@ export function namedValues(described: Described): ReadonlySet<string> {
   const values = [
     ...Object.values(described.colours),
     ...Object.values(described.raised).map((raised) => raised.prototype),
+    ...Object.values(described.drawnNotBuilt).map((drawn) => drawn.board),
     ...Object.values(described.wash).flat(),
   ];
 
@@ -388,4 +420,37 @@ export function claimsNotRecorded(review: string, readme: string): string[] {
       ? []
       : [`${prototypeReadme} does not record ${claim} under ${claimsHeading.slice(3)}`]),
   ]);
+}
+
+/**
+ * What a board draws on the glass, with everything a browser reads and nobody sees taken out:
+ * the head, the helmet of font and style links, every style element and every script.
+ */
+export function theGlassOf(markup: string): string {
+  return markup
+    .replace(/<!--[\s\S]*?-->/g, ' ')
+    .replace(/<(head|helmet|style|script)\b[^>]*>[\s\S]*?<\/\1>/gi, ' ');
+}
+
+/**
+ * The sentences a board writes, in the order it writes them.
+ *
+ * This is the other half of `drawnParts`: that one reads what a browser paints from, and this
+ * one reads what a woman reads.
+ *
+ * A board is held to its own words, where the mockups stage is held to its parts alone. The
+ * stage did not settle the wording, and a board approved with its words written out does.
+ */
+export function wordsDrawnOn(markup: string): string[] {
+  return theGlassOf(markup)
+    .split(/<[^>]*>/)
+    .map((said) => said.replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim())
+    .filter((said) => said.length > 0);
+}
+
+/** Every address a board sends a reader to, in the order it draws them. */
+export function addressesLinkedOn(markup: string): string[] {
+  return [...theGlassOf(markup).matchAll(/href="(https?:\/\/[^"]+)"/g)].flatMap((found) =>
+    found[1] === undefined ? [] : [found[1]],
+  );
 }

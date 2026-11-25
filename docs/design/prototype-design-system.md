@@ -58,6 +58,12 @@ raised:
     prototype: '#D4C2B9'
     on: ground
     reason: the number two away from the one she chose, 1.63 on the ground
+drawnNotBuilt:
+  plan-row-edge:
+    board: '#E6D3C8'
+    builds: line
+    on: paywall
+    reason: the edge of the plan row she has not chosen, three per cent from line, which the palette already holds
 wash:
   soft:
     - '#FFE8CD'
@@ -182,10 +188,21 @@ typography:
 ---
 
 The prototype this document describes is in `docs/design/prototype/`. The front matter is read
-against all fifty two screens by `tools/pipeline/prototype.test.ts`: every colour a screen paints
-with has a name above, and every name above is painted by a screen. The screens carry no
+against all fifty two screens of it by `tools/pipeline/prototype.test.ts`: every colour a screen
+paints with has a name above, and every name above is painted by a screen. The screens carry no
 configuration of their own, so each one writes its colours straight into the markup, and a
 translucent value is held to the opaque colour underneath it.
+
+A board drawn after that export is read the same way and counted apart from it. This document was
+written from the fifty two, so the fifty two are what it describes, and a later board is a drawing
+this palette has to cover. The paywall is the first of them.
+
+One value a later board paints is not in the palette and will not be added to it. The
+`drawnNotBuilt` block records it: the value the board paints, the name Emi draws in its place, the
+board that paints it and the reason. The design tool emitted an edge three per cent from the
+hairline this palette already holds, and two warm lines nobody can tell apart would be worse than
+one. So the board keeps its value, the screen draws the named colour, and the colour check reads
+the board without a name being invented for it.
 
 Four names carry two values. Each one is a colour the prototype paints below the contrast floor,
 and the `raised` block records what the prototype paints, the ground it was measured on and the
