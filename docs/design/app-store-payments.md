@@ -73,8 +73,10 @@ decision now.
 7. The free month belongs to the yearly plan alone. The monthly plan and the Black Friday product
    carry no offer of any kind.
 8. The paywall comes after the questions of the first run.
-9. She cannot close the paywall, for now. What a person who has not paid may do is decided later, in
-   https://github.com/atlantic-blue/emi/issues/622.
+9. She cannot close the paywall. Emi has no free content, so a person who has not paid reaches
+   nothing but the sign in and the paywall, and for a lapse or a refund the export and the delete
+   beside them. That holds on the first run and on every later opening, and it replaces the earlier
+   answer that https://github.com/atlantic-blue/emi/issues/622 would settle what she may do.
 10. Emi is for iPhone only, for now, and Google Play is out of scope. The application sells through
     the App Store alone. It carries no link to myemi.app and never names it as a way to pay, because
     guideline 3.1.1(a) forbids that outside the United States. A woman who paid on myemi.app unlocks
@@ -343,10 +345,8 @@ else. The first run is the one write this state allows. Her answers are what dra
 so refusing them would leave her with a product that shows nothing.
 
 Deleting everything stays open from the paywall, because her answers are already written and a wall
-with no way out would hold them. Everything else about this state is open:
-https://github.com/atlantic-blue/emi/issues/622 decides what she may read and export before she
-pays, and the paywall gets a close control when it does. Nothing below depends on that answer,
-because the states that follow all start with a payment.
+with no way out would hold them. Decision 9 answers the rest of this state: she reaches the sign in
+and the paywall and nothing else, and the paywall gets no close control.
 
 **Free month.** Everything. This is the paid state with no money taken. It ends on the instant Apple
 reports, and the application reads that instant and not a count of days.
@@ -356,8 +356,8 @@ reports, and the application reads that instant and not a count of days.
 **Cancelling.** Everything, until the period she paid for ends. The renewal is off and the date is
 unchanged, so nothing on any screen changes except the line in Settings that says when it stops.
 
-**Lapsed.** She reads every day she ever wrote, exports all of it, and deletes everything. No new
-write, and no edit of an old day. A prompt to subscribe sits where the write was refused.
+**Lapsed.** The paywall holds her, by decision 9. She exports every day she ever wrote and she
+deletes everything, both from that screen. No new write, and no edit of an old day.
 
 **Refunded.** The same as lapsed, from the instant the refund lands rather than from the end of the
 period. Her records stay exactly as they are. Apple is clear that the entitlement goes at once:
@@ -371,8 +371,14 @@ and 5 for revoked. (https://developer.apple.com/documentation/appstoreserverapi/
 gate treats 1, 3 and 4 as paid. That is a decision this design makes rather than one it found. A
 woman whose card expired on holiday keeps her diary while Apple sorts it out.
 
-Contracts PAY-4 and WIRE-5 are the floor under every row above. Reading, exporting and deleting
-never stop, in any state, for ever.
+Contracts PAY-4 and WIRE-5 are the floor under every row above. Exporting and deleting never stop,
+in any state, for ever, and the paywall carries a link to each one.
+
+Decision 9 narrows what reading means in the two states that stop paying. Emi has no free content,
+so a woman the phone reads as lapsed or refunded is held on the paywall and opens no day and no
+history from it. Her days are still hers: the export hands her every one of them, and the delete
+takes them off the phone and off the server. PAY-4 in `docs/contracts.md` still reads as though she
+opens a day, and the operator decides whether that contract now says what this section says.
 
 ## 6. Where the prompt appears, and what it says
 
@@ -380,8 +386,8 @@ Status: designed
 
 Four places, and no more. A prompt in a fifth place reads as nagging.
 
-**The paywall in the first run.** Once, at the end of the first run, after the questions, by
-decision 8. Her answers are written before she is asked for money, so she has something to come back
+**The paywall in the first run.** Once, at the end of the first run, after the questions and the
+sign in, by decision 8. Her answers are written before either one, so she has something to come back
 to. It carries the brand argument, the plans and every line App Review asks for. Section 11 lists it
 as a board.
 
@@ -707,6 +713,12 @@ action each.
 **7. The Black Friday row on the paywall.** One extra row for the product of section 3, at
 19.99 euros a year, every year, with no free month. It shows only while the window is open.
 
+**8. The paywall after a lapse.** The same screen as board 1, drawn for a woman who paid before.
+The free month is gone from the yearly row, from the button and from the renewal line, because
+Apple gives that offer once. Two links are added, one to her export and one to her delete, so a
+woman who is held here still reaches her own records. Approved on 2026-11-25 and committed as
+`docs/design/prototype/paywallLapsed.dc.html`.
+
 One board that the first draft of this design asked for is no longer needed now. A screen for a
 woman who has never paid waits for
 https://github.com/atlantic-blue/emi/issues/622, because she cannot close the paywall and reaches no
@@ -792,12 +804,22 @@ the paid state with the ring drawn. A test of a cancelled purchase asserts she i
 paywall.
 Waits for: step 4, and boards 1 and 6.
 
-**8. The paywall in the first run.**
-Changes: the paywall takes its place at the end of the first run, after the questions.
-Proves it: a test walks the whole first run, asserts the paywall comes after the last question, and
-asserts her answers are written before it. A test asserts the skip of the tour still reaches the
-questions and then the paywall. The pictures of the first run are generated again.
-Waits for: step 7, and board 1.
+**8. The paywall in the first run, and on every later opening.**
+Changes: the questions, then the sign in, then the paywall. Her answers are written before the sign
+in, so a woman who closes Emi on either screen comes back to a product that knows her. The sign in
+is the screen Settings already reaches, with no way past it and no way back, and a woman who
+already signed in goes straight to the paywall. On every later opening a woman the phone reads as
+never paid, lapsed, refunded or unknown goes the same way, which includes every woman on a build
+today. The free month, the paid state and the cancelling state pass straight through, everywhere.
+A woman who paid before reads the second board: no free month, because Apple gives it once, and two
+links to her own records. A purchase or a restore lands her where the first run used to land.
+Proves it: a test walks the first run and asserts the order, with her answers in the database before
+the sign in. A test opens Emi as a woman who finished the first run and never paid, and asserts the
+sign in and then the paywall. One case per state asserts who passes and who is held. A test in the
+lapsed state asserts no free month is promised, then opens the export and the delete from the
+paywall and asserts each one finishes and comes back. The mutation that lets a woman who never paid
+through is watched going red.
+Waits for: step 7, board 1, and the second board.
 
 **9. The filing route on the server.**
 Changes: one route takes a transaction identifier, signed by her device key. It asks Apple, then
