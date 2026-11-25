@@ -9,6 +9,7 @@ Feature: She opens Emi and logs her first period
   Scenario: SCREEN-1, her first run ends on the home screen with her period recorded
     Given she has never opened Emi before
     When she opens Emi
+    And the App Store already pays for her
     And she answers every question of the first run
     And she taps Save and start
     Then she is looking at the home screen
@@ -35,6 +36,7 @@ Feature: She opens Emi and logs her first period
   Scenario: SCREEN-1, she presses Done twice and her first run is written once
     Given she has never opened Emi before
     When she opens Emi
+    And the App Store already pays for her
     And she answers every question, and presses Done a second time before the screen goes
     And she taps Save and start
     Then she is looking at the home screen
@@ -70,6 +72,7 @@ Feature: She opens Emi and logs her first period
   Scenario: SCREEN-1, she asks Emi to remind her two days before the range starts
     Given she has never opened Emi before
     When she opens Emi
+    And the App Store already pays for her
     And she reaches the reminder after the first day she logs
     Then Turn on reminders waits until she picks when
     And the sample lock screen says only that it is a reminder from Emi
@@ -93,6 +96,7 @@ Feature: She opens Emi and logs her first period
   Scenario: SCREEN-1, the first run asks its questions and the save after them
     Given she has never opened Emi before
     When she opens Emi
+    And the App Store already pays for her
     And she answers every question of the first run
     And she taps Save and start
     Then she was asked what Emi is, her name, the year she was born, her last three periods, how long her cycle runs, how long her period lasts, how steady her cycle is, how she feels about it, and what she wants Emi to help with, and what changes with her cycle, and what she feels today, and whether Emi should remind her
@@ -102,6 +106,7 @@ Feature: She opens Emi and logs her first period
   Scenario: SCREEN-1, the first run asks for no account, no email address and no password
     Given she has never opened Emi before
     When she opens Emi
+    And the App Store already pays for her
     And she answers every question of the first run
     And she taps Save and start
     Then the only thing she could type into was her name
@@ -117,6 +122,7 @@ Feature: She opens Emi and logs her first period
   Scenario: SCREEN-1, the way past the three periods step leaves no date
     Given she has never opened Emi before
     When she opens Emi
+    And the App Store already pays for her
     And she gives her name and the year she was born, and reaches the step that asks for her last three periods
     And she says she will log as she goes
     Then she is being asked how long her cycle runs
@@ -129,6 +135,7 @@ Feature: She opens Emi and logs her first period
   Scenario: SCREEN-1, she gives her last three periods and her first forecast is ready
     Given she has never opened Emi before
     When she opens Emi
+    And the App Store already pays for her
     And she reaches the step that asks for her last three periods
     Then the step asks for three periods, and says the third can be skipped
     And the step says to start with the most recent, and names each row by its place, the most recent first
@@ -153,6 +160,7 @@ Feature: She opens Emi and logs her first period
   Scenario: SCREEN-1, her newest period is still going, and Emi writes the days up to today
     Given she has never opened Emi before
     When she opens Emi
+    And the App Store already pays for her
     And she reaches the step that asks for her last three periods
     And she gives her newest period, which started three days ago, as still going
     Then the row of her newest period says it is still going
@@ -642,6 +650,7 @@ Feature: She opens Emi and logs her first period
   Scenario: SCREEN-1, she completes the first run with no date, logs a period, and reads a ring
     Given she has never opened Emi before
     When she opens Emi
+    And the App Store already pays for her
     And she answers every question of the first run, and says she will log her periods as she goes
     And she taps Save and start
     Then she is looking at the screen that says what the ring needs
@@ -767,6 +776,7 @@ Feature: She opens Emi and logs her first period
   Scenario: SCREEN-1, a name she typed is kept when she presses Skip, and the home screen greets her by it
     Given she has never opened Emi before
     When she opens Emi, reads the welcome, skips the tour, types her name, and presses Skip
+    And the App Store already pays for her
     And she passes every other question she may pass, and taps Save and start
     Then the home screen greets her by the name she typed
 
@@ -1092,6 +1102,7 @@ Feature: She opens Emi and logs her first period
   Scenario: SCREEN-1, the window her three periods forecast has passed, and her first forecast says her period is late
     Given today is two days after the window that three periods 28 days apart, the newest on the 18th of September, forecast
     When she opens Emi
+    And the App Store already pays for her
     And she reaches the step that asks for her last three periods
     And she gives those three periods, each 5 days long
     And she answers the rest of the questions

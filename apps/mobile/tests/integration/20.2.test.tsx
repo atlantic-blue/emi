@@ -24,6 +24,7 @@ import { todayTestID } from '../../src/features/onboarding/Today';
 import { whatEmiDoesActionTestID } from '../../src/features/onboarding/WhatEmiDoesWithIt';
 import { type TodaySymptom, defaultCycleLengthDays } from '../../src/features/onboarding/firstRun';
 import { openDatabaseSync, resetExpoSqlite } from '../data/expoSqlite';
+import { theAppStoreIsPayingForHer } from '../fixtures/theSubscription';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { theProfileVaultOnHerPhone, theVaultOnHerPhone } from '../fixtures/herVault';
 import { sheTapsSaveAndStart } from '../fixtures/theSave';
@@ -131,6 +132,7 @@ describe('the way past the last period question passes the period before with it
     resetExpoSqlite();
     resetExpoSecureStore();
     theTourIsBehindHer();
+    theAppStoreIsPayingForHer(herDatabase(), whenSheOpensIt);
   });
 
   afterEach(() => {

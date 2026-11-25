@@ -43,6 +43,7 @@ import {
   setItemAsync,
   theKeychainRefusesToRemove,
 } from '../fixtures/expoSecureStore';
+import { theAppStoreIsPayingForHer } from '../fixtures/theSubscription';
 import { aBleedingDay, dayOf, herDatabase, herPhoneHolds } from '../fixtures/herPhone';
 import { herProfileVault, theVaultOnHerPhone } from '../fixtures/herVault';
 import { textIn, visibleTextIn } from '../fixtures/renderedText';
@@ -305,6 +306,9 @@ describe('after deleting, the database and the keychain are both empty', () => {
 
     it('takes her the whole way through the first run and opens the day she wrote', async () => {
       await shePresses(startAgainTestID);
+      // The delete emptied every table, the row the launch read wrote with them, so the state is
+      // held again here. In life the store still pays for her and the next launch reads it back.
+      theAppStoreIsPayingForHer(herDatabase(), whenSheOpensIt);
 
       await sheAnswersEveryQuestion({
         periodStartedOn: addDays(today, -2),

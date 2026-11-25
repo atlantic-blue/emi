@@ -28,6 +28,7 @@ import {
   theRemindersOnThePhone,
   timesThePhoneAsked,
 } from '../../fixtures/expoNotifications';
+import { theAppStoreIsPayingForHer } from '../../fixtures/theSubscription';
 import { resetExpoSecureStore } from '../../fixtures/expoSecureStore';
 import { herDatabase } from '../../fixtures/herPhone';
 import { sheAnswersEveryQuestion, sheReadsWhatEmiDoesWithIt } from '../../fixtures/theFirstRun';
@@ -74,6 +75,9 @@ function theMomentSheWasPromised(daysBefore: number): Date {
 async function sheFinishesTheFirstRun(): Promise<void> {
   await fireEvent.press(await screen.findByTestId(firstForecastActionTestID));
   await sheReadsWhatEmiDoesWithIt();
+  // The reminder is worked out on the home screen, so the walk has to reach it. The App Store
+  // pays for her, which is what sends the hold home rather than to the paywall.
+  theAppStoreIsPayingForHer(herDatabase(), whenSheOpensIt);
   await sheTapsSaveAndStart();
 }
 
@@ -235,6 +239,9 @@ describe('the reminder, after the first day she logs', () => {
         cycleLengthDays: herCycleLengthDays,
         reminder: 'twoDaysBefore',
       });
+      // The reminder is worked out on the home screen, so the walk has to reach it. The App Store
+      // pays for her, which is what sends the hold home rather than to the paywall.
+      theAppStoreIsPayingForHer(herDatabase(), whenSheOpensIt);
       await sheTapsSaveAndStart();
 
       expect(readSetting(herDatabase(), 'reminderLead')).toBe('twoDaysBefore');

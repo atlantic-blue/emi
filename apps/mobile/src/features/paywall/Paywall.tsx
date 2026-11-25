@@ -40,16 +40,16 @@ import {
  * full renewal price, how long the free month lasts and what is taken when it ends, a way to
  * restore a purchase, and a press to the terms and to the privacy policy.
  *
- * Nothing routes to this screen yet. The step that puts it at the end of the first run is the one
- * that gives it an address.
+ * It is the last screen of the first run, reached once her answers are written, and a purchase or
+ * a restore is the only way off it.
  */
 
 /**
  * What the route that draws this screen has to give the navigator.
  *
  * A swipe back is the navigator's to refuse and not the screen's, so the screen cannot close
- * that way out on its own. It names what it needs instead, and the step that gives the paywall an
- * address passes this through. The hardware back is refused below, where the screen can answer it.
+ * that way out on its own. It names what it needs instead, and the layout of the first run passes
+ * this through. The hardware back is refused below, where the screen can answer it.
  */
 export const theOptionsThePaywallNeeds = {
   gestureEnabled: false,

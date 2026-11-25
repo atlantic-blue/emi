@@ -16,6 +16,7 @@ import { logSymptomsSaveTestID, theGroupsOpened } from '../../src/features/log/L
 import { symptomGroupTestID } from '../../src/features/log/SymptomGroup';
 import { painGroup, symptomsAskedBy } from '../../src/features/log/askedGroup';
 import { resetExpoSqlite } from '../data/expoSqlite';
+import { theAppStoreIsPayingForHer } from '../fixtures/theSubscription';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { aBleedingDay, dayOf, herDatabase, herPhoneHolds } from '../fixtures/herPhone';
 import { herVault } from '../fixtures/herVault';
@@ -146,6 +147,7 @@ describe('she opens the log tab and her groups come first', () => {
   describe('the groups under the flow picker', () => {
     beforeEach(() => {
       theTourIsBehindHer();
+      theAppStoreIsPayingForHer(herDatabase(), whenSheOpensIt);
     });
 
     it('come in the order she tapped them on the focus screen', async () => {

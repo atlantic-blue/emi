@@ -48,6 +48,7 @@ import {
   controlsSizedByTheirRow as sizedByTheirRow,
   controlsTooSmallToPress as tooSmallToPress,
 } from '../fixtures/tapTargets';
+import { theAppStoreIsPayingForHer } from '../fixtures/theSubscription';
 import { theProfileVaultOnHerPhone, theVaultOnHerPhone } from '../fixtures/herVault';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { sheAnswersEveryQuestion } from '../fixtures/theFirstRun';
@@ -336,6 +337,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
     resetExpoSqlite();
     resetExpoSecureStore();
     theTourIsBehindHer();
+    theAppStoreIsPayingForHer(herDatabase(), whenSheOpensIt);
     // The hold draws a ring, and a ring asks the phone about motion before it draws anything.
     jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(false);
   });
@@ -501,7 +503,11 @@ describe('the first run ends on the home screen with her period recorded', () =>
       // question rather than asking one of its own, so it is named here and counted apart.
       const opensFromAQuestion = ['all-symptoms.tsx'];
 
-      for (const name of [...asksHerNothing, ...opensFromAQuestion]) {
+      // The screen at the end that sells Emi. It asks her for money rather than for an answer, so
+      // it is named on its own and counted apart as well.
+      const sellsEmi = ['paywall.tsx'];
+
+      for (const name of [...asksHerNothing, ...opensFromAQuestion, ...sellsEmi]) {
         expect(held).toContain(name);
       }
 
@@ -510,7 +516,8 @@ describe('the first run ends on the home screen with her period recorded', () =>
           (name) =>
             !name.startsWith('_') &&
             !asksHerNothing.includes(name) &&
-            !opensFromAQuestion.includes(name),
+            !opensFromAQuestion.includes(name) &&
+            !sellsEmi.includes(name),
         ),
       ).toEqual([
         'cycle-length.tsx',
@@ -527,7 +534,11 @@ describe('the first run ends on the home screen with her period recorded', () =>
         'year-of-birth.tsx',
       ]);
       expect(held).toHaveLength(
-        firstRunScreens.length + asksHerNothing.length + opensFromAQuestion.length + 1,
+        firstRunScreens.length +
+          asksHerNothing.length +
+          opensFromAQuestion.length +
+          sellsEmi.length +
+          1,
       );
       expect(held.filter((name) => name.startsWith('_'))).toEqual(['_layout.tsx']);
     });
