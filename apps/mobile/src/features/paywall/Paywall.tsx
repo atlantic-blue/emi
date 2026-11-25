@@ -7,6 +7,10 @@ import { PrimaryButton, TextLink } from '../../components/Button';
 import { Card } from '../../components/Card';
 import { Screen } from '../../components/Screen';
 import type { HoldsTheAnswer } from '../../services/store/theAnswerThePhoneHolds';
+import {
+  type FilesWhatTheStoreNamed,
+  filesNothing,
+} from '../../services/store/theEntitlementWhenSheOpens';
 import type { WhatSheIsEntitledToNow } from '../../services/store/theEntitlement';
 import type { APlanInTheStore } from '../../services/store/thePlans';
 import {
@@ -88,6 +92,7 @@ export function Paywall({
   buying,
   holding,
   now,
+  files = filesNothing,
   onPaid,
   openThePage,
 }: {
@@ -96,6 +101,11 @@ export function Paywall({
   readonly buying: BuysInTheStore;
   readonly holding: HoldsTheAnswer;
   readonly now: () => Date;
+  /**
+   * How a transaction reaches the server, which is the same route the launch read files with.
+   * A build with nothing to file with files nothing.
+   */
+  readonly files?: FilesWhatTheStoreNamed;
   /** Where she goes once the store says she is paid up, which is out of this screen. */
   readonly onPaid: (entitlement: WhatSheIsEntitledToNow) => void;
   readonly openThePage: (address: string) => void;
@@ -185,7 +195,7 @@ export function Paywall({
                 isReady={!isAsking}
                 label={theActionFor(row.which, row.plan.priceInWords)}
                 onPress={() => {
-                  void ask(() => sheBuys(row.plan.product.identifier, buying, holding, now));
+                  void ask(() => sheBuys(row.plan.product.identifier, buying, holding, now, files));
                 }}
                 testID={paywallActionTestID}
               />
@@ -199,7 +209,7 @@ export function Paywall({
             isReady={!isAsking}
             label={said.restore}
             onPress={() => {
-              void ask(() => sheRestores(buying, holding, now));
+              void ask(() => sheRestores(buying, holding, now, files));
             }}
             testID={paywallRestoreTestID}
           />

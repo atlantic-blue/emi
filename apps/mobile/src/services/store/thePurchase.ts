@@ -7,7 +7,11 @@ import type {
 } from './theEntitlement';
 import { theStatesSheCanBeIn } from './theEntitlement';
 import { theStatesAWriteIsRefusedIn } from './theWriteGate';
-import { theEntitlementWhenSheOpens } from './theEntitlementWhenSheOpens';
+import {
+  type FilesWhatTheStoreNamed,
+  filesNothing,
+  theEntitlementWhenSheOpens,
+} from './theEntitlementWhenSheOpens';
 
 /**
  * Contract PAY-2. She presses a plan, and this is everything between the press and the state the
@@ -94,8 +98,9 @@ async function theAnswerAfterwards(
   using: BuysInTheStore,
   holding: HoldsTheAnswer,
   now: () => Date,
+  files: FilesWhatTheStoreNamed,
 ): Promise<WhereThePressLeftHer> {
-  const read = await theEntitlementWhenSheOpens(using, holding, now);
+  const read = await theEntitlementWhenSheOpens(using, holding, now, files);
 
   return { did: 'itAnswered', entitlement: read.entitlement };
 }
@@ -115,6 +120,7 @@ export async function sheBuys(
   using: BuysInTheStore,
   holding: HoldsTheAnswer,
   now: () => Date,
+  files: FilesWhatTheStoreNamed = filesNothing,
 ): Promise<WhereThePressLeftHer> {
   try {
     await using.open();
@@ -126,7 +132,7 @@ export async function sheBuys(
     return { did: whatTheStoreDidWith(raised), entitlement: null };
   }
 
-  return theAnswerAfterwards(using, holding, now);
+  return theAnswerAfterwards(using, holding, now, files);
 }
 
 /**
@@ -140,6 +146,7 @@ export async function sheRestores(
   using: BuysInTheStore,
   holding: HoldsTheAnswer,
   now: () => Date,
+  files: FilesWhatTheStoreNamed = filesNothing,
 ): Promise<WhereThePressLeftHer> {
   try {
     await using.open();
@@ -148,5 +155,5 @@ export async function sheRestores(
     return { did: whatTheStoreDidWith(raised), entitlement: null };
   }
 
-  return theAnswerAfterwards(using, holding, now);
+  return theAnswerAfterwards(using, holding, now, files);
 }

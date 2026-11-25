@@ -39,6 +39,8 @@ import {
   theStatesThatLetHerIn,
 } from '../../src/services/store/thePurchase';
 import { theStatesAWriteIsRefusedIn } from '../../src/services/store/theWriteGate';
+import type { FilesWhatTheStoreNamed } from '../../src/services/store/theEntitlementWhenSheOpens';
+import type { WhatTheStoreSaysAboutATransaction } from '../../src/services/store/theEntitlement';
 import { openTestDatabase } from '../data/nodeDatabase';
 import { resetExpoSqlite } from '../data/expoSqlite';
 import {
@@ -100,6 +102,8 @@ interface Opened {
   readonly database: Database;
   readonly paid: WhatSheIsEntitledToNow[];
   readonly opened: string[];
+  /** Every list of transactions the screen handed to the filing, in the order it handed them. */
+  readonly filed: (readonly WhatTheStoreSaysAboutATransaction[])[];
 }
 
 /** The phone she holds, and the language she reads Emi in. */
@@ -122,6 +126,12 @@ async function sheOpensThePaywall(language: Language = 'en'): Promise<Opened> {
   const database = migrated();
   const paid: WhatSheIsEntitledToNow[] = [];
   const opened: string[] = [];
+  const filed: (readonly WhatTheStoreSaysAboutATransaction[])[] = [];
+  const files: FilesWhatTheStoreNamed = (these) => {
+    filed.push(these);
+
+    return Promise.resolve();
+  };
 
   opens += 1;
 
@@ -129,6 +139,7 @@ async function sheOpensThePaywall(language: Language = 'en'): Promise<Opened> {
     <OnAPhone>
       <Paywall
         buying={theStoreOnThisPhone}
+        files={files}
         holding={theSettingTableHolds(database)}
         key={opens}
         now={now}
@@ -145,7 +156,7 @@ async function sheOpensThePaywall(language: Language = 'en'): Promise<Opened> {
     await theGlass.rerender(element);
   }
 
-  return { database, opened, paid };
+  return { database, filed, opened, paid };
 }
 
 async function shePresses(testID: string): Promise<void> {
@@ -479,6 +490,18 @@ describe('the paywall', () => {
       expect(thePressesOnTheStore()).toEqual([
         { request: { apple: { sku: theMonthlyPlan.identifier } }, type: 'subs' },
       ]);
+    });
+
+    it('files what the store named, so the server hears about the purchase she just made', async () => {
+      theStoreSells(aYearSheJustBought());
+      theStoreHoldsTheseTransactions([aYearSheJustBought()]);
+
+      const { filed } = await sheOpensThePaywall();
+
+      await shePresses(paywallActionTestID);
+
+      expect(filed).toHaveLength(1);
+      expect(filed[0]?.map((one) => one.originalTransactionIdentifier)).toEqual(['the-first-one']);
     });
   });
 
