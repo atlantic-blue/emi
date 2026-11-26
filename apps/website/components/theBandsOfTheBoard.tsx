@@ -6,7 +6,12 @@ import { CarouselsProvider } from '@/components/carousels';
 import { type Founder, FounderNote } from '@/components/founderNote';
 import { NextPeriodWindow } from '@/components/nextPeriodWindow';
 import { type Review, ReviewRow } from '@/components/reviewRow';
-import { JULIANS_PHOTOGRAPH, THE_APP_STORE_LISTING, THE_EMI_COMMUNITY } from '@/lib/addresses';
+import {
+  IULIIAS_PHOTOGRAPH,
+  JULIANS_PHOTOGRAPH,
+  THE_APP_STORE_LISTING,
+  THE_EMI_COMMUNITY,
+} from '@/lib/addresses';
 import { asADayNumber, theDayOf } from '@/lib/theNextPeriodRange';
 import { theCardsOf, theRealReviews } from '@/lib/theReviews';
 
@@ -111,12 +116,14 @@ export function TheStorePress({ words, onNight }: { words: SiteWords; onNight?: 
  * The two people building Emi, in the board's order. A name is a name in every language, so the
  * names, the initials and the photographs are here and only the roles and the notes are words.
  *
- * One of the two has sent a photograph. The other is drawn as her initials until she sends hers.
+ * Both of them have sent a photograph. The initials stay beside each one, because the badge draws
+ * them wherever a photograph is missing.
  */
 export function theFoundersOf(words: SiteWords): Founder[] {
   return [
     {
       initials: 'IN',
+      photograph: IULIIAS_PHOTOGRAPH,
       name: 'Iuliia Nikolaeva',
       role: words.founderIuliiaRole,
       note: words.founderIuliiaNote,

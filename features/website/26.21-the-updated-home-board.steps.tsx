@@ -8,7 +8,7 @@ import { websiteFace, websiteFaceStack } from '@emi/tokens';
 
 import HomePage from '../../apps/website/app/[lang]/page';
 import { type Language, languages, wordsIn } from '../../apps/website/app/words';
-import { JULIANS_PHOTOGRAPH } from '../../apps/website/lib/addresses';
+import { IULIIAS_PHOTOGRAPH, JULIANS_PHOTOGRAPH } from '../../apps/website/lib/addresses';
 import { amountsOfMoneyIn, theAmountOf } from '../../apps/website/lib/theOnePrice';
 import { theRealReviews } from '../../apps/website/lib/theReviews';
 import { classesIn, declarationsOf, stylesheetFor } from '../../apps/website/test/stylesheet';
@@ -226,10 +226,10 @@ defineFeature(feature, (test) => {
         expect(page).not.toContain('Julian Tellez');
         expect(page).not.toContain(words.founderJulianNote);
 
-        // Two dots, because there are two of them, and a round badge of initials for the one of
-        // them who has not sent a photograph. His stands in that circle instead, and it is behind
-        // the press with the rest of him.
-        expect(page).toContain('>IN<');
+        // Two dots, because there are two of them, and her face in the round badge beside her
+        // name. His stands in that same circle, behind the press with the rest of him.
+        expect(page).toContain(IULIIAS_PHOTOGRAPH);
+        expect(page).not.toContain('>IN<');
         expect(page).not.toContain(JULIANS_PHOTOGRAPH);
         expect(page).toContain(words.noteEyebrow);
       }

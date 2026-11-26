@@ -89,11 +89,15 @@ export function theSupportAddress(): string {
 }
 
 /**
- * The photograph of one of the two people building Emi, served beside the pages. The other is
- * drawn as her initials until she sends one, so this is one name and not a list.
+ * The photographs of the two people building Emi, served beside the pages.
  *
- * It is not a word of a catalogue: a face reads the same in every language. It is held here
- * because the distribution is told each file under `public` by name, and a test reads the file
- * under this name to prove the page does not point at one that is not there.
+ * Neither is a word of a catalogue: a face reads the same in every language. They are held here
+ * because the distribution is told each file under `public` by name, and a test reads each file
+ * under these names to prove the page does not point at one that is not there.
+ *
+ * A photograph of a person carries where and when it was taken unless somebody takes that out, so
+ * the case that reads these files reads what they say about themselves as well.
  */
+export const IULIIAS_PHOTOGRAPH = '/iuliia-nikolaeva.jpg';
+
 export const JULIANS_PHOTOGRAPH = '/julian-tellez.jpg';
