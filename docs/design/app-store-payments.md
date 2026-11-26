@@ -655,9 +655,10 @@ The yearly plan is sold in both places, so the condition holds. The two prices n
 the host of the website, the word Stars, and any amount of money that is not one of the three
 product prices. A run holds the rule, not a memory.
 
-The word Stars stays on that list even though no route sells in Stars now. The website privacy
-policy still names it, and a screen that learned the word from there would be a screen naming a way
-to pay that Apple does not allow it to name.
+The word Stars stays on that list because the website sells one year in Stars, and nothing inside
+the application sells in Stars. The website privacy policy still names it, and a screen that
+learned the word from there would be a screen naming a way to pay that Apple does not allow it to
+name.
 
 ## 10. Which library the application uses
 
