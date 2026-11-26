@@ -20,10 +20,11 @@ export interface DeployedFunction {
 export const projectName = 'emi';
 
 /**
- * The ten functions of the account. Three answer the vault, four carry the sign in with Telegram,
- * which is the function that answers a code and the three triggers the pool calls, and three carry
- * the money: one answers the press on Buy Emi, one answers the deliveries of Stripe, and one
- * answers the notifications of the App Store.
+ * The twelve functions of the account. Three answer the vault, four carry the sign in with
+ * Telegram, which is the function that answers a code and the three triggers the pool calls, and
+ * five carry the money: one answers the press on Buy Emi, one answers the deliveries of Stripe,
+ * one answers the notifications of the App Store, one makes an invoice link for Telegram Stars,
+ * and one answers an update of the Emi bot.
  */
 export const deployedFunctions: readonly DeployedFunction[] = [
   {
@@ -76,6 +77,16 @@ export const deployedFunctions: readonly DeployedFunction[] = [
     entryPoint: 'services/vault/src/functions/storeNotifications.ts',
     resource: 'aws_lambda_function.store_notifications',
   },
+  {
+    name: `${projectName}-payments-stars-invoice`,
+    entryPoint: 'services/vault/src/functions/starsInvoice.ts',
+    resource: 'aws_lambda_function.payments_stars_invoice',
+  },
+  {
+    name: `${projectName}-telegram-updates`,
+    entryPoint: 'services/vault/src/functions/telegramUpdates.ts',
+    resource: 'aws_lambda_function.telegram_updates',
+  },
 ];
 
 /**
@@ -122,5 +133,7 @@ export const uploadOrder: readonly string[] = [
   `${projectName}-payments-subscription`,
   `${projectName}-payments-webhook`,
   `${projectName}-store-notifications`,
+  `${projectName}-payments-stars-invoice`,
+  `${projectName}-telegram-updates`,
   `${projectName}-vault`,
 ];

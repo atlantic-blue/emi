@@ -238,6 +238,18 @@ data "aws_iam_policy_document" "plan" {
     resources = ["arn:aws:ssm:${var.region}:${var.account_id}:parameter/${var.project_name}/accounts/*"]
   }
 
+  # The secret of the webhook of the bot, which this root creates rather than a person. A plan
+  # reads it to say whether it still stands as the state holds it, and writes nothing.
+  statement {
+    sid    = "ReadTheBotWebhookSecret"
+    effect = "Allow"
+    actions = [
+      "ssm:GetParameter",
+      "ssm:ListTagsForResource",
+    ]
+    resources = ["arn:aws:ssm:${var.region}:${var.account_id}:parameter/${var.project_name}/payments/telegram/webhook-secret"]
+  }
+
   # Two of the six are secure strings under aws/ssm, the key the parameter store makes for this
   # account, whose identifier the service generates. The condition is what narrows this grant: the
   # role may decrypt only through a parameter store call, so it opens nothing the statement above
@@ -695,13 +707,34 @@ data "aws_iam_policy_document" "apply" {
   }
 
   # The six credentials, read at the scope the plan role reads them at and with the same condition
-  # on the key. A merge reads them and writes none of them: no statement here carries
-  # ssm:PutParameter.
+  # on the key. A merge reads them and writes none of them: no statement here writes a parameter
+  # under the accounts prefix, so nothing in the pipeline can replace a credential a person wrote
+  # or take one away.
   statement {
     sid       = "ReadTheProviderKeys"
     effect    = "Allow"
     actions   = ["ssm:GetParameter"]
     resources = ["arn:aws:ssm:${var.region}:${var.account_id}:parameter/${var.project_name}/accounts/*"]
+  }
+
+  # The one parameter a merge writes, named in full: the secret of the webhook of the bot. Nothing
+  # of hers is in it, no person ever reads it, and the same job reads it back to register the
+  # webhook with Telegram. There is no delete here, so an apply cannot take it away.
+  #
+  # The two tag calls are there because every resource of this root carries the project tags, and
+  # the parameter store tags a parameter through calls of its own rather than through the write.
+  statement {
+    sid    = "WriteTheBotWebhookSecret"
+    effect = "Allow"
+    actions = [
+      "ssm:PutParameter",
+      "ssm:GetParameter",
+      "ssm:AddTagsToResource",
+      "ssm:ListTagsForResource",
+    ]
+    resources = [
+      "arn:aws:ssm:${var.region}:${var.account_id}:parameter/${var.project_name}/payments/telegram/webhook-secret",
+    ]
   }
 
   statement {

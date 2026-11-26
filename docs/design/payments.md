@@ -43,7 +43,8 @@ The operator made each one. Do not argue with them here.
 4. Telegram Stars is dropped. The operator decided that on 23 November 2026, and this document no
    longer designs it. Nothing of it was built. The Stripe route is the only route this document
    carries. Signing in with Telegram is a different thing and it stays, because it is built and
-   `docs/design/accounts.md` holds it.
+   `docs/design/accounts.md` holds it. On 26 November 2026 the operator brought the Stars route
+   back as one payment of 2250 Stars for one year, which renews nothing and carries no free month.
 5. She pays with Apple Pay, Google Pay or a card, on our own page. It is not Stripe's hosted
    Checkout page. Change card, receipts and cancel are on our account page too.
 6. The account is required to pay. She signs in on myemi.app first. Sign in with Apple, Google,

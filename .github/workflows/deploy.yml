@@ -357,7 +357,7 @@ jobs:
           # function that issues the answer they spend. This list is held in
           # tools/deploy/functions.ts as well, and the infrastructure test refuses the two the
           # moment they disagree.
-          for name in emi-authorizer emi-articles emi-sign-in-challenge-define emi-sign-in-challenge-create emi-sign-in-challenge-verify emi-sign-in-telegram emi-payments-subscription emi-payments-webhook emi-store-notifications emi-vault; do
+          for name in emi-authorizer emi-articles emi-sign-in-challenge-define emi-sign-in-challenge-create emi-sign-in-challenge-verify emi-sign-in-telegram emi-payments-subscription emi-payments-webhook emi-store-notifications emi-payments-stars-invoice emi-telegram-updates emi-vault; do
             version=$(aws lambda update-function-code \
               --function-name "${name}" \
               --zip-file "fileb://services/vault/build/${name}.zip" \
@@ -366,6 +366,28 @@ jobs:
             aws lambda wait function-updated --function-name "${name}"
             echo "${name} now runs version ${version}"
           done
+      # Telegram keeps one webhook address for each bot, so a merge tells it where the api is now.
+      # Both values are read from the parameter store and masked before anything else runs, so a
+      # later line of this job cannot print either one into a log of a public repository.
+      - name: tell the Emi bot where to send its updates
+        if: env.SHIPS == 'true' && env.ROLE != ''
+        run: |
+          set -o pipefail
+          token=$(aws ssm get-parameter \
+            --name /emi/accounts/telegram/bot-token \
+            --with-decryption \
+            --no-cli-pager \
+            --query Parameter.Value --output text)
+          echo "::add-mask::${token}"
+          secret=$(aws ssm get-parameter \
+            --name /emi/payments/telegram/webhook-secret \
+            --with-decryption \
+            --no-cli-pager \
+            --query Parameter.Value --output text)
+          echo "::add-mask::${secret}"
+          terraform -chdir=infra init -input=false -lock=false
+          EMI_BOT_TOKEN="${token}" EMI_BOT_WEBHOOK_SECRET="${secret}" \
+            npm run register:bot-webhook -- "$(terraform -chdir=infra output -raw api_endpoint)"
       # The last word on this deploy, and the only step that reads what her phone gets. A bundle
       # that fails to load answers no request at all, so the refusal is read from the live api
       # rather than from the step above reporting that it uploaded something.

@@ -248,6 +248,37 @@ export const loadChecks: Readonly<Record<string, readonly LoadCheck[]>> = {
       describes: 'a notification carrying no signature of the App Store is refused',
     },
   ],
+  // A request the token authorizer handed nothing on from is refused before the function reads the
+  // bot token or reaches the bot api, so a bundle with no account behind it owes this answer. The
+  // path is written out here, and a case of loadEachBundle.test.ts holds it to the one the handler
+  // names.
+  'emi-payments-stars-invoice': [
+    {
+      event: {
+        rawPath: '/v1/payments/stars/invoice',
+        headers: {},
+        requestContext: { http: { method: 'POST' } },
+        body: '{}',
+      },
+      owes: (answer) => fieldOf(answer, 'statusCode') === 401,
+      describes: 'a request carrying no token of the pool is refused',
+    },
+  ],
+  // A request carrying no secret header at all is refused before the function reads a parameter,
+  // reaches the bot api or parses one field of the body. So a bundle with no account behind it
+  // owes this answer, and a container that cannot read the secret still proves the bundle runs.
+  'emi-telegram-updates': [
+    {
+      event: {
+        rawPath: '/v1/telegram/updates',
+        headers: {},
+        requestContext: { http: { method: 'POST' } },
+        body: '{"update_id":1}',
+      },
+      owes: (answer) => fieldOf(answer, 'statusCode') === 401,
+      describes: 'an update carrying no secret of this bot is refused',
+    },
+  ],
   'emi-sign-in-challenge-define': [
     {
       event: { request: { session: [] }, response: {} },
