@@ -321,6 +321,63 @@ resource "aws_lambda_permission" "payments_webhook" {
   source_arn    = "${aws_apigatewayv2_api.vault.execution_arn}/*/*"
 }
 
+# The Telegram Stars route runs in two functions of its own, under the one role that reads the bot
+# token. The press on Buy with Stars stands behind the token authorizer of the pool, the same as
+# every other route a woman presses, and the updates of the bot stand behind no authorizer at all.
+resource "aws_apigatewayv2_integration" "payments_stars_invoice" {
+  api_id                 = aws_apigatewayv2_api.vault.id
+  integration_type       = "AWS_PROXY"
+  integration_uri        = aws_lambda_function.payments_stars_invoice.invoke_arn
+  payload_format_version = "2.0"
+  timeout_milliseconds   = 10000
+}
+
+# The press on Buy with Stars. It answers one invoice link for one year, made for the digest her
+# own token names, and it writes nothing at all.
+resource "aws_apigatewayv2_route" "stars_invoice" {
+  api_id             = aws_apigatewayv2_api.vault.id
+  route_key          = "POST /v1/payments/stars/invoice"
+  target             = "integrations/${aws_apigatewayv2_integration.payments_stars_invoice.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.pool_token.id
+}
+
+resource "aws_lambda_permission" "payments_stars_invoice" {
+  statement_id  = "AllowInvokeFromTheApi"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.payments_stars_invoice.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.vault.execution_arn}/*/*"
+}
+
+resource "aws_apigatewayv2_integration" "telegram_updates" {
+  api_id                 = aws_apigatewayv2_api.vault.id
+  integration_type       = "AWS_PROXY"
+  integration_uri        = aws_lambda_function.telegram_updates.invoke_arn
+  payload_format_version = "2.0"
+  timeout_milliseconds   = 10000
+}
+
+# The updates of the Emi bot. They carry no authorizer because Telegram holds no token of this
+# account: every update carries the secret of the webhook in a header instead, and the function
+# matches it against the parameter store before it reads one field of the body. A body that fails
+# the check is answered 401 and written nowhere. The functions job of the deploy registers this
+# address with Telegram.
+resource "aws_apigatewayv2_route" "telegram_updates" {
+  api_id             = aws_apigatewayv2_api.vault.id
+  route_key          = "POST /v1/telegram/updates"
+  target             = "integrations/${aws_apigatewayv2_integration.telegram_updates.id}"
+  authorization_type = "NONE"
+}
+
+resource "aws_lambda_permission" "telegram_updates" {
+  statement_id  = "AllowInvokeFromTheApi"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.telegram_updates.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.vault.execution_arn}/*/*"
+}
+
 # The notifications of the App Store run in a function of their own, under the role that reads the
 # pointer of one purchase and writes the date on one account item. The vault function cannot be
 # reached without a signature of her device key, and this one is reached by Apple, so the two are

@@ -37,7 +37,10 @@ export const apiConfiguration = 'infra/api.tf';
  * phase is read and never who is reading it. The deliveries of Stripe carry none because Stripe
  * holds no token of this account: it signs each delivery, and the function verifies that signature
  * before it reads one field of the body. The notifications of the App Store carry none for the same
- * reason, and Apple signs the whole body rather than a header of it.
+ * reason, and Apple signs the whole body rather than a header of it. The updates of the Emi bot
+ * carry none for the same reason again: Telegram holds no token of this account, every update
+ * carries the secret of the webhook in a header instead, and the function matches it against the
+ * parameter store before it reads one field of the body.
  */
 export const routesWithNoAuthorizer: readonly string[] = [
   'register',
@@ -45,6 +48,7 @@ export const routesWithNoAuthorizer: readonly string[] = [
   'read_articles',
   'stripe_events',
   'store_notifications',
+  'telegram_updates',
 ];
 
 /** The registration route, which the live read asks for a status that is not the placeholder's. */

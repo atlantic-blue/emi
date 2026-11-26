@@ -502,7 +502,7 @@ describe('the infrastructure is applied only by the pipeline', () => {
         (match) => (match[1] ? [match[1]] : []),
       );
 
-      expect(groups).toHaveLength(11);
+      expect(groups).toHaveLength(13);
       expect(new Set(groups)).toEqual(new Set(['var.log_retention_days']));
       expect(bodyOf('variable "log_retention_days"')).toContain('default     = 30');
     });
@@ -632,9 +632,13 @@ describe('the infrastructure is applied only by the pipeline', () => {
     });
 
     it('writes no parameter, so nothing in the pipeline can replace the key or remove it', () => {
+      const written = [...configuration.matchAll(/resource "aws_ssm_parameter" "([a-z_]+)"/g)].map(
+        (match) => bodyOf(`resource "aws_ssm_parameter" "${match[1] ?? ''}"`),
+      );
+
       expect(actionsIn(payments)).not.toContain('ssm:PutParameter');
       expect(actionsIn(payments)).not.toContain('ssm:DeleteParameter');
-      expect(configuration).not.toContain('resource "aws_ssm_parameter"');
+      expect(written.filter((parameter) => parameter.includes('stripe'))).toEqual([]);
     });
   });
 
@@ -1022,7 +1026,11 @@ describe('the infrastructure is applied only by the pipeline', () => {
     });
 
     it('creates the parameter nowhere, because the operator writes the key by hand', () => {
-      expect(configuration).not.toContain('resource "aws_ssm_parameter"');
+      for (const parameter of [stripeSecretKeyParameter, stripeWebhookSecretParameter]) {
+        expect(configuration).not.toContain(`name        = "${parameter}"`);
+      }
+
+      expect(configuration).not.toContain('resource "aws_ssm_parameter" "stripe');
       expect(configuration).not.toContain('data "aws_ssm_parameter" "stripe');
     });
   });
@@ -1044,6 +1052,7 @@ describe('the infrastructure is applied only by the pipeline', () => {
         'ReadTheIdentityProviders',
         'ReadTheUserPoolDomain',
         'ReadTheProviderKeys',
+        'ReadTheBotWebhookSecret',
         'DecryptAProviderKey',
         'ReadTheSender',
         'ReadTheEmailEventTopic',
@@ -1458,6 +1467,8 @@ describe('the deployed functions carry the bundle the pipeline uploads', () => {
       'emi-payments-subscription': 'payments',
       'emi-payments-webhook': 'payments',
       'emi-store-notifications': 'store_notifications',
+      'emi-payments-stars-invoice': 'stars',
+      'emi-telegram-updates': 'stars',
     };
 
     /** The role one function resource names, read out of the resource itself. */
@@ -1505,9 +1516,11 @@ describe('the deployed functions carry the bundle the pipeline uploads', () => {
         .map((held) => held.name);
 
       expect(reading.sort()).toEqual([
+        'emi-payments-stars-invoice',
         'emi-payments-subscription',
         'emi-payments-webhook',
         'emi-sign-in-telegram',
+        'emi-telegram-updates',
         'emi-vault',
       ]);
     });
@@ -1552,6 +1565,7 @@ describe('the deployed functions carry the bundle the pipeline uploads', () => {
       8: 'Eight',
       9: 'Nine',
       10: 'Ten',
+      12: 'Twelve',
     };
 
     it('names the count of deployed functions, which went stale once at two', () => {
@@ -1748,12 +1762,12 @@ describe('the deployed functions carry the bundle the pipeline uploads', () => {
       }
     });
 
-    it('leaves the sign in with Telegram carrying none, and five routes carrying none in all', () => {
+    it('leaves the sign in with Telegram carrying none, and six routes carrying none in all', () => {
       const signIn = routes.find((route) => route.resource === 'sign_in_telegram');
 
       expect(signIn?.authorizationType).toBe('NONE');
       expect(signIn?.authorizerId).toBeNull();
-      expect(routesWithNoAuthorizer).toHaveLength(5);
+      expect(routesWithNoAuthorizer).toHaveLength(6);
     });
 
     it('sends that route to the function of its own, which the api is allowed to invoke', () => {
@@ -3330,6 +3344,17 @@ describe('the keys the Telegram sign in may read, and the two roles that reach t
       statement.resources.map((resource) => resolved(configuration, resource)),
     );
 
+  /** Every parameter Terraform itself writes, read off the resources that write one. */
+  const parametersTerraformWrites = (): string[] =>
+    [...configuration.matchAll(/resource "aws_ssm_parameter" "([a-z_]+)"/g)]
+      .flatMap((match) => (match[1] === undefined ? [] : [match[1]]))
+      .map((name) =>
+        valueOf(
+          configuration,
+          pairsIn(bodyOf(`resource "aws_ssm_parameter" "${name}"`)).name ?? '',
+        ),
+      );
+
   /** Every parameter Terraform itself reads, which the salt is deliberately absent from. */
   const parametersTerraformReads = (): string[] =>
     [...configuration.matchAll(/data "aws_ssm_parameter" "([a-z_]+)"/g)]
@@ -3457,7 +3482,22 @@ describe('the keys the Telegram sign in may read, and the two roles that reach t
     });
 
     it('is written by no resource, because a salt that changed would lock every Telegram user out', () => {
-      expect(configuration).not.toContain('resource "aws_ssm_parameter"');
+      expect(parametersTerraformWrites()).not.toContain('/emi/accounts/telegram/salt');
+    });
+
+    it('writes no parameter a person wrote by hand, which is every one under the accounts prefix', () => {
+      const written = parametersTerraformWrites();
+
+      expect(written).toEqual(['/emi/payments/telegram/webhook-secret']);
+      expect(written.filter((name) => name.startsWith('/emi/accounts/'))).toEqual([]);
+    });
+
+    it('holds no value of the one parameter it does write, because a random source makes it', () => {
+      const parameter = bodyOf('resource "aws_ssm_parameter" "telegram_webhook_secret"');
+
+      expect(parameter).toContain('type        = "SecureString"');
+      expect(parameter).toContain('value       = random_password.telegram_webhook_secret.result');
+      expect(configuration).toContain('resource "random_password" "telegram_webhook_secret"');
     });
 
     it('is named in the readme as permanent, beside what the operator did in BotFather', () => {
@@ -3790,13 +3830,13 @@ describe('the api answers the preflight of the site, which is issue 433', () => 
       );
     });
 
-    it('keeps the routes that carry none at the five that are named', () => {
+    it('keeps the routes that carry none at the six that are named', () => {
       const none = readTheRoutes(repositoryRoot)
         .filter((route) => !carriesTheAuthorizer(route))
         .map((route) => route.resource);
 
       expect(none.sort()).toEqual([...routesWithNoAuthorizer].sort());
-      expect(none).toHaveLength(5);
+      expect(none).toHaveLength(6);
     });
 
     it('declares no route for the preflight, because the api answers it before a route is read', () => {

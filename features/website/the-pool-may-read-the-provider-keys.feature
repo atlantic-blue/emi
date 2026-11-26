@@ -13,6 +13,11 @@ Feature: The pipeline may read the Apple and Google keys, and a merge may use th
   and its pipeline log is public. So the six credentials stay in the parameter store of the
   account. Both roles read them. Neither role writes one.
 
+  A merge writes one parameter, and it is not a credential a person wrote. It is the secret that
+  every update of the Emi bot must carry. Terraform generates the value, no person ever reads it,
+  and the same job hands it to Telegram. The rule that holds is the narrower one: neither role may
+  write or remove a parameter under the accounts prefix.
+
   Three mistakes are easy here. No one of them fails an apply.
 
   The first mistake is a grant that stands on every resource. This account holds the parameters of
@@ -44,7 +49,7 @@ Feature: The pipeline may read the Apple and Google keys, and a merge may use th
     When the grants the sign in needs are read
     Then a pull request reads the parameters, the provider and the domain
     And it holds no write of a provider, of a domain or of a parameter
-    And neither role may write a parameter or read one outside Emi
+    And neither role may write a credential of hers or read a parameter outside Emi
 
   Scenario: each role decrypts a secure string only through a parameter store call
     Given the two roles the pipeline assumes
