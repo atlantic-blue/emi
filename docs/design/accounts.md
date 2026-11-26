@@ -1805,8 +1805,8 @@ search.
 Contracts WIRE-5 and PAY-4 are untouched. A pull, an export and a delete work whatever any of this
 says.
 
-A payment on myemi.app through Stripe, and Telegram Stars later, are two more routes to the same
-answer. `docs/design/payments.md` designs both.
+A payment on myemi.app through Stripe, and a payment in Telegram Stars, are two more routes to the
+same answer. Both are built, and each one sells one year. `docs/design/payments.md` designs both.
 
 ## The four ways in, at field level
 
