@@ -15,6 +15,7 @@ import {
   THE_FIELD_A_RENEWAL_TRAVELS_IN,
   WHERE_A_SUBSCRIPTION_IS_READ,
   theDateShape,
+  theYearIsAlmostUp,
   whatTheRenewalRowDoes,
   whichCardSheReads,
 } from '../lib/theSubscriptionSheHolds';
@@ -56,6 +57,9 @@ const words = wordsIn('en');
 const now = new Date('2026-11-16T09:00:00.000Z');
 const theYearEnds = '2027-12-16T09:00:00.000Z';
 const theYearEnded = '2026-10-01T09:00:00.000Z';
+
+/** Twenty four days after the instant the card is drawn at, which is inside the thirty. */
+const theYearEndsSoon = '2026-12-10T09:00:00.000Z';
 
 /** One call the card made, as it left the browser. */
 interface OneCall {
@@ -384,16 +388,109 @@ describe('the subscription card of her account', () => {
     });
   });
 
-  describe('a payment with no renewal to stop', () => {
-    it('refuses the press of a woman who paid with Stars, who cancels in Telegram', async () => {
-      const card = await theCardFor({ paidUntil: theYearEnds, state: 'active', route: 'stars' });
+  /**
+   * A woman who paid in Telegram Stars. She bought one year, nothing renews it, and the card she
+   * is held on is Telegram's rather than ours, so the two rows that change either are not drawn.
+   */
+  describe('a woman who paid in Telegram Stars', () => {
+    const aStarsPayment: WhatSheHolds = {
+      paidUntil: theYearEnds,
+      state: 'active',
+      route: 'stars',
+    };
 
+    it('says she paid in Stars, and where she paid', async () => {
+      const card = await theCardFor(aStarsPayment);
+
+      expect(card.text()).toContain(words.accountPaidWith);
+      expect(card.text()).toContain(words.accountPaidWithStars);
+      expect(card.text()).not.toContain(words.accountPaidWithCard);
+    });
+
+    it('says the day she is paid until, and that nothing renews it', async () => {
+      const card = await theCardFor(aStarsPayment);
+
+      expect(card.text()).toContain(
+        words.accountStarsPaidUntil.replace('{date}', '16 December 2027'),
+      );
+      expect(card.text()).toContain(words.accountStateActive);
+      // The renewal date is the card route's line, and so is the amount in euros inside it.
+      expect(card.text()).not.toContain('Renews on');
+      expect(card.text()).not.toContain('39 euros');
+    });
+
+    it('offers her no change card and no cancel, because neither is hers to press', async () => {
+      const card = await theCardFor(aStarsPayment);
+
+      expect(card.rows().map((row) => row.textContent?.replace('›', ''))).toEqual([
+        words.accountReceipts,
+      ]);
+      expect(card.text()).not.toContain(words.accountChangeCard);
+      expect(card.text()).not.toContain(words.accountCancelRenewal);
+      expect(card.text()).not.toContain(words.accountTurnRenewalOn);
+    });
+
+    it('leaves her no press at all that could change a renewal', async () => {
+      const card = await theCardFor(aStarsPayment);
+
+      // The last row of that card is Receipts, so this presses the row the board puts a renewal
+      // on and nothing of a renewal moves.
       await card.pressesTheRenewal();
 
-      expect(card.theRenewalRow().disabled).toBe(true);
+      expect(card.theRenewalRow().textContent).toContain(words.accountReceipts);
       expect(card.calls.filter((call) => call.method === 'PATCH')).toEqual([]);
     });
 
+    it('offers her nothing to buy while the year she paid for has months left', async () => {
+      const card = await theCardFor(aStarsPayment);
+
+      expect(card.text()).not.toContain(words.accountBuyAnotherYear);
+      expect(card.text()).not.toContain(words.accountBuyEmi);
+    });
+
+    it('offers her another year once the day she paid until is close', async () => {
+      const card = await theCardFor({ ...aStarsPayment, paidUntil: theYearEndsSoon });
+
+      expect(card.text()).toContain(words.accountBuyAnotherYear);
+      expect(card.holder.querySelector('a[href]')?.getAttribute('href')).toBe('/en/checkout/');
+    });
+
+    it('offers that to nobody who pays by card, because a card renews on its own', async () => {
+      const card = await theCardFor({ ...anActivePayment, paidUntil: theYearEndsSoon });
+
+      expect(card.text()).not.toContain(words.accountBuyAnotherYear);
+      expect(card.text()).toContain(words.accountCancelRenewal);
+    });
+
+    it.each(languages)('says both of those in %s', async (language) => {
+      const said = wordsIn(language);
+      const card = await theCardFor({ ...aStarsPayment, paidUntil: theYearEndsSoon }, { language });
+
+      expect(card.text()).toContain(said.accountPaidWithStars);
+      expect(card.text()).toContain(said.accountBuyAnotherYear);
+    });
+  });
+
+  describe('the day she is paid until coming close', () => {
+    it.each([
+      ['two days before it as almost up', true, '2026-11-18T09:00:00.000Z'],
+      ['the minute inside the thirty days as almost up', true, '2026-12-16T08:59:00.000Z'],
+      ['the minute outside the thirty days as not almost up', false, '2026-12-16T09:01:00.000Z'],
+      ['the thirtieth day itself as not almost up', false, '2026-12-16T09:00:00.000Z'],
+      ['a year away as not almost up', false, theYearEnds],
+      ['a day that has passed as not almost up', false, theYearEnded],
+    ] as const)('reads %s', (_said, almost, paidUntil) => {
+      expect(theYearIsAlmostUp({ paidUntil, state: 'active', route: 'stars' }, now)).toBe(almost);
+    });
+
+    it('reads a woman the route said nothing about as a year that is not almost up', () => {
+      expect(theYearIsAlmostUp(null, now)).toBe(false);
+      expect(theYearIsAlmostUp({ state: 'active', route: 'stars' }, now)).toBe(false);
+      expect(theYearIsAlmostUp({ paidUntil: 'the day after', route: 'stars' }, now)).toBe(false);
+    });
+  });
+
+  describe('a payment with no renewal to stop', () => {
     it('refuses the press of a payment that lapsed, which has no renewal left', async () => {
       const card = await theCardFor({ paidUntil: theYearEnds, state: 'lapsed', route: 'card' });
 
