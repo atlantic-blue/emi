@@ -857,3 +857,184 @@ resource "aws_lambda_function" "store_notifications" {
     ignore_changes = [filename, source_code_hash]
   }
 }
+
+# ── The Telegram Stars route ─────────────────────────────────────────────────
+#
+# One role for the two functions that sell a year in Stars. It reaches the same partition prefix
+# of the vault table as the card route and no account partition at all, and it is the only role in
+# Emi that reads the bot token: that token is the one credential that can act as the Emi bot, so
+# the payments role and the sign in role are both kept away from it.
+
+resource "aws_iam_role" "stars" {
+  name               = "${var.project_name}-stars"
+  assume_role_policy = data.aws_iam_policy_document.lambda_trust.json
+}
+
+data "aws_iam_policy_document" "stars" {
+  statement {
+    sid    = "WriteItsOwnLogs"
+    effect = "Allow"
+    actions = [
+      "logs:CreateLogStream",
+      "logs:PutLogEvents",
+    ]
+    resources = [
+      "arn:aws:logs:${var.region}:${var.account_id}:log-group:/aws/lambda/${var.project_name}-payments-stars-invoice:*",
+      "arn:aws:logs:${var.region}:${var.account_id}:log-group:/aws/lambda/${var.project_name}-telegram-updates:*",
+    ]
+  }
+
+  # One item, by its whole key, under a partition that opens with PAY#. The two conditions are the
+  # same pair the payments role carries: a ForAllValues test is true when the request names no key
+  # at all, which a scan does not, so the Null condition beside it refuses that request.
+  statement {
+    sid    = "ReadAndWriteOnePaymentPartition"
+    effect = "Allow"
+    actions = [
+      "dynamodb:GetItem",
+      "dynamodb:UpdateItem",
+    ]
+    resources = [aws_dynamodb_table.vault.arn]
+
+    condition {
+      test     = "ForAllValues:StringLike"
+      variable = "dynamodb:LeadingKeys"
+      values   = ["PAY#*"]
+    }
+
+    condition {
+      test     = "Null"
+      variable = "dynamodb:LeadingKeys"
+      values   = ["false"]
+    }
+  }
+
+  # Two parameters, each named in full. The bot token a person wrote, and the secret of the webhook
+  # that this root creates. A prefix would reach every parameter of this product.
+  statement {
+    sid     = "ReadTheBotTokenAndTheWebhookSecret"
+    effect  = "Allow"
+    actions = ["ssm:GetParameter"]
+    resources = [
+      "arn:aws:ssm:${var.region}:${var.account_id}:parameter/${var.project_name}/accounts/telegram/bot-token",
+      "arn:aws:ssm:${var.region}:${var.account_id}:parameter/${var.project_name}/payments/telegram/webhook-secret",
+    ]
+  }
+
+  statement {
+    sid       = "DecryptASecureString"
+    effect    = "Allow"
+    actions   = ["kms:Decrypt"]
+    resources = ["arn:aws:kms:${var.region}:${var.account_id}:key/*"]
+
+    condition {
+      test     = "StringEquals"
+      variable = "kms:ViaService"
+      values   = ["ssm.${var.region}.amazonaws.com"]
+    }
+  }
+}
+
+resource "aws_iam_role_policy" "stars" {
+  name   = "${var.project_name}-stars"
+  role   = aws_iam_role.stars.id
+  policy = data.aws_iam_policy_document.stars.json
+}
+
+# The secret every update of the bot must present. It is the one secret of Emi that this root
+# creates rather than a person: no value of hers is in it, it names nothing, and the deploy that
+# registers the webhook reads it back and hands it to Telegram in the same job.
+#
+# A new value here costs one registration, which the same job makes, so this parameter can be
+# replaced at any time. That is why it is generated and the bot token is not.
+resource "random_password" "telegram_webhook_secret" {
+  length = 48
+  # Telegram allows the characters below in this header and refuses the rest.
+  override_special = "_-"
+  special          = true
+  upper            = true
+  lower            = true
+  numeric          = true
+}
+
+resource "aws_ssm_parameter" "telegram_webhook_secret" {
+  name        = "/${var.project_name}/payments/telegram/webhook-secret"
+  description = "The secret an update of the Emi bot carries. Generated, never written by hand"
+  type        = "SecureString"
+  value       = random_password.telegram_webhook_secret.result
+}
+
+# The function that answers the press on Buy with Stars. It makes one invoice link and writes
+# nothing: the payment itself arrives as an update of the bot. Its environment carries the table
+# and the pool, and no secret of any kind.
+
+resource "aws_cloudwatch_log_group" "payments_stars_invoice" {
+  name              = "/aws/lambda/${var.project_name}-payments-stars-invoice"
+  retention_in_days = var.log_retention_days
+}
+
+resource "aws_lambda_function" "payments_stars_invoice" {
+  function_name = "${var.project_name}-payments-stars-invoice"
+  role          = aws_iam_role.stars.arn
+  runtime       = "nodejs22.x"
+  architectures = ["arm64"]
+  handler       = "index.handler"
+  memory_size   = 512
+  # It reads one parameter, one item and one method of the bot api, so it waits on a service of
+  # somebody else twice.
+  timeout = 10
+
+  filename         = data.archive_file.vault_placeholder.output_path
+  source_code_hash = data.archive_file.vault_placeholder.output_base64sha256
+
+  environment {
+    variables = {
+      EMI_VAULT_TABLE      = aws_dynamodb_table.vault.name
+      EMI_ACCOUNTS_POOL_ID = aws_cognito_user_pool.accounts.id
+    }
+  }
+
+  depends_on = [aws_cloudwatch_log_group.payments_stars_invoice]
+
+  # The functions job of .github/workflows/deploy.yml uploads the bundle on a merge. Terraform
+  # would read that bundle as drift and put the placeholder back on the next apply, so the route
+  # in front of this function would answer from a placeholder again.
+  lifecycle {
+    ignore_changes = [filename, source_code_hash]
+  }
+}
+
+# The function that answers an update of the Emi bot. It matches the secret of the header before it
+# reads one field of the body, answers the pre checkout query, and writes the payment down.
+
+resource "aws_cloudwatch_log_group" "telegram_updates" {
+  name              = "/aws/lambda/${var.project_name}-telegram-updates"
+  retention_in_days = var.log_retention_days
+}
+
+resource "aws_lambda_function" "telegram_updates" {
+  function_name = "${var.project_name}-telegram-updates"
+  role          = aws_iam_role.stars.arn
+  runtime       = "nodejs22.x"
+  architectures = ["arm64"]
+  handler       = "index.handler"
+  memory_size   = 512
+  # Telegram cancels a payment whose pre checkout query is not answered within 10 seconds, and it
+  # sends an update again after a failure, so a timeout costs a retry rather than a payment.
+  timeout = 10
+
+  filename         = data.archive_file.vault_placeholder.output_path
+  source_code_hash = data.archive_file.vault_placeholder.output_base64sha256
+
+  environment {
+    variables = {
+      EMI_VAULT_TABLE = aws_dynamodb_table.vault.name
+    }
+  }
+
+  depends_on = [aws_cloudwatch_log_group.telegram_updates]
+
+  lifecycle {
+    ignore_changes = [filename, source_code_hash]
+  }
+}

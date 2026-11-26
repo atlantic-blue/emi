@@ -190,7 +190,19 @@ defineFeature(feature, (test) => {
     });
 
     and('Terraform creates the salt through no resource', () => {
-      expect(configuration).not.toContain('resource "aws_ssm_parameter"');
+      // Read through the helpers rather than off the text: a name carries an interpolation, and a
+      // body matched up to the first closing brace stops inside it.
+      const written = [...configuration.matchAll(/resource "aws_ssm_parameter" "([a-z_]+)"/g)]
+        .flatMap((found) => (found[1] === undefined ? [] : [found[1]]))
+        .map((name) =>
+          valueOf(
+            configuration,
+            pairsIn(bodyOf(configuration, `resource "aws_ssm_parameter" "${name}"`)).name ?? '',
+          ),
+        );
+
+      expect(written.filter((name) => name.startsWith('/emi/accounts/'))).toEqual([]);
+      expect(written).not.toContain('/emi/accounts/telegram/salt');
     });
 
     and('the readme says the salt is permanent', () => {

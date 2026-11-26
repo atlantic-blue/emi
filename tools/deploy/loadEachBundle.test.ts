@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { zipOf } from './archive';
-import { bundleFileName, type DeployedFunction } from './functions';
+import { bundleFileName, deployedFunctions, type DeployedFunction } from './functions';
 import {
   type Answered,
   containerIdIn,
@@ -58,6 +58,18 @@ import {
   thatNotificationIsNotSigned,
   type WhatTheNotificationsNeed,
 } from '../../services/vault/src/payments/storeNotifications';
+import {
+  starsInvoiceFor,
+  starsInvoicePath,
+  thatTokenBuysNothing,
+  type WhatTheInvoiceNeeds,
+} from '../../services/vault/src/payments/starsInvoice';
+import {
+  telegramUpdatesFor,
+  telegramUpdatesPath,
+  thatUpdateIsNotOurs,
+  type WhatTheUpdatesNeed,
+} from '../../services/vault/src/payments/telegramUpdates';
 import { appleRoots } from '../../services/vault/src/payments/appleRoot';
 import { createAuthChallenge } from '../../services/vault/src/triggers/createAuthChallenge';
 import { customChallengeName } from '../../services/vault/src/triggers/defineAuthChallenge';
@@ -363,6 +375,15 @@ describe('every bundle is loaded in a container of its own, and two in a row can
       expect(ran.thrown?.message).toContain(`holds no ${bundleFileName} at its root`);
     });
 
+    it('names an event for every deployed function, which is what the run above needs', () => {
+      const unchecked = deployedFunctions
+        .filter((held) => (loadChecks[held.name] ?? []).length === 0)
+        .map((held) => held.name);
+
+      expect(unchecked).toEqual([]);
+      expect(deployedFunctions.length).toBeGreaterThan(0);
+    });
+
     it('fails where a deployed function has no event that proves its bundle answers', async () => {
       const unchecked: DeployedFunction = { ...theVault, name: 'emi-nobody-checks-this' };
 
@@ -626,6 +647,70 @@ describe('every bundle is loaded in a container of its own, and two in a row can
     });
 
     it('refuses the answer a bundle that took an unsigned delivery would give', () => {
+      expect(check?.owes({ statusCode: 200, body: '{"written":true}' })).toBe(false);
+    });
+  });
+
+  describe('the refusal an invoice bundle owes', () => {
+    const [check] = loadChecks['emi-payments-stars-invoice'] ?? [];
+
+    /** Every port it needs, each one raising, so a call that happens is a failure here. */
+    const nothingItMayReach = (): WhatTheInvoiceNeeds => ({
+      entitlements: { readEntitlement: () => Promise.reject(new Error('the table was read')) },
+      reaches: () => Promise.reject(new Error('the bot api was called')),
+      botToken: () => Promise.reject(new Error('the parameter store was read')),
+      poolId: 'eu-central-1_NOTAPOOL',
+      clock: () => new Date('2026-11-26T09:00:00.000Z'),
+    });
+
+    it('asks on the path the handler answers, so the two cannot drift apart', () => {
+      expect((check?.event as { rawPath?: string } | undefined)?.rawPath).toBe(starsInvoicePath);
+    });
+
+    it('takes the refusal the handler answers that press with, having read no token', async () => {
+      const answered = await starsInvoiceFor(check?.event as HttpRequestEvent, nothingItMayReach());
+
+      expect(check?.owes(answered)).toBe(true);
+      expect(JSON.parse(answered.body)).toEqual({ error: thatTokenBuysNothing });
+    });
+
+    it('refuses the answer a bundle that made an invoice for nobody would give', () => {
+      expect(
+        check?.owes({ statusCode: 200, body: '{"invoiceLink":"https://t.me/$nothing"}' }),
+      ).toBe(false);
+    });
+  });
+
+  describe('the refusal an updates bundle owes', () => {
+    const [check] = loadChecks['emi-telegram-updates'] ?? [];
+
+    /** Every port it needs, each one raising, so a call that happens is a failure here. */
+    const nothingItMayReach = (): WhatTheUpdatesNeed => ({
+      entitlements: {
+        readEntitlement: () => Promise.reject(new Error('the table was read')),
+        writeEntitlement: () => Promise.reject(new Error('the table was written')),
+      },
+      reaches: () => Promise.reject(new Error('the bot api was called')),
+      botToken: () => Promise.reject(new Error('the parameter store was read')),
+      webhookSecret: () => Promise.reject(new Error('the parameter store was read')),
+      clock: () => new Date('2026-11-26T09:00:00.000Z'),
+    });
+
+    it('asks on the path the handler answers, so the two cannot drift apart', () => {
+      expect((check?.event as { rawPath?: string } | undefined)?.rawPath).toBe(telegramUpdatesPath);
+    });
+
+    it('takes the refusal the handler answers that update with, having read no secret', async () => {
+      const answered = await telegramUpdatesFor(
+        check?.event as HttpRequestEvent,
+        nothingItMayReach(),
+      );
+
+      expect(check?.owes(answered)).toBe(true);
+      expect(JSON.parse(answered.body)).toEqual({ error: thatUpdateIsNotOurs });
+    });
+
+    it('refuses the answer a bundle that wrote a payment for nobody would give', () => {
       expect(check?.owes({ statusCode: 200, body: '{"written":true}' })).toBe(false);
     });
   });

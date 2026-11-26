@@ -70,6 +70,8 @@ const verifyTrigger = 'emi-sign-in-challenge-verify';
 const paymentsFunction = 'emi-payments-subscription';
 const webhookFunction = 'emi-payments-webhook';
 const notificationFunction = 'emi-store-notifications';
+const starsInvoiceFunction = 'emi-payments-stars-invoice';
+const updatesFunction = 'emi-telegram-updates';
 
 /** The three clients of the account this service binds, each in a package of its own. */
 const theTableClient = '@aws-sdk/client-dynamodb';
@@ -89,6 +91,8 @@ const functionsThatReachTheTable = [
   paymentsFunction,
   webhookFunction,
   notificationFunction,
+  starsInvoiceFunction,
+  updatesFunction,
 ];
 
 describe('one bundle for each deployed function, in the shape the runtime unpacks', () => {
@@ -199,15 +203,22 @@ describe('one bundle for each deployed function, in the shape the runtime unpack
       ]);
     });
 
-    it('leaves the parameter store out of every bundle but the four that read a secret', () => {
+    it('leaves the parameter store out of every bundle but the six that read a secret', () => {
       const carrying = deployedFunctions
         .filter((held) => modulesIn(held.name).some((module) => module.includes(theSecretClient)))
         .map((held) => held.name);
 
-      // The vault joins the three because a delete stops the renewal of the payment it finds, and
-      // that call needs the secret key.
+      // The vault joins them because a delete stops the renewal of the payment it finds, and that
+      // call needs the secret key. The two of the Stars route read the token of the Emi bot.
       expect(carrying.sort()).toEqual(
-        [paymentsFunction, signInFunction, vaultFunction, webhookFunction].sort(),
+        [
+          paymentsFunction,
+          signInFunction,
+          starsInvoiceFunction,
+          updatesFunction,
+          vaultFunction,
+          webhookFunction,
+        ].sort(),
       );
     });
 

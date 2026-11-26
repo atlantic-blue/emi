@@ -20,6 +20,13 @@ const repositoryRoot = join(__dirname, '..', '..');
 const vaultInfrastructure = join(repositoryRoot, 'infra');
 
 const theParameters = 'arn:aws:ssm:eu-central-1:230345688874:parameter/emi/accounts/*';
+
+/**
+ * The one parameter a merge writes. Terraform generates the value and no person ever reads it, so
+ * it is the one secret of Emi that the pipeline may replace.
+ */
+const theBotWebhookSecret =
+  'arn:aws:ssm:eu-central-1:230345688874:parameter/emi/payments/telegram/webhook-secret';
 const theKeys = 'arn:aws:kms:eu-central-1:230345688874:key/*';
 const everyPool = 'arn:aws:cognito-idp:*:230345688874:userpool/*';
 const theCertificates = 'arn:aws:acm:us-east-1:230345688874:certificate/*';
@@ -97,7 +104,7 @@ defineFeature(feature, (test) => {
     });
 
     then('a merge reads the parameters of Emi and no other parameter', () => {
-      expect(scopeOf(apply, readAParameter)).toEqual([[theParameters]]);
+      expect(scopeOf(apply, readAParameter)).toEqual([[theParameters], [theBotWebhookSecret]]);
       expect(grantedOnEveryResource(apply, readAParameter)).toBe(false);
     });
 
@@ -141,7 +148,7 @@ defineFeature(feature, (test) => {
     });
 
     then('a pull request reads the parameters, the provider and the domain', () => {
-      expect(scopeOf(plan, readAParameter)).toEqual([[theParameters]]);
+      expect(scopeOf(plan, readAParameter)).toEqual([[theParameters], [theBotWebhookSecret]]);
       expect(scopeOf(plan, readAProvider)).toEqual([[everyPool]]);
       expect(grantedOnEveryResource(plan, readADomain)).toBe(true);
     });
@@ -153,11 +160,17 @@ defineFeature(feature, (test) => {
       expect(scopeOf(plan, configureADistribution)).toEqual([]);
     });
 
-    and('neither role may write a parameter or read one outside Emi', () => {
-      for (const { statements } of bothRoles()) {
-        for (const action of parameterWrites) {
+    and('neither role may write a credential of hers or read a parameter outside Emi', () => {
+      for (const { role, statements } of bothRoles()) {
+        // A delete is refused to both roles, so nothing in the pipeline can take a parameter away.
+        for (const action of parameterWrites.filter((named) => named !== 'ssm:PutParameter')) {
           expect(scopeOf(statements, action)).toEqual([]);
         }
+
+        // The write of the one generated secret belongs to a merge, and to no pull request.
+        expect(scopeOf(statements, 'ssm:PutParameter')).toEqual(
+          role === 'apply' ? [[theBotWebhookSecret]] : [],
+        );
 
         const everyParameterGrant = statements
           .filter((statement) => statement.actions.some((action) => action.startsWith('ssm:')))
@@ -165,7 +178,11 @@ defineFeature(feature, (test) => {
             statement.resources.map((resource) => resolved(configuration, resource)),
           );
 
-        expect(everyParameterGrant).toEqual([[theParameters]]);
+        expect(everyParameterGrant).toEqual([[theParameters], [theBotWebhookSecret]]);
+
+        for (const [named] of everyParameterGrant) {
+          expect(named).toContain(':parameter/emi/');
+        }
       }
     });
   });
