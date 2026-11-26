@@ -9,7 +9,7 @@ import RootLayout from '../app/[lang]/layout';
 import HomePage from '../app/[lang]/page';
 import { type Language, type SiteWordKey, brandEyebrowOf, languages, wordsIn } from '../app/words';
 import { LANGUAGES_ANCHOR } from '../components/siteHeader';
-import { JULIANS_PHOTOGRAPH } from '../lib/addresses';
+import { IULIIAS_PHOTOGRAPH, JULIANS_PHOTOGRAPH } from '../lib/addresses';
 import { theRealReviews } from '../lib/theReviews';
 import { theStoreListingIsOpen } from '../lib/theStoreListing';
 import { amountsOfMoneyIn, theAmountOf } from '../lib/theOnePrice';
@@ -19,6 +19,49 @@ import { hostsAPageMayNotName } from './theHostsAPageMayName';
 
 /** Compiling the stylesheet takes a moment, and each case that reads it compiles its own markup. */
 const longEnoughToCompile = 60_000;
+
+/** The side of the round badge the two faces are drawn in, in the pixels the files hold. */
+const THE_SIDE_OF_A_BADGE = 192;
+
+/** Where a camera and an editor write what they know about a picture, by the segment it sits in. */
+const whatACameraWrites = ['Exif', 'http://ns.adobe.com/xap', 'Photoshop 3.0'];
+
+/**
+ * One photograph under `public`, read as the bytes it is: the size out of its own frame header,
+ * and whatever it says about where it came from.
+ *
+ * The segments are walked by their lengths rather than searched for. A profile or a thumbnail
+ * carries arbitrary bytes, so the two that open a frame can stand inside one, and a search would
+ * read the size out of the middle of a colour profile.
+ */
+function theJpegAt(address: string): {
+  readonly wide: number;
+  readonly tall: number;
+  readonly says: string[];
+} {
+  const held = readFileSync(join(__dirname, '..', 'public', address));
+  const says = whatACameraWrites.filter((written) => held.includes(Buffer.from(written)));
+  let at = 2;
+
+  while (at < held.length - 1) {
+    if (held[at] !== 0xff) {
+      throw new Error(`${address} is not a jpeg this case can read, at byte ${at}`);
+    }
+
+    const marker = held[at + 1] ?? 0;
+    const length = held.readUInt16BE(at + 2);
+
+    // Every frame header but the two that hold a table says how tall and how wide the picture is,
+    // in the four bytes after the precision.
+    if (marker >= 0xc0 && marker <= 0xcf && marker !== 0xc4 && marker !== 0xc8 && marker !== 0xcc) {
+      return { tall: held.readUInt16BE(at + 5), wide: held.readUInt16BE(at + 7), says };
+    }
+
+    at += 2 + length;
+  }
+
+  throw new Error(`${address} carries no frame, so it names no size`);
+}
 
 /**
  * The whole document she is sent, which is the page inside the layout. Next.js composes the two
@@ -326,6 +369,8 @@ describe('the page a woman meets Emi on', () => {
       expect(theNoteIn(page)).not.toContain('text-siteQuietText');
       expect(theNoteIn(page)).not.toMatch(/\[[A-Z]/);
 
+      expect(page).toContain(IULIIAS_PHOTOGRAPH);
+
       // The second founder is one press away rather than on the page she is handed, so his note,
       // his role and his photograph are not drawn until the band moves.
       expect(page).not.toContain(words.founderJulianNote);
@@ -334,13 +379,42 @@ describe('the page a woman meets Emi on', () => {
   );
 
   /**
-   * The photograph is a file the site serves, so the name the page points at and the name the
+   * Each photograph is a file the site serves, so the name the page points at and the name the
    * folder holds are read against each other. A page pointing at a file nobody committed draws an
    * empty circle, and every test that reads words would still pass.
+   *
+   * What the file says about itself is read here too. A photograph carries where and when it was
+   * taken until somebody takes that out, and this repository is public, so a founder's face that
+   * arrived straight off a telephone would publish her kitchen with it.
    */
-  it('serves the photograph the band points at', () => {
-    expect(JULIANS_PHOTOGRAPH).toBe('/julian-tellez.jpg');
-    expect(statSync(join(__dirname, '..', 'public', JULIANS_PHOTOGRAPH)).isFile()).toBe(true);
+  describe('the photographs the band points at', () => {
+    const theFaces = [
+      ['Iuliia', IULIIAS_PHOTOGRAPH, '/iuliia-nikolaeva.jpg'],
+      ['Julian', JULIANS_PHOTOGRAPH, '/julian-tellez.jpg'],
+    ] as const;
+
+    it.each(theFaces)(
+      'serves the face of %s under the name the band gives it',
+      (_who, held, named) => {
+        expect(held).toBe(named);
+        expect(statSync(join(__dirname, '..', 'public', held)).isFile()).toBe(true);
+      },
+    );
+
+    it.each(theFaces)('draws the face of %s as a square the round badge can fill', (_who, held) => {
+      const jpeg = theJpegAt(held);
+
+      expect(jpeg.wide).toBe(jpeg.tall);
+      expect(jpeg.wide).toBe(THE_SIDE_OF_A_BADGE);
+    });
+
+    it.each(theFaces)('keeps nothing of the camera of %s in the file', (_who, held) => {
+      const jpeg = theJpegAt(held);
+
+      // Exif is where a telephone writes the model, the moment and the place, and the other two
+      // are where an editor writes its own copy of all three.
+      expect(jpeg.says).toEqual([]);
+    });
   });
 
   /**

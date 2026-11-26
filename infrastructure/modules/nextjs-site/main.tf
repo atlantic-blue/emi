@@ -59,6 +59,7 @@ locals {
     "/icon-512.png",
     "/apple-touch-icon.png",
     "/share-preview.png",
+    "/iuliia-nikolaeva.jpg",
     "/julian-tellez.jpg",
   ]
 }
