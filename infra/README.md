@@ -16,6 +16,13 @@ not spread yet. So a grant ships alone and first, and the resources follow in a 
 change that adds a resource of a service the roles have never touched is two merges, in that
 order.
 
+The apply job now does that first half by itself for `infra`. It applies the policies of the two
+pipeline roles on their own, with no refresh, then waits until the account answers with the new
+grant, then applies everything. Two merges on 26 November 2026 proved why. The first wrote the
+secret of the webhook of the bot before the grant to write it existed, and the account refused it.
+The second wrote it and was then refused the read back, because reading a parameter reads its
+metadata and that call names no parameter, so a grant scoped to one path allows none of it.
+
 ## What this builds
 
 One DynamoDB table, `emi-vault`, in eu-central-1. It holds ciphertext, a revision and a write
