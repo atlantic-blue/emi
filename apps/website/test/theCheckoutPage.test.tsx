@@ -5,7 +5,7 @@ import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import CheckoutPage from '../app/[lang]/checkout/page';
-import { type Language, languages, wordsIn } from '../app/words';
+import { type Language, type SiteWords, languages, wordsIn } from '../app/words';
 import { ThePaymentForm, WHERE_THE_TERMS_ARE } from '../components/thePaymentForm';
 import { TheSignedInLine } from '../components/theSignedInLine';
 import { THE_SESSION_ENTRY } from '../lib/theSessionSheHolds';
@@ -23,6 +23,12 @@ import {
   THE_FIELD_A_SETUP_TRAVELS_IN,
   WHERE_A_SUBSCRIPTION_STARTS,
 } from '../lib/theSubscriptionSheStarts';
+import {
+  SHE_ALREADY_HOLDS_EMI,
+  THE_OFFER_PRICE_IN_STARS,
+  THE_PRICE_IN_STARS,
+  WHERE_A_STARS_INVOICE_IS_MADE,
+} from '../lib/thePaymentInStars';
 import {
   WHERE_SHE_WAS_GOING_ENTRY,
   WHICH_OFFER_SHE_ARRIVED_WITH_ENTRY,
@@ -56,6 +62,9 @@ const ONCE_THE_OFFER_HAS_CLOSED = new Date('2026-11-30T23:00:00.000Z');
 /** Where her browser was told to go, which is the end of this page in a browser. */
 const whereSheWentNext: string[] = [];
 const A_SETUP = 'seti_000000000001';
+
+/** The invoice the Stars route answers with. Telegram issued no such thing: the double wrote it. */
+const THE_INVOICE = 'https://t.me/$the-double-wrote-this';
 
 /** The secret of the invoice a plan with no free month leaves to be paid. Not a real one. */
 const THE_SECRET_OF_THE_FIRST_INVOICE = 'in_000000000001_secret_the-double-wrote-this';
@@ -197,6 +206,10 @@ interface HowTheApiBehaves {
   readonly createsNothing?: boolean;
   /** The route creates one on the offer and names no charge to confirm, which buys her nothing. */
   readonly answersNoPaymentSecret?: boolean;
+  /** What the Stars invoice route answers, where a case wants something other than the invoice. */
+  readonly theStarsRouteAnswers?: number;
+  /** The address it answers with, where a case wants one Telegram would never have issued. */
+  readonly theInvoiceOpens?: string;
 }
 
 /** The api, answering the press with the secret of a setup and the put with the subscription. */
@@ -217,6 +230,19 @@ function anApi(behaves: HowTheApiBehaves): {
       token: headers.authorization ?? '',
       ...(body === undefined ? {} : { body }),
     });
+
+    if (String(where) === WHERE_A_STARS_INVOICE_IS_MADE) {
+      const status = behaves.theStarsRouteAnswers ?? 200;
+
+      return Promise.resolve({
+        ok: status === 200,
+        status,
+        json: () =>
+          Promise.resolve(
+            status === 200 ? { invoiceLink: behaves.theInvoiceOpens ?? THE_INVOICE } : {},
+          ),
+      } as Response);
+    }
 
     if (method === 'PUT') {
       // The route answers the secret of the first invoice for a plan with no free month, which is
@@ -447,30 +473,36 @@ describe('the form she pays on', () => {
     expect(form.did.mounted).toEqual(['expressCheckout', 'payment']);
   });
 
-  it('names the card route she is on, and offers her nothing to choose', async () => {
+  it('draws the two ways to pay, and opens on the card', async () => {
     const form = await aFormOnThePage();
+    const pressed = [...form.holder.querySelectorAll('button[aria-pressed="true"]')];
 
     expect(form.text()).toContain(words.checkoutPayByCard);
-    expect(form.text()).toContain(words.checkoutPayByCardWhere);
-    expect(
-      [...form.holder.querySelectorAll('[aria-pressed]')].map((held) => held.textContent),
-    ).toEqual([]);
+    expect(form.text()).toContain(words.checkoutPayByStars);
+    expect(pressed.map((button) => button.textContent)).toEqual([
+      `${words.checkoutPayByCard}${words.checkoutPayByCardWhere}`,
+    ]);
   });
 
-  it('draws one press, which is the press that pays, with nothing pressed first', async () => {
+  it('draws the two choices and the press that pays, and nothing else to press', async () => {
     const form = await aFormOnThePage();
     const presses = [...form.holder.querySelectorAll('button')];
 
-    expect(presses.map((press) => press.textContent)).toEqual([thePressThatPays]);
+    expect(presses.map((press) => press.textContent)).toEqual([
+      `${words.checkoutPayByCard}${words.checkoutPayByCardWhere}`,
+      `${words.checkoutPayByStars}${words.checkoutPayByStarsWhere}`,
+      thePressThatPays,
+    ]);
     expect(form.did.mounted).toEqual(['expressCheckout', 'payment']);
   });
 
-  it.each(languages)('says nothing about paying in Telegram Stars, in %s', async (language) => {
+  it.each(languages)('names both ways she can pay in her own language, in %s', async (language) => {
+    const said = wordsIn(language);
     const form = await aFormOnThePage({ language });
 
-    expect(form.text()).not.toContain('Telegram');
-    expect(form.text()).not.toContain('Stars');
-    expect(form.text()).toContain(wordsIn(language).checkoutPay);
+    expect(form.text()).toContain(said.checkoutPayByCard);
+    expect(form.text()).toContain(said.checkoutPayByStarsWhere);
+    expect(form.text()).toContain(said.checkoutPay);
   });
 
   describe('the page she was reading going away under the form', () => {
@@ -671,6 +703,255 @@ describe('the form she pays on', () => {
     });
   });
 
+  /**
+   * The Telegram Stars choice, from the row she presses to the address her browser is handed.
+   *
+   * The route is a double of the contract it is built to: the invoice, the refusal of a woman who
+   * already holds Emi, and a refusal of any other kind. Nothing here reaches Telegram, and the
+   * invoice in this file was written by the double.
+   */
+  describe('the Telegram Stars choice', () => {
+    const onTheOffer = `?${THE_OFFER_IN_AN_ADDRESS}=${THE_BLACK_FRIDAY_OFFER}`;
+
+    /** The one call that choice makes, read off everything the form asked for. */
+    const theInvoiceItAskedFor = (form: ADrivenForm): OneCall | undefined =>
+      form.calls.find((call) => call.address === WHERE_A_STARS_INVOICE_IS_MADE);
+
+    /** The count of Stars the panel says, written into the sentence the way the page writes it. */
+    const theCountItAsksFor = (said: SiteWords, stars: number): string =>
+      said.checkoutStarsPrice.replace('{stars}', `${stars}`);
+
+    /** Opens the choice, then presses the one press behind it. */
+    async function sheOpensTheBot(form: ADrivenForm): Promise<void> {
+      await form.press(words.checkoutPayByStars);
+      await form.press(words.checkoutStarsOpenTheBot);
+    }
+
+    it.each(languages)(
+      'says what a year costs in Stars, and what it buys, in %s',
+      async (language) => {
+        const said = wordsIn(language);
+        const form = await aFormOnThePage({ language });
+
+        await form.press(said.checkoutPayByStars);
+
+        expect(form.text()).toContain(theCountItAsksFor(said, THE_PRICE_IN_STARS));
+        expect(form.text()).toContain(said.checkoutStarsOneYear);
+        expect(form.text()).toContain(said.checkoutStarsComeBack);
+        expect(form.text()).toContain(said.checkoutStarsOpenTheBot);
+      },
+    );
+
+    it.each(languages)('asks for half of that while the offer is open, in %s', async (language) => {
+      const said = wordsIn(language);
+      const form = await aFormOnThePage({
+        language,
+        now: WHILE_THE_OFFER_IS_OPEN,
+        search: onTheOffer,
+      });
+
+      await form.press(said.checkoutPayByStars);
+
+      expect(form.text()).toContain(theCountItAsksFor(said, THE_OFFER_PRICE_IN_STARS));
+      expect(form.text()).not.toContain(theCountItAsksFor(said, THE_PRICE_IN_STARS));
+    });
+
+    it.each(languages)(
+      'asks for the whole count once the offer has closed, in %s',
+      async (language) => {
+        const said = wordsIn(language);
+        const form = await aFormOnThePage({
+          language,
+          now: ONCE_THE_OFFER_HAS_CLOSED,
+          search: onTheOffer,
+        });
+
+        await form.press(said.checkoutPayByStars);
+
+        expect(form.text()).toContain(theCountItAsksFor(said, THE_PRICE_IN_STARS));
+        expect(form.text()).not.toContain(theCountItAsksFor(said, THE_OFFER_PRICE_IN_STARS));
+      },
+    );
+
+    it('asks for the whole count for a woman who arrived with no offer at all', async () => {
+      const form = await aFormOnThePage({ now: WHILE_THE_OFFER_IS_OPEN });
+
+      await form.press(words.checkoutPayByStars);
+
+      expect(form.text()).toContain(theCountItAsksFor(words, THE_PRICE_IN_STARS));
+    });
+
+    it('asks for the whole count on a value nobody approved', async () => {
+      const form = await aFormOnThePage({
+        now: WHILE_THE_OFFER_IS_OPEN,
+        search: '?offer=half-off-for-ever',
+      });
+
+      await form.press(words.checkoutPayByStars);
+
+      expect(form.text()).toContain(theCountItAsksFor(words, THE_PRICE_IN_STARS));
+    });
+
+    it('promises no free month, which belongs to the one price and to nothing else', async () => {
+      const form = await aFormOnThePage();
+
+      await form.press(words.checkoutPayByStars);
+
+      expect(form.text().toLocaleLowerCase()).not.toContain('free');
+      expect(words.checkoutStarsOneYear).toContain('does not renew');
+    });
+
+    it('asks Emi for nothing at all until she presses', async () => {
+      const form = await aFormOnThePage();
+
+      await form.press(words.checkoutPayByStars);
+
+      expect(form.calls).toEqual([]);
+      expect(whereSheWentNext).toEqual([]);
+    });
+
+    describe('the press that opens the bot', () => {
+      it('asks the route for an invoice with her token, and names no offer', async () => {
+        const form = await aFormOnThePage();
+
+        await sheOpensTheBot(form);
+
+        expect(theInvoiceItAskedFor(form)?.method).toBe('POST');
+        expect(theInvoiceItAskedFor(form)?.token.startsWith('Bearer ')).toBe(true);
+        expect(JSON.parse(theInvoiceItAskedFor(form)?.body ?? '')).toEqual({});
+      });
+
+      it('leaves her in Telegram, on the invoice the route answered with', async () => {
+        const form = await aFormOnThePage();
+
+        await sheOpensTheBot(form);
+
+        expect(whereSheWentNext).toEqual([THE_INVOICE]);
+      });
+
+      it('names the offer while it is open, so the route halves the count', async () => {
+        const form = await aFormOnThePage({ now: WHILE_THE_OFFER_IS_OPEN, search: onTheOffer });
+
+        await sheOpensTheBot(form);
+
+        expect(JSON.parse(theInvoiceItAskedFor(form)?.body ?? '')).toEqual({
+          [THE_FIELD_AN_OFFER_TRAVELS_IN]: THE_BLACK_FRIDAY_OFFER,
+        });
+        expect(whereSheWentNext).toEqual([THE_INVOICE]);
+      });
+
+      it('names no offer once it has closed, so she is asked for the whole count', async () => {
+        const form = await aFormOnThePage({ now: ONCE_THE_OFFER_HAS_CLOSED, search: onTheOffer });
+
+        await sheOpensTheBot(form);
+
+        expect(JSON.parse(theInvoiceItAskedFor(form)?.body ?? '')).toEqual({});
+      });
+
+      it('names no offer for a value nobody approved', async () => {
+        const form = await aFormOnThePage({
+          now: WHILE_THE_OFFER_IS_OPEN,
+          search: '?offer=half-off-for-ever',
+        });
+
+        await sheOpensTheBot(form);
+
+        expect(JSON.parse(theInvoiceItAskedFor(form)?.body ?? '')).toEqual({});
+      });
+
+      it('says she already has Emi where the route refuses the press with that', async () => {
+        const form = await aFormOnThePage({ api: { theStarsRouteAnswers: SHE_ALREADY_HOLDS_EMI } });
+
+        await sheOpensTheBot(form);
+
+        expect(form.text()).toContain(words.checkoutStarsAlreadyPaid);
+        expect(form.text()).not.toContain(words.checkoutStarsNothingTaken);
+        expect(whereSheWentNext).toEqual([]);
+      });
+
+      it('says nothing was taken where the route refuses it any other way', async () => {
+        const form = await aFormOnThePage({ api: { theStarsRouteAnswers: 502 } });
+
+        await sheOpensTheBot(form);
+
+        expect(form.text()).toContain(words.checkoutStarsNothingTaken);
+        expect(form.text()).not.toContain(words.checkoutStarsAlreadyPaid);
+        expect(whereSheWentNext).toEqual([]);
+      });
+
+      it('says the same for an invoice that would open a host nobody approved', async () => {
+        const form = await aFormOnThePage({
+          api: { theInvoiceOpens: 'https://not-telegram.example/pay' },
+        });
+
+        await sheOpensTheBot(form);
+
+        expect(form.text()).toContain(words.checkoutStarsNothingTaken);
+        expect(whereSheWentNext).toEqual([]);
+      });
+
+      it('lets her press again after a refusal, which is the whole of what she can do', async () => {
+        const form = await aFormOnThePage({ api: { theStarsRouteAnswers: 502 } });
+
+        await sheOpensTheBot(form);
+        await form.press(words.checkoutStarsOpenTheBot);
+
+        expect(
+          form.calls.filter((call) => call.address === WHERE_A_STARS_INVOICE_IS_MADE),
+        ).toHaveLength(2);
+      });
+    });
+
+    describe('switching between the two choices', () => {
+      it('takes the wallets and the card form off the page while she reads this one', async () => {
+        const form = await aFormOnThePage();
+
+        await form.press(words.checkoutPayByStars);
+
+        expect(form.did.destroyed).toEqual(THE_PAIR);
+        expect(theElementsOnThePage(form)).toEqual([]);
+        expect(form.text()).not.toContain(thePressThatPays);
+      });
+
+      it('mounts both of them again, into the elements the card choice draws this time', async () => {
+        const form = await aFormOnThePage();
+
+        await form.press(words.checkoutPayByStars);
+        await form.press(words.checkoutPayByCard);
+
+        expect(form.did.mounted).toEqual([...THE_PAIR, ...THE_PAIR]);
+        expect(theElementsOnThePage(form).map((drawn) => drawn.kind)).toEqual(THE_PAIR);
+        expect(form.text()).toContain(thePressThatPays);
+      });
+
+      it('pays on the card form she came back to, and nothing of the first', async () => {
+        const form = await aFormOnThePage();
+
+        await form.press(words.checkoutPayByStars);
+        await form.press(words.checkoutPayByCard);
+        await form.press(thePressThatPays);
+
+        const onThePage = theElementsOnThePage(form);
+
+        expect(onThePage).toHaveLength(2);
+        expect(form.did.confirmed[0]?.elements).toBe(onThePage[0]?.group);
+        expect(whereSheWentNext).toEqual(['/en/account/']);
+      });
+
+      it('takes the line of one choice off the other, because it is not about it', async () => {
+        const form = await aFormOnThePage({ api: { refusesToStart: true } });
+
+        await form.press(thePressThatPays);
+
+        expect(form.text()).toContain(words.checkoutCouldNotStart);
+
+        await form.press(words.checkoutPayByStars);
+
+        expect(form.text()).not.toContain(words.checkoutCouldNotStart);
+      });
+    });
+  });
+
   describe('a build with no publishable key', () => {
     it('draws no payment form and says paying here is not open yet', async () => {
       const form = await aFormOnThePage({ publishableKey: '' });
@@ -822,6 +1103,8 @@ describe('the page she buys Emi on', () => {
       expect(said).toContain(words.checkoutPlanAmount);
       expect(said).toContain(words.checkoutPayByCard);
       expect(said).toContain(words.checkoutPayByCardWhere);
+      expect(said).toContain(words.checkoutPayByStars);
+      expect(said).toContain(words.checkoutPayByStarsWhere);
       expect(said).toContain(thePressThatPays);
       expect(said).toContain(words.checkoutCancelAnyTime);
       // She asked for this page and she is reading it, so nothing was kept and she was moved

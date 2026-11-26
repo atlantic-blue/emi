@@ -84,6 +84,27 @@ export function theYearHasRunOut(held: WhatSheHolds | null, now: Date): boolean 
   return !Number.isNaN(until) && until <= now.getTime();
 }
 
+/** How long before the end of her year a payment that renews nothing offers her another one. */
+export const THE_DAYS_SHE_IS_OFFERED_ANOTHER_YEAR_IN = 30;
+
+const ONE_DAY = 24 * 60 * 60 * 1000;
+
+/**
+ * Whether the day she is paid until is less than that many days away.
+ *
+ * A payment in Stars renews nothing, so the year ends unless she buys another one, and the offer
+ * to buy it has to arrive before the day it ends. A date that has already passed is not almost up,
+ * and the card offers her Emi again rather than another year.
+ */
+export function theYearIsAlmostUp(held: WhatSheHolds | null, now: Date): boolean {
+  const until = held?.paidUntil === undefined ? Number.NaN : Date.parse(held.paidUntil);
+  const left = until - now.getTime();
+
+  return (
+    !Number.isNaN(until) && left > 0 && left < THE_DAYS_SHE_IS_OFFERED_ANOTHER_YEAR_IN * ONE_DAY
+  );
+}
+
 /** The twelve months, under the names the catalogues already give them. */
 const monthKeys = [
   'cycleMonthJanuary',

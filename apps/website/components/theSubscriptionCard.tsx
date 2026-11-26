@@ -20,6 +20,7 @@ import {
   theRenewalSheSets,
   theSubscriptionSheHolds,
   theYearHasRunOut,
+  theYearIsAlmostUp,
   whatTheRenewalRowDoes,
   whichCardSheReads,
 } from '@/lib/theSubscriptionSheHolds';
@@ -129,6 +130,17 @@ export function TheSubscriptionCard({
   const which = whichCardSheReads(read, now);
   const paidUntil = read?.paidUntil;
   const theRenewal = whatTheRenewalRowDoes(read);
+  // A payment in Stars renews nothing and is not held on a card, so the two rows that change a
+  // renewal and a card are not drawn at all. She stops nothing: the year ends on its own.
+  const nothingRenews = read?.route === 'stars';
+
+  const theLineUnderThePlan = (): string => {
+    if (nothingRenews) {
+      return words.accountStarsPaidUntil;
+    }
+
+    return which === 'active' ? words.accountRenewsOn : words.accountPaidUntil;
+  };
 
   const readsAPageOfReceipts = (cursor: string | null): void => {
     if (token === null || token === undefined) {
@@ -205,7 +217,7 @@ export function TheSubscriptionCard({
             <span className="flex flex-col">
               <span className="text-body-lg font-semibold">{words.accountPlanName}</span>
               <span className="text-body-sm text-siteQuietText">
-                {(which === 'active' ? words.accountRenewsOn : words.accountPaidUntil).replace(
+                {theLineUnderThePlan().replace(
                   '{date}',
                   theDateWritten(language, words, paidUntil),
                 )}
@@ -216,12 +228,14 @@ export function TheSubscriptionCard({
             </span>
           </div>
 
-          {read?.route === 'card' ? (
+          {read?.route === undefined ? null : (
             <div className="flex min-h-[52px] items-center justify-between border-b-hairline border-siteTintLine px-margin text-body-lg">
               <span>{words.accountPaidWith}</span>
-              <span className="text-siteQuietText">{words.accountPaidWithCard}</span>
+              <span className="text-siteQuietText">
+                {nothingRenews ? words.accountPaidWithStars : words.accountPaidWithCard}
+              </span>
             </div>
-          ) : null}
+          )}
 
           <button
             aria-expanded={receiptsOpen}
@@ -277,17 +291,19 @@ export function TheSubscriptionCard({
             </div>
           ) : null}
 
-          <button
-            aria-expanded={theCardFormIsOpen}
-            className={rowStyle}
-            onClick={() => setTheCardFormIsOpen(!theCardFormIsOpen)}
-            type="button"
-          >
-            <span>{words.accountChangeCard}</span>
-            <span aria-hidden="true">›</span>
-          </button>
+          {nothingRenews ? null : (
+            <button
+              aria-expanded={theCardFormIsOpen}
+              className={rowStyle}
+              onClick={() => setTheCardFormIsOpen(!theCardFormIsOpen)}
+              type="button"
+            >
+              <span>{words.accountChangeCard}</span>
+              <span aria-hidden="true">›</span>
+            </button>
+          )}
 
-          {theCardFormIsOpen && token !== null && token !== undefined ? (
+          {theCardFormIsOpen && !nothingRenews && token !== null && token !== undefined ? (
             <TheChangeCardForm
               asks={asks}
               comesBackTo={`${SITE_ORIGIN}/${language}/${WHERE_HER_ACCOUNT_IS}`}
@@ -299,16 +315,27 @@ export function TheSubscriptionCard({
             />
           ) : null}
 
-          <button
-            className={`${rowStyle} ${theRenewal === 'nothing' ? 'text-siteQuietText' : 'text-siteAccent'}`}
-            disabled={theRenewal === 'nothing' || thePress === 'running'}
-            onClick={pressesTheRenewal}
-            type="button"
-          >
-            <span>
-              {theRenewal === 'starts' ? words.accountTurnRenewalOn : words.accountCancelRenewal}
-            </span>
-          </button>
+          {nothingRenews ? null : (
+            <button
+              className={`${rowStyle} ${theRenewal === 'nothing' ? 'text-siteQuietText' : 'text-siteAccent'}`}
+              disabled={theRenewal === 'nothing' || thePress === 'running'}
+              onClick={pressesTheRenewal}
+              type="button"
+            >
+              <span>
+                {theRenewal === 'starts' ? words.accountTurnRenewalOn : words.accountCancelRenewal}
+              </span>
+            </button>
+          )}
+
+          {nothingRenews && theYearIsAlmostUp(read, now) ? (
+            <a
+              className={`${rowStyle} text-siteAccent`}
+              href={`/${language}/${WHERE_SHE_BUYS_EMI}`}
+            >
+              <span>{words.accountBuyAnotherYear}</span>
+            </a>
+          ) : null}
         </div>
       )}
 
