@@ -207,6 +207,13 @@ export async function telegramUpdatesFor(
   held: WhatTheUpdatesNeed,
 ): Promise<HttpResponse> {
   const presented = event.headers[secretTokenHeader];
+
+  // A request carrying no secret at all is refused first, because that needs no secret to decide:
+  // nothing of the body is parsed and the parameter store is never read for it.
+  if (presented === undefined || presented.length === 0) {
+    return refusal(401, thatUpdateIsNotOurs);
+  }
+
   let secret: string;
 
   try {

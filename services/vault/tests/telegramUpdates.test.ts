@@ -197,6 +197,30 @@ describe('an update of the Emi bot', () => {
       expect(updates.table.items()).toEqual([]);
     });
 
+    it('reads no parameter for a request carrying no secret header, so a cold container refuses it', async () => {
+      const reads: string[] = [];
+      const updates = theUpdates({
+        parameters: {
+          read: (name: string) => {
+            reads.push(name);
+
+            return Promise.resolve(theWebhookSecret);
+          },
+          writeIfAbsent: () => Promise.reject(new Error('the webhook writes no parameter')),
+        },
+      });
+
+      const answered = await telegramUpdatesFor(
+        await updates.send(aPayment(), { secret: null }),
+        updates.held,
+      );
+
+      expect(answered.statusCode).toBe(401);
+      expect(reads).toEqual([]);
+      expect(updates.bot.calls()).toEqual([]);
+      expect(updates.table.items()).toEqual([]);
+    });
+
     it('asks for the update again when the parameter store holds no secret yet', async () => {
       const updates = theUpdates({ parameters: parametersHolding({}) });
 
