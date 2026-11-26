@@ -83,9 +83,10 @@ decision now.
     the application when she signs in, which guideline 3.1.3(b) allows.
 11. The first line of `docs/design/payments.md` now reads: "Emi has three plans in the app, sold
     through the App Store, and one yearly plan on myemi.app, sold through Stripe."
-12. Telegram Stars is dropped. Nothing of it was built, and `docs/design/payments.md` no longer
-    designs it. Signing in with Telegram is a different thing and it stays. The wording gate still
-    refuses the word Stars on a screen of the application.
+12. Telegram Stars is a route of the website, and it is built. One payment of 2250 Stars buys 365
+    days, taken in the Emi bot, and `docs/design/payments.md` carries it again. It sells nothing
+    inside the application, so the wording gate still refuses the word Stars on a screen of the
+    application. Signing in with Telegram is a different thing and it stays.
 
 Four earlier decisions still hold, from `docs/contracts.md` and `docs/features.md`. There is no free
 tier, because a free tier is paid for with her data. Reading, exporting and deleting stay open for

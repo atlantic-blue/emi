@@ -40,11 +40,12 @@ The operator made each one. Do not argue with them here.
    reads is the figure she pays, in every country.
 3. Atlantic Blue Solutions Limited is the seller of record and handles the tax itself. The operator
    set that on 4 November 2026.
-4. Telegram Stars is dropped. The operator decided that on 23 November 2026, and this document no
-   longer designs it. Nothing of it was built. The Stripe route is the only route this document
-   carries. Signing in with Telegram is a different thing and it stays, because it is built and
-   `docs/design/accounts.md` holds it. On 26 November 2026 the operator brought the Stars route
-   back as one payment of 2250 Stars for one year, which renews nothing and carries no free month.
+4. Telegram Stars is a route, and it is built. The operator dropped it on 23 November 2026 and
+   brought it back on 26 November 2026, as one payment and not a subscription. One payment of 2250
+   Stars buys 365 days, and 1125 Stars buys the same 365 days while the Black Friday offer is open.
+   It renews nothing, and there is no free month on it. The website starts it and the Emi bot takes
+   the payment. Signing in with Telegram is a different thing again, and
+   `docs/design/accounts.md` holds it.
 5. She pays with Apple Pay, Google Pay or a card, on our own page. It is not Stripe's hosted
    Checkout page. Change card, receipts and cancel are on our account page too.
 6. The account is required to pay. She signs in on myemi.app first. Sign in with Apple, Google,
@@ -65,9 +66,8 @@ Two approved boards carry the screens.
 
 `docs/design/website/checkout/boards/Checkout.dc.html` is the page she buys on. The operator
 approved this drawing of it on 16 November 2026. It shows a plan card and two choices: "Apple Pay,
-Google Pay or card" on this site, and "Telegram Stars" in the Emi bot. The second choice is a row
-the drawing still carries and the page does not build, because decision 4 dropped that route.
-Section 3 reads the first choice row by row. Its words carry the yearly price.
+Google Pay or card" on this site, and "Telegram Stars" in the Emi bot. The page builds both rows
+now. Section 3 reads the first choice row by row. Its words carry the yearly price.
 
 `docs/design/website/sign-in/boards/Profile.dc.html` is her account. Its subscription card reads
 "Emi, yearly", the yearly price, a renewal date, "Active", "Paid with Card, on this site", and
@@ -201,8 +201,7 @@ one day of anybody's history, and a test reads that policy rather than trusting 
 It is the one field every reader wants. The free month belongs to the one price of 39 euros a year,
 so a subscription bought on an offer is charged at once.
 
-`route` is a string. It is `card`. It is what the account page says she paid with. The built type
-also allows `stars`, which no route writes now, and the last section names taking it out.
+`route` is a string. It is `card` or `stars`. It is what the account page says she paid with.
 
 `state` is a string. It is `active`, `cancelling`, `lapsed` or `refunded`. `cancelling` means she
 stopped the renewal and the year she paid for still runs.
@@ -211,8 +210,8 @@ stopped the renewal and the year she paid for still runs.
 
 `subscriptionRef` is a string, the Stripe subscription identifier.
 
-`chargeRef` is a string in the built type and nothing writes it. It belonged to the route decision 4
-dropped, and the last section names taking it out.
+`chargeRef` is a string. The Stars route writes the Telegram charge of the last payment into it,
+and the card route leaves it out.
 
 `eventAt` is a number, the seconds of the event that last wrote this item. Every write is
 conditional on a newer `eventAt`, because Stripe does not promise an order of delivery. Without it,
@@ -647,8 +646,8 @@ has no board.
 5. What does the account page show after she cancels, while the year she paid for still runs?
 6. What does the delete screen say to a woman whose subscription is still running? The delete
    stops the renewal and refunds nothing, so she has to read that before she presses it.
-7. The approved checkout board draws a second choice, Telegram Stars in the Emi bot. Decision 4
-   dropped that route. Does the drawing lose that row?
+7. Answered. The approved checkout board draws a second choice, Telegram Stars in the Emi bot,
+   and the page builds that row now. It opens the invoice the bot answers with.
 
 ---
 
@@ -660,14 +659,14 @@ Each step is one pull request with one intention. Each one ships its tests in th
 infrastructure is applied from a machine: every step that adds a resource adds its Terraform, and
 the merge deploys it.
 
-Steps 1 to 4 are the shared half. Steps 5 to 11 are the Stripe route. There are eleven steps,
-because decision 4 dropped the three that sold in Telegram Stars.
+Steps 1 to 4 are the shared half. Steps 5 to 11 are the Stripe route. There are eleven steps. The
+Stars route is not among them: it was built after this path was written, in one pull request of its
+own, and section 4 of `docs/contracts.md` carries what it does.
 
 **1. The contracts for the money.**
 Files: `docs/contracts.md`, `docs/features.md`.
 Behaviour: PAY-5 names the entitlement record and the one question it answers. PAY-6 names the
-Stripe route. PAY-8 names the entitlement read. PAY-7 named the route decision 4 dropped, and the
-last section names taking it out.
+Stripe route. PAY-8 names the entitlement read. PAY-7 names the Stars route, which is built.
 Proof: the documents gate holds the two files to each other, so a contract in one and not the other
 fails the run.
 Depends on: nothing.
@@ -768,9 +767,10 @@ Three were open and the operator answered them on 16 November 2026. Each one is 
 "The decisions this design starts from". The Stripe account is verified, so nothing waits on it. The
 terms page has a board and its own pull request. A delete does not delete payments.
 
-One more was open and the operator answered it on 23 November 2026, which is decision 4. Telegram
-Stars is dropped. The sanctions question of issue 427, which asked whether a company in the United
-Kingdom may take a payment from a person in Russia, went with that route and blocks nothing now.
+One more was open and the operator answered it on 23 November 2026, and then answered it the other
+way on 26 November 2026, which is decision 4. The Stars route is built. So the sanctions question of
+issue 427 is open again: it asks whether a company in the United Kingdom may take a payment from a
+person in Russia. Nothing in this repository answers it, and no code here reads where she is.
 
 The board questions of section 7 still block three steps.
 
@@ -778,7 +778,8 @@ The board questions of section 7 still block three steps.
 
 Status: designed
 
-The whole design: 85 per cent. Decision 4 took out the route that was least sure of itself.
+The whole design: 85 per cent. The Stars route of decision 4 was the least sure of itself, and it
+is built and tested now, so this figure is about the Stripe route and the boards below.
 
 The entitlement record and the payer digest: 90 per cent. The shape follows the four digests this
 repository already makes, and the one new attribute sits on an item the delete already walks. What
@@ -818,17 +819,8 @@ A price in any currency but the euro.
 
 Whether a woman who already pays in a store should be shown a price on the website at all.
 
-What becomes of what Telegram Stars left behind. Five places still name it, and none of them is in
-this document's path, because taking each one out is a change of its own with its own tests.
+A refund of a payment in Stars. The operator makes one in Telegram with `refundStarPayment`, and
+nothing in this repository calls it or reads its answer, so the payment item is not changed by it.
 
-Contract PAY-7 names the route, in `docs/contracts.md` and in `docs/features.md`.
-
-The built entitlement type allows `stars` as a route and carries `chargeRef`. Nothing writes either
-one now.
-
-`docs/design/accounts.md` names Stars in three places, including the words of the sign in screen in
-all three languages.
-
-The privacy policy of the website names Telegram Stars as a way to pay, in all three languages.
-
-`docs/design/website/README.md` says the checkout shows a choice between a card and Telegram Stars.
+Whether a company in the United Kingdom may take a payment in Stars from a person in Russia, which
+is the sanctions question of issue 427 and is open again.

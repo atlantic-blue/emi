@@ -653,26 +653,43 @@ name or an address written by Emi anywhere.
 
 Verified by a test.
 
-Input: a payment in Telegram Stars, made in the Emi bot.
+Input: two calls. The website asks for an invoice with `POST /v1/payments/stars/invoice`, carrying
+her identity token and a body of `{}` or `{"offer":"black-friday"}`. The Emi bot sends its updates
+to `POST /v1/telegram/updates`, and each update carries the secret of the webhook in the
+`X-Telegram-Bot-Api-Secret-Token` header.
 
-Output: an invoice from `createInvoiceLink`, with `currency` set to `XTR`, exactly one price
-component, and a `payload` that carries the payer digest and nothing else. The bot answers the pre
-checkout query within 10 seconds, before it writes anything, because Telegram cancels the payment
-after that. The payment arrives as `successful_payment`, and the bot reads four fields of it:
-`invoice_payload` for the digest, `subscription_expiration_date` for the instant that becomes
-`paidUntil`, `is_first_recurring` for whether this is the first period, and
-`telegram_payment_charge_id` for `chargeRef`. It writes the item of `PAY-5`, with `route` as
-`stars` and `state` as `active`. A refund moves `state` to `refunded` and `paidUntil` to the
-instant of the refund.
+Output: the invoice route answers `{"invoiceLink":"..."}`, the link Telegram draws the invoice on.
+The link comes from `createInvoiceLink`, with `currency` set to `XTR`, exactly one price
+component, and no provider token. The price is 2250 Stars for 365 days, and 1125 Stars while the
+Black Friday offer is open. The invoice carries no subscription period, so one payment buys 365
+days, it renews nothing, and there is no free month on this route.
 
-The invoice is one payment for a year, or a subscription that renews every 30 days, which is the
-only period Telegram sells. The operator chooses the shape and the number of Stars before anybody
-builds this route, and both shapes write the same item.
+The `payload` carries the payer digest and the price she was shown, and it is under the 128 bytes
+Telegram takes. The bot answers the pre checkout query within 10 seconds, and before it writes
+anything, because Telegram cancels the payment after that. The payment arrives as
+`successful_payment`. The bot
+reads `invoice_payload` for the digest and `telegram_payment_charge_id` for `chargeRef`. It writes
+the item of `PAY-5`, with `route` as `stars`, `state` as `active`, and `paidUntil` 365 days after
+the later of now and the instant she already holds. It writes once for each charge, so an update
+that arrives twice changes nothing.
 
-Errors: a currency that is not `XTR`. A price of more than one component. A payload carrying
-anything beyond the digest. A pre checkout query answered later than 10 seconds. A Telegram user
-identifier written to the table. A subscription period that is not 2592000 seconds. A subscription
-price above 10000 Stars.
+A refund is made by the operator in Telegram, with `refundStarPayment`. Nothing in this repository
+calls it and nothing reads its answer, so the payment item is not changed by a refund today. She
+keeps the date she holds until it passes.
+
+Errors: the invoice route answers 400 for a body naming any other field or any other offer, 401 for
+a request carrying no token of the pool, and 409 while a paid year or a card subscription of hers is
+still running. The updates route answers 401 for an update whose secret header is absent or does not
+match, and it reads no parameter for an update carrying no header at all. The pre checkout answer is
+not ok for a payload no invoice of ours made, for a currency that is not `XTR`, for an amount that
+is not the price the payload names, and for the offer price after the offer closed. No Telegram
+identifier of hers is written to the table or to a log.
+
+The tests prove the form of the invoice call, the payload and its length, the price at each instant,
+the four refusals of the pre checkout, the three refusals of the invoice route, the two refusals of
+the secret header, the item one payment writes, and that a second update of one charge writes
+nothing. The sentence about a refund is a statement about code that is absent: no test can prove it,
+and a grep for the method name is what holds it.
 
 ### PAY-8, the entitlement read
 
