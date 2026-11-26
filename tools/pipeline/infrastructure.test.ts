@@ -255,6 +255,7 @@ const collectionLevelActions: readonly string[] = [
   'route53:ListHostedZonesByName',
   's3:ListAllMyBuckets',
   'ses:ListConfigurationSets',
+  'ssm:DescribeParameters',
   'ses:ListEmailIdentities',
   'sns:ListTopics',
 ];
@@ -380,10 +381,16 @@ describe('the infrastructure is applied only by the pipeline', () => {
       'skips every step of the %s job that reaches the account',
       (name) => {
         const steps = job(name).steps ?? [];
-        const unguarded = steps.slice(1).filter((step) => step.if !== "env.ROLE != ''");
+        // A step may narrow this further, as the two that order the grants of infra do. It may
+        // never widen it: an or would let the step run with the variable still empty.
+        const unguarded = steps
+          .slice(1)
+          .filter((step) => !(step.if ?? '').startsWith("env.ROLE != ''"));
+        const loosened = steps.slice(1).filter((step) => (step.if ?? '').includes('||'));
 
         expect(steps.length).toBeGreaterThan(1);
         expect(unguarded).toEqual([]);
+        expect(loosened).toEqual([]);
       },
     );
 
@@ -1053,6 +1060,7 @@ describe('the infrastructure is applied only by the pipeline', () => {
         'ReadTheUserPoolDomain',
         'ReadTheProviderKeys',
         'ReadTheBotWebhookSecret',
+        'ReadTheMetadataOfAParameter',
         'DecryptAProviderKey',
         'ReadTheSender',
         'ReadTheEmailEventTopic',
@@ -3393,8 +3401,19 @@ describe('the keys the Telegram sign in may read, and the two roles that reach t
     });
 
     it('deletes no parameter, so nothing in the account can take the salt away', () => {
+      const deleting = [planPolicy, applyPolicy, signInPolicy, challengePolicy]
+        .flatMap((policy) => statementsReaching(statementsIn(policy), 'ssm:DeleteParameter'))
+        .flatMap((statement) => statement.resources.map((held) => resolved(configuration, held)));
+
       expect(scopeOf(signInPolicy, 'ssm:DeleteParameter')).toEqual([]);
-      expect(configuration).not.toContain('ssm:Delete');
+      expect(configuration).not.toContain('ssm:DeleteParameters');
+
+      // One delete exists, and it reaches the one parameter this root generates. Every credential a
+      // person wrote lives under the accounts prefix, and nothing may take one of those away.
+      expect(deleting).toEqual([
+        'arn:aws:ssm:eu-central-1:230345688874:parameter/emi/payments/telegram/webhook-secret',
+      ]);
+      expect(deleting.filter((held) => held.includes(':parameter/emi/accounts/'))).toEqual([]);
     });
 
     it('writes the one time answer item, and reads and deletes nothing in the table', () => {
