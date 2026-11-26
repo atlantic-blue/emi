@@ -200,9 +200,10 @@ no free month either. Read and export stay open forever if she stops paying.
 The price is the product. There is no free tier, because a free tier is paid for with her data.
 
 Two more routes sell the same subscription. She pays on myemi.app with a wallet or a card, through
-Stripe, or she pays in Telegram Stars in the Emi bot. Both of those cost the same 39 euros a year,
-after one free month. A payment says one thing about one way in: this way in is paid until this
-date. It never says whose records those are.
+Stripe, at 39 euros a year after one free month. Or she pays in the Emi bot with Telegram Stars,
+where one payment of 2250 Stars buys 365 days, renews nothing, and carries no free month. A payment
+says one thing about one way in: this way in is paid until this date. It never says whose records
+those are.
 
 A delete of her account keeps the payment, because it is the record of a sale, and stops the
 subscription at the end of the year she paid for.
@@ -218,7 +219,8 @@ The contracts it builds:
   instant and names nobody.
 - `PAY-6` the Stripe route, at 39 euros a year with the tax inside the amount, after one free
   month.
-- `PAY-7` the Telegram Stars route, an invoice in Stars that writes the same record.
+- `PAY-7` the Telegram Stars route, one payment of 2250 Stars for 365 days, which writes the same
+  record.
 - `PAY-8` the entitlement read, one instant, which says nothing about how she paid.
 - `PAY-9` the pointer that gives one purchase to one vault, which a conditional write holds.
 - `WIRE-5` a pull and a delete that work whatever the subscription says.

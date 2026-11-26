@@ -658,7 +658,7 @@ describe('the contracts for the money say what was decided about it', () => {
 
     expect(stars).toContain('`currency` set to `XTR`, exactly one price component');
     expect(stars).toContain('within 10 seconds');
-    expect(stars).toContain('A Telegram user identifier written to the table.');
+    expect(stars).toContain('No Telegram identifier of hers is written to the table or to a log.');
   });
 });
 
