@@ -166,6 +166,36 @@ jobs:
         with:
           role-to-assume: ${{ env.ROLE }}
           aws-region: eu-central-1
+      # A grant and the resource that needs it cannot land in one apply. The account reads a policy
+      # for each request, and the refresh at the start of a full apply reads the parameter under the
+      # policy that is still in force, so the full apply is refused before it writes the new one.
+      # These two policies therefore go first, with no refresh and with nothing else in the plan.
+      #
+      # The website root holds no parameter and no role, so it skips both steps below.
+      - name: put the grants of the two roles in force first
+        if: env.ROLE != '' && matrix.root == 'infra'
+        working-directory: infra
+        run: |
+          terraform init -input=false
+          terraform apply -auto-approve -input=false -refresh=false \
+            -target=aws_iam_role_policy.apply \
+            -target=aws_iam_role_policy.plan
+      # The account spreads a policy change on its own clock, so the apply below waits for the one
+      # action the refusal named rather than for a number of seconds somebody guessed. The answer is
+      # thrown away: it carries the parameter names of every product in this account.
+      - name: wait until the account answers with the new grant
+        if: env.ROLE != '' && matrix.root == 'infra'
+        run: |
+          for attempt in $(seq 1 24); do
+            if aws ssm describe-parameters --max-results 1 --no-cli-pager > /dev/null 2>&1; then
+              echo "The metadata read is in force, after ${attempt} attempt(s)."
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "The account still refuses ssm:DescribeParameters after two minutes."
+          echo "The apply below would fail reading the parameter it writes, so this job stops here."
+          exit 1
       - name: apply
         if: env.ROLE != ''
         working-directory: ${{ matrix.root }}

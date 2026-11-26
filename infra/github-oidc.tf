@@ -250,6 +250,18 @@ data "aws_iam_policy_document" "plan" {
     resources = ["arn:aws:ssm:${var.region}:${var.account_id}:parameter/${var.project_name}/payments/telegram/webhook-secret"]
   }
 
+  # Reading a parameter back reads its metadata, and that call names no parameter: it answers a
+  # page of the account. A statement scoped to the one path grants nothing for it, which is what
+  # refused the apply of 2026-11-26. So the action stands on every resource, and the cost is that
+  # both roles may list the parameter names of the other products in this account. It answers names
+  # and never values, and the value of each secret is still reached through the statements above.
+  statement {
+    sid       = "ReadTheMetadataOfAParameter"
+    effect    = "Allow"
+    actions   = ["ssm:DescribeParameters"]
+    resources = ["*"]
+  }
+
   # Two of the six are secure strings under aws/ssm, the key the parameter store makes for this
   # account, whose identifier the service generates. The condition is what narrows this grant: the
   # role may decrypt only through a parameter store call, so it opens nothing the statement above
@@ -723,11 +735,18 @@ data "aws_iam_policy_document" "apply" {
   #
   # The two tag calls are there because every resource of this root carries the project tags, and
   # the parameter store tags a parameter through calls of its own rather than through the write.
+  #
+  # The delete is here for one reason: a create whose read back was refused leaves the object
+  # tainted, and Terraform replaces a tainted object by deleting it first. Nothing is lost by that,
+  # because this value is generated and the same job hands the new one to Telegram. No credential a
+  # person wrote is reachable by it: every one of those lives under the accounts prefix, and no
+  # statement of either role writes or deletes anything there.
   statement {
     sid    = "WriteTheBotWebhookSecret"
     effect = "Allow"
     actions = [
       "ssm:PutParameter",
+      "ssm:DeleteParameter",
       "ssm:GetParameter",
       "ssm:AddTagsToResource",
       "ssm:ListTagsForResource",
@@ -735,6 +754,17 @@ data "aws_iam_policy_document" "apply" {
     resources = [
       "arn:aws:ssm:${var.region}:${var.account_id}:parameter/${var.project_name}/payments/telegram/webhook-secret",
     ]
+  }
+
+  # The same metadata read the plan role holds, at the same scope. Writing the parameter above is
+  # half of it: the provider reads the object back after it writes it, and that read is this call.
+  # A statement scoped to the one path grants nothing for it, which is what refused the apply of
+  # 2026-11-26 after the write had already gone through.
+  statement {
+    sid       = "ReadTheMetadataOfAParameter"
+    effect    = "Allow"
+    actions   = ["ssm:DescribeParameters"]
+    resources = ["*"]
   }
 
   statement {

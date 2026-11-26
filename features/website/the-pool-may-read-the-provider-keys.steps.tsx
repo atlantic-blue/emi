@@ -48,6 +48,12 @@ const domainWrites = [
 
 const parameterWrites = ['ssm:PutParameter', 'ssm:DeleteParameter', 'ssm:DeleteParameters'];
 
+/**
+ * The read of a parameter's metadata, which the provider makes for every parameter it holds. It
+ * names no parameter, so it is the one grant of these two roles that stands on every resource.
+ */
+const theMetadataRead = 'ssm:DescribeParameters';
+
 const readADomain = 'cognito-idp:DescribeUserPoolDomain';
 const readAProvider = 'cognito-idp:DescribeIdentityProvider';
 const readAParameter = 'ssm:GetParameter';
@@ -160,29 +166,35 @@ defineFeature(feature, (test) => {
       expect(scopeOf(plan, configureADistribution)).toEqual([]);
     });
 
-    and('neither role may write a credential of hers or read a parameter outside Emi', () => {
+    and('neither role may write a credential of hers or read a value outside Emi', () => {
       for (const { role, statements } of bothRoles()) {
-        // A delete is refused to both roles, so nothing in the pipeline can take a parameter away.
-        for (const action of parameterWrites.filter((named) => named !== 'ssm:PutParameter')) {
-          expect(scopeOf(statements, action)).toEqual([]);
+        // The write and the delete of the one generated secret belong to a merge, and to no pull
+        // request. Neither one reaches a second parameter.
+        for (const action of ['ssm:PutParameter', 'ssm:DeleteParameter']) {
+          expect(scopeOf(statements, action)).toEqual(
+            role === 'apply' ? [[theBotWebhookSecret]] : [],
+          );
         }
 
-        // The write of the one generated secret belongs to a merge, and to no pull request.
-        expect(scopeOf(statements, 'ssm:PutParameter')).toEqual(
-          role === 'apply' ? [[theBotWebhookSecret]] : [],
-        );
+        expect(scopeOf(statements, 'ssm:DeleteParameters')).toEqual([]);
 
-        const everyParameterGrant = statements
+        // Every grant that reads or writes a value names the path of that value in full. The one
+        // grant on every resource reads metadata, which is a page of names and carries no value.
+        const reachingAValue = statements
           .filter((statement) => statement.actions.some((action) => action.startsWith('ssm:')))
+          .filter((statement) => !statement.actions.includes(theMetadataRead))
           .map((statement) =>
             statement.resources.map((resource) => resolved(configuration, resource)),
           );
 
-        expect(everyParameterGrant).toEqual([[theParameters], [theBotWebhookSecret]]);
+        expect(reachingAValue).toEqual([[theParameters], [theBotWebhookSecret]]);
 
-        for (const [named] of everyParameterGrant) {
+        for (const [named] of reachingAValue) {
           expect(named).toContain(':parameter/emi/');
+          expect(named).not.toBe('*');
         }
+
+        expect(scopeOf(statements, theMetadataRead)).toEqual([['*']]);
       }
     });
   });

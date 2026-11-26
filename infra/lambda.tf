@@ -962,6 +962,11 @@ resource "aws_ssm_parameter" "telegram_webhook_secret" {
   description = "The secret an update of the Emi bot carries. Generated, never written by hand"
   type        = "SecureString"
   value       = random_password.telegram_webhook_secret.result
+
+  # The policy that allows the write is written by this same root, and the account reads a policy
+  # per request. Without this line the two run in either order, and the apply of 2026-11-26 wrote
+  # the parameter before the grant existed and was refused.
+  depends_on = [aws_iam_role_policy.apply]
 }
 
 # The function that answers the press on Buy with Stars. It makes one invoice link and writes

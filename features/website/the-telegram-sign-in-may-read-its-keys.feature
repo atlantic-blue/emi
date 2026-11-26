@@ -47,7 +47,7 @@ Feature: The Telegram sign in may read its keys, and nothing else may
   Scenario: nothing may take the salt away, because the salt is permanent
     Given the roles of the Telegram sign in
     When the grants of the function that answers a code are read
-    Then no role of this account may delete a parameter
+    Then no role of this account may delete a credential a person wrote
     And Terraform reads the salt through no data source
     And Terraform creates the salt through no resource
     And the readme says the salt is permanent

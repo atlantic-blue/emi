@@ -15,8 +15,15 @@ Feature: The pipeline may read the Apple and Google keys, and a merge may use th
 
   A merge writes one parameter, and it is not a credential a person wrote. It is the secret that
   every update of the Emi bot must carry. Terraform generates the value, no person ever reads it,
-  and the same job hands it to Telegram. The rule that holds is the narrower one: neither role may
-  write or remove a parameter under the accounts prefix.
+  and the same job hands it to Telegram. A merge may also remove that one parameter, because a
+  create whose read back was refused leaves an object that Terraform replaces, and a replace deletes
+  first. The rule that holds is the narrower one: neither role may write or remove a parameter under
+  the accounts prefix.
+
+  Both roles read the metadata of a parameter, and that call names no parameter. It answers a page
+  of the account, so a statement scoped to one path grants nothing for it and the action stands on
+  every resource. It answers names and never values. Every value either role reads is still reached
+  through a statement that names its path in full.
 
   Three mistakes are easy here. No one of them fails an apply.
 
@@ -49,7 +56,7 @@ Feature: The pipeline may read the Apple and Google keys, and a merge may use th
     When the grants the sign in needs are read
     Then a pull request reads the parameters, the provider and the domain
     And it holds no write of a provider, of a domain or of a parameter
-    And neither role may write a credential of hers or read a parameter outside Emi
+    And neither role may write a credential of hers or read a value outside Emi
 
   Scenario: each role decrypts a secure string only through a parameter store call
     Given the two roles the pipeline assumes

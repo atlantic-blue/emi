@@ -161,12 +161,22 @@ defineFeature(feature, (test) => {
       expect(signIn).not.toEqual([]);
     });
 
-    then('no role of this account may delete a parameter', () => {
-      for (const statements of [signIn, challenge, apply, plan]) {
+    then('no role of this account may delete a credential a person wrote', () => {
+      const deleting = [signIn, challenge, apply, plan].flatMap((statements) =>
+        scopeOf(statements, 'ssm:DeleteParameter').flat(),
+      );
+
+      for (const statements of [signIn, challenge, plan]) {
         expect(scopeOf(statements, 'ssm:DeleteParameter')).toEqual([]);
-        expect(scopeOf(statements, 'ssm:DeleteParameters')).toEqual([]);
       }
-      expect(configuration).not.toContain('ssm:Delete');
+
+      // A merge may replace the one value this root generates, and nothing else. A tainted object
+      // is replaced by deleting it first, so the delete and the create are one move.
+      expect(deleting).toEqual([
+        'arn:aws:ssm:eu-central-1:230345688874:parameter/emi/payments/telegram/webhook-secret',
+      ]);
+      expect(deleting.filter((held) => held.includes(':parameter/emi/accounts/'))).toEqual([]);
+      expect(configuration).not.toContain('ssm:DeleteParameters');
     });
 
     and('Terraform reads the salt through no data source', () => {
