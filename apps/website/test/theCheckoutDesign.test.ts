@@ -24,14 +24,16 @@ jest.mock('../components/theCheckoutBehindASignIn', () => ({
  * can be held is the text: every sentence the board draws is a sentence the page says, in the
  * language the board is written in.
  *
- * Two places the page differs from the board, each one a decision the operator can reverse.
- *
- * The board draws two ways to pay, and the second one is Telegram Stars in the Emi bot. No bot
- * exists, so the operator decided to leave that choice out until the Stars route is built. The
- * page draws the card route alone, and there is nothing on it to choose.
+ * Three places the page differs from the board, each one a decision the operator can reverse.
  *
  * The board draws the wallets and the card form as two boxes the payment provider fills. The page
  * mounts Stripe's two elements there, so neither box carries words of ours.
+ *
+ * Behind the Telegram Stars choice the board draws one sentence, a terms line and the press. The
+ * page says what the year costs in Stars there, which the board was drawn before anybody decided.
+ *
+ * The board's sentence sends her to the application to unlock it. The page tells her to come back
+ * to this page instead, because her account on this site is where the year she paid for lands.
  */
 
 const repositoryRoot = resolve(__dirname, '..', '..', '..');
@@ -104,18 +106,25 @@ const theWordsTheBoardDraws = [
   words.checkoutMethodQuestion,
   words.checkoutPayByCard,
   words.checkoutPayByCardWhere,
+  words.checkoutPayByStars,
+  words.checkoutPayByStarsWhere,
   words.checkoutTermsLink,
   thePressThatPays,
   words.checkoutCancelAnyTime,
 ] as const;
 
 /**
- * The two sentences of the board that only a browser can draw. The line under the title names the
- * way she signed in, which a server of this site cannot read, and the line over the card form is
- * drawn once a wallet of her device has answered. Both are read against the board here and against
- * the page in `theCheckoutPage.test.tsx`, which drives it in a browser.
+ * The sentences of the board that only a browser can draw. The line under the title names the way
+ * she signed in, which a server of this site cannot read. The line over the card form is drawn once
+ * a wallet of her device has answered. The press that opens the bot sits behind the second choice,
+ * and the board opens on the first one. Each is read against the board here and against the page in
+ * `theCheckoutPage.test.tsx`, which drives it in a browser.
  */
-const theWordsHerBrowserAdds = [words.checkoutNotYou, words.checkoutOrPayByCard] as const;
+const theWordsHerBrowserAdds = [
+  words.checkoutNotYou,
+  words.checkoutOrPayByCard,
+  words.checkoutStarsOpenTheBot,
+] as const;
 
 describe('the approved board of the page she buys Emi on', () => {
   it('is in this repository, and it draws something to read', () => {
@@ -131,7 +140,7 @@ describe('the approved board of the page she buys Emi on', () => {
     const page = await whatThePageSays();
     const missing = theWordsTheBoardDraws.filter((said) => !page.includes(said));
 
-    expect(theWordsTheBoardDraws.length).toBeGreaterThan(12);
+    expect(theWordsTheBoardDraws.length).toBeGreaterThan(14);
     expect(missing).toEqual([]);
   });
 
@@ -152,14 +161,31 @@ describe('the approved board of the page she buys Emi on', () => {
     expect(await whatThePageSays()).toContain(said);
   });
 
-  it('leaves the Telegram Stars choice of the board out, as the operator decided', async () => {
+  it('draws the Telegram Stars choice of the board, in the words the board draws it in', async () => {
     const page = await whatThePageSays();
 
-    expect(whatTheBoardSays()).toContain('Telegram Stars');
-    expect(whatTheBoardSays()).toContain('Open the Emi bot');
-    expect(Object.values(words)).not.toContain('Open the Emi bot');
-    expect(page).not.toContain('Telegram Stars');
-    expect(page).not.toContain('Open the Emi bot');
+    expect(whatTheBoardSays()).toContain(
+      `${words.checkoutPayByStars} ${words.checkoutPayByStarsWhere}`,
+    );
+    expect(page).toContain(`${words.checkoutPayByStars} ${words.checkoutPayByStarsWhere}`);
+  });
+
+  it('says what a year costs in Stars, which the board draws nowhere', async () => {
+    const page = await whatThePageSays();
+
+    expect(whatTheBoardSays()).not.toContain('Stars for a year');
+    expect(words.checkoutStarsPrice).toContain('{stars}');
+    // The count is drawn behind the choice, so a server render of the page carries neither it nor
+    // the hole it is written into.
+    expect(page).not.toContain('{stars}');
+  });
+
+  it('tells her to come back to this page, where the board sends her to the application', () => {
+    expect(whatTheBoardSays()).toContain(
+      'Open the Emi bot and pay there. Then log in with Telegram on your iPhone, and Emi unlocks by itself.',
+    );
+    expect(Object.values(words).join(' ')).not.toContain('unlocks by itself');
+    expect(words.checkoutStarsComeBack).toContain('come back to this page');
   });
 
   it('leaves the card form of the board to the payment provider, as the board does', async () => {

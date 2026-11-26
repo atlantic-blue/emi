@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Language, SiteWords } from '@/app/words';
 import { SITE_ORIGIN } from '@/lib/addresses';
 import { type AnOffer, theOfferOnThePage } from '@/lib/theOfferSheArrivedWith';
+import { anInvoiceInStars, theStarsSheWouldPay } from '@/lib/thePaymentInStars';
 import { theSessionHeld } from '@/lib/theSessionSheHolds';
 import { theTermsPageIsBuilt } from '@/lib/theTermsPage';
 import {
@@ -22,12 +23,8 @@ import { goTo } from '@/lib/whereSheGoesNext';
 
 /**
  * The half of the Buy Emi page that takes money, from
- * `docs/design/website/checkout/boards/Checkout.dc.html`: the card route, the wallets, the card
- * form, the terms line and the press that pays.
- *
- * The board draws a second route, Telegram Stars in the Emi bot. No bot answers it, so the page
- * leaves that route out by decision and draws the card route alone. One route is not a choice, so
- * the route is a line she reads and not a press.
+ * `docs/design/website/checkout/boards/Checkout.dc.html`: the two ways to pay, the wallets, the
+ * card form, the terms line and the press that pays.
  *
  * The wallets and the card form are two elements of Stripe rather than one. Stripe draws each
  * wallet in the first element alone when both are on a page, so the buttons sit above the line and
@@ -40,6 +37,15 @@ import { goTo } from '@/lib/whereSheGoesNext';
  * One press can confirm twice. The card is always collected against a setup, and a plan with no
  * free month is then charged at once, which is a second confirmation on the invoice the service
  * answers with. The one price has a free month in front of it, so there it confirms once.
+ *
+ * The Stars choice is paid for in Telegram and not here. The press asks for an invoice and hands
+ * her browser the address the route answered, so this page takes nothing and holds nothing: the
+ * payment arrives as a message to the bot, and her account reads it afterwards. A payment in Stars
+ * buys one year and renews nothing, and it carries no free month.
+ *
+ * Two things the Stars choice says that the board does not. It names the count of Stars, because
+ * the board was drawn before the price was decided. And it tells her to come back to this page
+ * rather than to open the application, because her account on this site is where the year lands.
  */
 
 /** Where a finished setup leaves her, which is the account page in the language she is reading. */
@@ -65,8 +71,14 @@ export interface WhatThePaymentFormNeeds {
   readonly theTermsHaveAPage?: boolean;
 }
 
-const theRoute =
-  'flex min-h-[64px] w-full items-center justify-between gap-spaceMd rounded-lg border-2 border-siteAccent bg-siteCard px-margin py-spaceLg';
+/** Which of the two ways she is looking at. The board opens on the card. */
+type TheWayShePays = 'card' | 'stars';
+
+const theChoice = (chosen: boolean): string =>
+  [
+    'flex min-h-[64px] w-full items-center justify-between gap-spaceMd rounded-lg bg-siteCard px-margin py-spaceLg text-left',
+    chosen ? 'border-2 border-siteAccent' : 'border-hairline border-siteControlLine',
+  ].join(' ');
 
 export function ThePaymentForm({
   language,
@@ -80,6 +92,7 @@ export function ThePaymentForm({
   // Read once, when the form draws, which is the same read the plan above it makes. The press and
   // the words on it then agree with the amount she was shown, whatever the clock does afterwards.
   const [offer] = useState<AnOffer | null>(() => theOfferOnThePage(now));
+  const [way, setWay] = useState<TheWayShePays>('card');
   const [hasAWallet, setHasAWallet] = useState(false);
   const [paying, setPaying] = useState(false);
   const [whatWentWrong, setWhatWentWrong] = useState<string | null>(null);
@@ -194,6 +207,40 @@ export function ThePaymentForm({
     ],
   );
 
+  const opensTheBot = useCallback(async (): Promise<void> => {
+    const session = theSessionHeld();
+
+    if (session === null || paying) {
+      return;
+    }
+
+    setPaying(true);
+    setWhatWentWrong(null);
+
+    const said = await anInvoiceInStars(session.idToken, asks, offer);
+
+    if ('opens' in said) {
+      // Her browser leaves this site here, so the press stays held: she is reading Telegram by the
+      // time anything else could happen on this page.
+      goTo(said.opens);
+
+      return;
+    }
+
+    setPaying(false);
+    setWhatWentWrong(
+      said.refused === 'sheAlreadyHoldsEmi'
+        ? words.checkoutStarsAlreadyPaid
+        : words.checkoutStarsNothingTaken,
+    );
+  }, [asks, offer, paying, words.checkoutStarsAlreadyPaid, words.checkoutStarsNothingTaken]);
+
+  const picks = (chosen: TheWayShePays): void => {
+    setWay(chosen);
+    // What went wrong on one way is nothing to do with the other, so the line goes with the way.
+    setWhatWentWrong(null);
+  };
+
   useEffect(() => {
     pressesPay.current = (elements) => void pay(elements);
   }, [pay]);
@@ -204,6 +251,27 @@ export function ThePaymentForm({
 
   const terms = words.checkoutTerms.split('{terms}');
 
+  const theTermsLine = (
+    <p className="text-body-sm text-siteQuietText">
+      {terms[0]}
+      {theTermsHaveAPage ? (
+        <a className="text-siteAccent" href={`/${language}/${WHERE_THE_TERMS_ARE}`}>
+          {words.checkoutTermsLink}
+        </a>
+      ) : (
+        words.checkoutTermsLink
+      )}
+      {terms[1]}
+    </p>
+  );
+
+  const theLineThatWentWrong =
+    whatWentWrong === null ? null : (
+      <p className="text-body-sm text-siteAccent" role="alert">
+        {whatWentWrong}
+      </p>
+    );
+
   return (
     <>
       <section aria-labelledby="how-she-pays" className="flex flex-col gap-spaceMd">
@@ -211,58 +279,80 @@ export function ThePaymentForm({
           {words.checkoutMethodHeading}{' '}
           <span className="font-normal text-siteQuietText">{words.checkoutMethodQuestion}</span>
         </h2>
-        <div className={theRoute}>
+        <button
+          aria-pressed={way === 'card'}
+          className={theChoice(way === 'card')}
+          onClick={() => picks('card')}
+          type="button"
+        >
           <span className="flex flex-col">
             <span className="text-body-lg font-semibold">{words.checkoutPayByCard}</span>
             <span className="text-body-sm text-siteQuietText">{words.checkoutPayByCardWhere}</span>
           </span>
-        </div>
-      </section>
-
-      <div className="flex flex-col gap-spaceMd">
-        <div ref={theWallets} />
-        {hasAWallet ? (
-          <div
-            aria-hidden="true"
-            className="flex items-center gap-spaceMd py-spaceXs text-body-sm text-siteQuietText"
-          >
-            <span className="h-hairline grow bg-siteTintLine" />
-            {words.checkoutOrPayByCard}
-            <span className="h-hairline grow bg-siteTintLine" />
-          </div>
-        ) : null}
-        <div ref={drawsTheCardForm} />
-        <p className="text-body-sm text-siteQuietText">
-          {terms[0]}
-          {theTermsHaveAPage ? (
-            <a className="text-siteAccent" href={`/${language}/${WHERE_THE_TERMS_ARE}`}>
-              {words.checkoutTermsLink}
-            </a>
-          ) : (
-            words.checkoutTermsLink
-          )}
-          {terms[1]}
-        </p>
-        {whatWentWrong === null ? null : (
-          <p className="text-body-sm text-siteAccent" role="alert">
-            {whatWentWrong}
-          </p>
-        )}
+        </button>
         <button
-          className="min-h-[52px] rounded-lg bg-siteAccent text-body-lg font-semibold text-siteCard"
-          disabled={paying}
-          onClick={() => {
-            const elements = theElements();
-
-            if (elements !== null) {
-              void pay(elements);
-            }
-          }}
+          aria-pressed={way === 'stars'}
+          className={theChoice(way === 'stars')}
+          onClick={() => picks('stars')}
           type="button"
         >
-          {offer === null ? words.checkoutPay : words.checkoutOfferPay}
+          <span className="flex flex-col">
+            <span className="text-body-lg font-semibold">{words.checkoutPayByStars}</span>
+            <span className="text-body-sm text-siteQuietText">{words.checkoutPayByStarsWhere}</span>
+          </span>
         </button>
-      </div>
+      </section>
+
+      {way === 'card' ? (
+        <div className="flex flex-col gap-spaceMd">
+          <div ref={theWallets} />
+          {hasAWallet ? (
+            <div
+              aria-hidden="true"
+              className="flex items-center gap-spaceMd py-spaceXs text-body-sm text-siteQuietText"
+            >
+              <span className="h-hairline grow bg-siteTintLine" />
+              {words.checkoutOrPayByCard}
+              <span className="h-hairline grow bg-siteTintLine" />
+            </div>
+          ) : null}
+          <div ref={drawsTheCardForm} />
+          {theTermsLine}
+          {theLineThatWentWrong}
+          <button
+            className="min-h-[52px] rounded-lg bg-siteAccent text-body-lg font-semibold text-siteCard"
+            disabled={paying}
+            onClick={() => {
+              const elements = theElements();
+
+              if (elements !== null) {
+                void pay(elements);
+              }
+            }}
+            type="button"
+          >
+            {offer === null ? words.checkoutPay : words.checkoutOfferPay}
+          </button>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-spaceMd">
+          <p className="text-body-lg font-semibold">
+            {words.checkoutStarsPrice.replace('{stars}', `${theStarsSheWouldPay(offer)}`)}
+          </p>
+          <p className="text-body-lg text-siteQuietText">{words.checkoutStarsOneYear}</p>
+          <p className="text-body-lg text-siteQuietText">{words.checkoutStarsComeBack}</p>
+          {theTermsLine}
+          {theLineThatWentWrong}
+          <button
+            className="min-h-[52px] rounded-lg bg-siteAccent text-body-lg font-semibold text-siteCard"
+            disabled={paying}
+            onClick={() => void opensTheBot()}
+            type="button"
+          >
+            {words.checkoutStarsOpenTheBot}
+          </button>
+        </div>
+      )}
     </>
   );
 }

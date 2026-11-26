@@ -370,6 +370,8 @@ export const english = {
   checkoutMethodQuestion: 'How would you like to pay?',
   checkoutPayByCard: 'Apple Pay, Google Pay or card',
   checkoutPayByCardWhere: 'On this site',
+  checkoutPayByStars: 'Telegram Stars',
+  checkoutPayByStarsWhere: 'In the Emi bot',
   checkoutOrPayByCard: 'or pay by card',
   checkoutTerms: 'By paying you agree to the {terms}.',
   checkoutTermsLink: 'terms',
@@ -378,6 +380,16 @@ export const english = {
     'Cancel on your account page at any time. The payment links to your account. It never links to your records.',
   checkoutCouldNotStart: 'Emi could not start that payment. Try again in a moment.',
   checkoutNoPaymentFormYet: 'Paying on this site is not open yet. Emi is in the App Store today.',
+
+  // The Telegram Stars choice. The figure is held out of the catalogue: the count of Stars
+  // lives in `lib/thePaymentInStars.ts`, and the offer halves it, so one place says what it
+  // costs. Nothing here offers a free month, because that month belongs to the one price.
+  checkoutStarsPrice: '{stars} Stars for a year',
+  checkoutStarsOneYear: 'It pays for one year. It does not renew.',
+  checkoutStarsComeBack: 'Pay in Telegram, then come back to this page.',
+  checkoutStarsOpenTheBot: 'Open the Emi bot',
+  checkoutStarsAlreadyPaid: 'You already have Emi, so nothing was taken.',
+  checkoutStarsNothingTaken: 'Emi could not open that payment. Nothing was taken.',
 
   // The same plan for a woman who arrived on the Black Friday offer. Each one stands in for the
   // word above that says the full price. The free month belongs to that price alone: the offer is
@@ -397,6 +409,8 @@ export const english = {
   accountStateRenewalOff: 'Renewal off',
   accountPaidWith: 'Paid with',
   accountPaidWithCard: 'Card, on this site',
+  accountPaidWithStars: 'Telegram Stars, in the Emi bot',
+  accountStarsPaidUntil: 'Paid until {date}. It does not renew.',
   accountReceipts: 'Receipts',
   accountChangeCard: 'Change card',
   accountCancelRenewal: 'Cancel renewal',
@@ -409,6 +423,7 @@ export const english = {
   accountMoreReceipts: 'Show more',
   accountNoSubscription: 'You have no subscription yet.',
   accountBuyEmi: 'Buy Emi ›',
+  accountBuyAnotherYear: 'Buy another year ›',
 
   // The band at the top of the page, from boards/Header.dc.html.
   headerHomeLabel: 'Emi home',

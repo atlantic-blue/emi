@@ -293,6 +293,8 @@ export const spanish: SiteWords = {
   checkoutMethodQuestion: '¿Cómo quieres pagar?',
   checkoutPayByCard: 'Apple Pay, Google Pay o tarjeta',
   checkoutPayByCardWhere: 'En este sitio',
+  checkoutPayByStars: 'Telegram Stars',
+  checkoutPayByStarsWhere: 'En el bot de Emi',
   checkoutOrPayByCard: 'o paga con tarjeta',
   checkoutTerms: 'Al pagar aceptas los {terms}.',
   checkoutTermsLink: 'términos',
@@ -302,6 +304,13 @@ export const spanish: SiteWords = {
   checkoutCouldNotStart: 'Emi no pudo iniciar ese pago. Inténtalo de nuevo en un momento.',
   checkoutNoPaymentFormYet:
     'Pagar en este sitio aún no está abierto. Hoy Emi está en la App Store.',
+
+  checkoutStarsPrice: '{stars} estrellas por un año',
+  checkoutStarsOneYear: 'Paga un año. No se renueva.',
+  checkoutStarsComeBack: 'Paga en Telegram y vuelve después a esta página.',
+  checkoutStarsOpenTheBot: 'Abrir el bot de Emi',
+  checkoutStarsAlreadyPaid: 'Ya tienes Emi, así que no se ha cobrado nada.',
+  checkoutStarsNothingTaken: 'Emi no pudo abrir ese pago. No se ha cobrado nada.',
 
   checkoutOfferEveryYear: 'Emi, a mitad de precio cada año.',
   checkoutOfferRenews: 'Se renueva cada año a mitad de precio',
@@ -318,6 +327,8 @@ export const spanish: SiteWords = {
   accountStateRenewalOff: 'Renovación desactivada',
   accountPaidWith: 'Pagado con',
   accountPaidWithCard: 'Tarjeta, en este sitio',
+  accountPaidWithStars: 'Telegram Stars, en el bot de Emi',
+  accountStarsPaidUntil: 'Pagado hasta el {date}. No se renueva.',
   accountReceipts: 'Recibos',
   accountChangeCard: 'Cambiar tarjeta',
   accountCancelRenewal: 'Cancelar la renovación',
@@ -330,6 +341,7 @@ export const spanish: SiteWords = {
   accountMoreReceipts: 'Mostrar más',
   accountNoSubscription: 'Todavía no tienes suscripción.',
   accountBuyEmi: 'Compra Emi ›',
+  accountBuyAnotherYear: 'Comprar otro año ›',
 
   headerHomeLabel: 'Página de inicio de Emi',
   headerMainLabel: 'Principal',
